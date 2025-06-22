@@ -1,31 +1,27 @@
 {
+  "name": "authenticationapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env index.js",
+    "dev": "node --watch --trace-warnings --env-file=.env index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "@prisma/client": "^6.10.0",
-    "axios": "^1.10.0",
-    "basic-ftp": "^5.0.5",
+    "@prisma/client": "^6.10.1",
     "bcryptjs": "^3.0.2",
-    "bull": "^4.16.5",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "csv-parse": "^5.6.0",
-    "date-fns": "^4.1.0",
-    "dotenv": "^16.5.0",
-    "express": "^4.21.2",
-    "express-async-errors": "^3.1.1",
-    "express-rate-limit": "^7.5.0",
-    "express-validator": "^7.2.1",
-    "fast-xml-parser": "^5.2.5",
+    "express": "^5.1.0",
     "helmet": "^8.1.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0",
-    "multer": "^2.0.1",
-    "prisma": "^6.10.0",
-    "ssh2-sftp-client": "^12.0.0",
-    "stripe": "^18.2.1",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1",
-    "uuid": "^11.1.0",
-    "winston": "^3.17.0",
-    "zod": "^3.25.67"
-  }
+    "nodemailer": "^7.0.3",
+    "pg": "^8.16.2",
+    "prisma": "^6.10.1"
+  },
+  "type": "module"
 }

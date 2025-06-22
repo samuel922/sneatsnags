@@ -1,0 +1,8 @@
+### Signup route
+POST http://localhost:5001/api/auth/signup
+Content-Type: application/json
+
+{
+    "email": "brenda@gmail.com",
+    "password": "@Software23"
+}

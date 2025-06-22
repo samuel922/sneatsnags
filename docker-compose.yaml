@@ -1,0 +1,33 @@
+version: "3"
+services:
+  app:
+    build: .
+    container_name: auth-app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/authapp
+      - JWT_SECRET=your_jwt_secret_here
+      - NODE_ENV=development
+      - PORT=5001
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npx prisma generate && node ./index.js"
+
+  db:
+    image: postgres:13-alpine
+    container_name: postgres-db_auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
