@@ -2,12 +2,15 @@ version: "3"
 services:
   app:
     build: .
-    container_name: auth-app
+    container_name: sneatsnags
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/authapp
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/sneatsnags
       - JWT_SECRET=your_jwt_secret_here
       - NODE_ENV=development
       - PORT=5001
+      - NODE_CODE_SENDING_EMAIL_ADDRESS=samuelgates271@gmail.com
+      - NODE_CODE_SENDING_EMAIL_PASSWORD=iddafcgebkpqtvfl
+      - HMAC_VERIFICATION_CODE_SECRET=my_secrete_key
     ports:
       - "5001:5001"
     depends_on:
@@ -19,11 +22,11 @@ services:
 
   db:
     image: postgres:13-alpine
-    container_name: postgres-db_auth
+    container_name: postgres-db_sneatsnags
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: authapp
+      POSTGRES_DB: sneatsnags
     ports:
       - "5432:5432"
     volumes:

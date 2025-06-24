@@ -19,9 +19,9 @@ model User {
   password                      String
   verified                      Boolean @default(false)
   verificationCode              String?
-  verificationCodeValidation    Int?
+  verificationCodeValidation    BigInt?
   forgotPasswordCode            String?
-  forgotPasswordCodeValidation  Int?
+  forgotPasswordCodeValidation  BigInt?
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime?
 }
