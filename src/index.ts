@@ -5,7 +5,7 @@ import rateLimit from "express-rate-limit";
 import { config } from "./config/config";
 import { logger } from "./utils/logger";
 import { errorHandler } from "./middlewares/errorHandler";
-import { authRoutes } from "./routes/route";
+import { authRoutes } from "./routes/auth";
 import { setupSwagger } from "./config/swagger";
 
 const app = express();

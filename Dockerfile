@@ -1,26 +1,30 @@
-# Use an official node.js runtime as a parent image
-FROM node:22-alpine
+# Use official Node.js runtime with Debian base for better compatibility
+FROM node:22-slim
 
-# Set the working directory in the container
+# Install OpenSSL and cleaning up caches
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the package.json and the package-lock.json files to the container
+# Copy dependency definitions
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies reproducibly and global TS tooling
+RUN npm ci && \
+    npm install -g ts-node tsx
 
-# Copy Prisma schema before generating the client
+# Copy Prisma schema and generate the client
 COPY prisma ./prisma
-
-# Generate Prisma Client
 RUN npx prisma generate
 
-# Copy the rest of the application code
+# Copy application code
 COPY . .
 
-# Expose the port that the app runs on
+# Expose application port
 EXPOSE 5001
 
-# Define the command to run your application
-CMD ["npm", "dev"]
+# Start in development mode using nodemon with TS support
+CMD ["npm", "run", "dev"]

@@ -69,7 +69,7 @@ export class AuthService {
       },
     });
 
-    if (!user || user.isActive) {
+    if (!user || !user.isActive) {
       throw new Error("Invalid credentials");
     }
 

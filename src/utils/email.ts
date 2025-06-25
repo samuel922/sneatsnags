@@ -3,9 +3,7 @@ import { config } from "../config/config";
 import { logger } from "./logger";
 
 const transporter = nodemailer.createTransport({
-  host: config.SMTP_HOST,
-  port: config.SMTP_PORT,
-  secure: false,
+  service: "gmail",
   auth: {
     user: config.SMTP_USER,
     pass: config.SMTP_PASS,
