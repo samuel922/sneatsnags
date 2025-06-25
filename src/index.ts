@@ -6,6 +6,7 @@ import { config } from "./config/config";
 import { logger } from "./utils/logger";
 import { errorHandler } from "./middlewares/errorHandler";
 import { authRoutes } from "./routes/auth";
+import { userRoutes } from "./routes/user";
 import { setupSwagger } from "./config/swagger";
 
 const app = express();
@@ -42,6 +43,7 @@ app.get("/health", (req, res) => {
 
 //Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 //Error handling
 app.use(errorHandler);
