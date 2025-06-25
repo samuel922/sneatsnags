@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Request, Response, NextFunction } from "express";
 import { User } from "@prisma/client";
 import { errorResponse } from "./response";
 
