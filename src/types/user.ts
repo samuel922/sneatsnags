@@ -1,3 +1,5 @@
+import type { User } from "@prisma/client";
+
 export interface CreateOfferDTO {
   eventId: string;
   maxPrice: number;
@@ -33,3 +35,19 @@ export interface BrokerIntegrationDTO {
   syncSchedule: string;
   fieldMappings?: Record<string, any>;
 }
+
+export type UserProfile = Pick<
+  User,
+  | "id"
+  | "email"
+  | "firstName"
+  | "lastName"
+  | "phone"
+  | "role"
+  | "profileImage"
+  | "stripeCustomerId"
+  | "stripeAccountId"
+  | "isEmailVerified"
+  | "lastLoginAt"
+  | "createdAt"
+>;

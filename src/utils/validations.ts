@@ -26,3 +26,15 @@ export const resetPasswordSchema = z.object({
 export const verifyEmailSchema = z.object({
   token: z.string().min(1, "Token is required"),
 });
+
+export const updateProfileSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phone: z.string().optional(),
+  profileImage: z.string().optional(),
+});
+
+export const updateRoleSchema = z.object({
+  userId: z.string(),
+  role: z.enum(["BUYER", "SELLER", "BROKER", "ADMIN"]),
+});
