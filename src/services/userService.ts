@@ -1,13 +1,14 @@
-import { PrismaClient, User, Notification } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import {
   getPaginationParams,
   createPaginationResult,
 } from "../utils/pagination";
+import type { UserProfile } from "../types/user";
 
 export class UserService {
   constructor(private prisma: PrismaClient) {}
 
-  async getUserProfile(userId: string): Promise<User | null> {
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
     return this.prisma.user.findUnique({
       where: { id: userId },
       select: {

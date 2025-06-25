@@ -33,3 +33,22 @@ export interface BrokerIntegrationDTO {
   syncSchedule: string;
   fieldMappings?: Record<string, any>;
 }
+
+// Shape returned from the user profile query
+import type { User } from "@prisma/client";
+
+export type UserProfile = Pick<
+  User,
+  | "id"
+  | "email"
+  | "firstName"
+  | "lastName"
+  | "phone"
+  | "role"
+  | "profileImage"
+  | "stripeCustomerId"
+  | "stripeAccountId"
+  | "isEmailVerified"
+  | "lastLoginAt"
+  | "createdAt"
+>;
