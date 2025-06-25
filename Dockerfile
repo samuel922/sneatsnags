@@ -23,4 +23,4 @@ COPY . .
 EXPOSE 5001
 
 # Define the command to run your application
-CMD ["node", "./index.js"]
+CMD ["npm", "dev"]

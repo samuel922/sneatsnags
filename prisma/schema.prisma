@@ -13,16 +13,362 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id                            Int     @id @default(autoincrement())
-  email                         String  @unique
-  password                      String
-  verified                      Boolean @default(false)
-  verificationCode              String?
-  verificationCodeValidation    BigInt?
-  forgotPasswordCode            String?
-  forgotPasswordCodeValidation  BigInt?
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime?
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  firstName         String
+  lastName          String
+  phone             String?
+  role              UserRole @default(BUYER)
+  isEmailVerified   Boolean  @default(false)
+  emailVerifyToken  String?
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
+  stripeCustomerId  String?
+  stripeAccountId   String? // For sellers using Stripe Connect
+  profileImage      String?
+  isActive          Boolean  @default(true)
+  lastLoginAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relationships
+  buyerOffers       Offer[]
+  sellerListings    Listing[]
+  transactions      Transaction[]
+  brokerIntegrations BrokerIntegration[]
+  notifications     Notification[]
+  supportTickets    SupportTicket[]
+
+  @@map("users")
 }
 
+model Event {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  venue           String
+  address         String
+  city            String
+  state           String
+  zipCode         String
+  country         String   @default("US")
+  eventDate       DateTime
+  doors           DateTime?
+  eventType       EventType
+  category        String?
+  subcategory     String?
+  ticketmasterId  String?   @unique
+  imageUrl        String?
+  minPrice        Decimal?  @db.Decimal(10,2)
+  maxPrice        Decimal?  @db.Decimal(10,2)
+  totalSeats      Int?
+  availableSeats  Int?
+  status          EventStatus @default(ACTIVE)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relationships
+  sections        Section[]
+  offers          Offer[]
+  listings        Listing[]
+  transactions    Transaction[]
+
+  @@map("events")
+}
+
+model Section {
+  id          String @id @default(cuid())
+  eventId     String
+  name        String
+  description String?
+  rowCount    Int?
+  seatCount   Int?
+  priceLevel  Int?
+  
+  // Relationships
+  event       Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  offerSections OfferSection[]
+  listings    Listing[]
+
+  @@map("sections")
+}
+
+model Offer {
+  id            String      @id @default(cuid())
+  buyerId       String
+  eventId       String
+  maxPrice      Decimal     @db.Decimal(10,2)
+  quantity      Int         @default(1)
+  message       String?
+  status        OfferStatus @default(ACTIVE)
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  acceptedBy    String?     // Seller ID who accepted
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relationships
+  buyer         User        @relation(fields: [buyerId], references: [id])
+  event         Event       @relation(fields: [eventId], references: [id])
+  sections      OfferSection[]
+  transaction   Transaction?
+
+  @@map("offers")
+}
+
+
+model OfferSection {
+  id        String @id @default(cuid())
+  offerId   String
+  sectionId String
+
+  // Relationships
+  offer     Offer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  section   Section @relation(fields: [sectionId], references: [id])
+
+  @@unique([offerId, sectionId])
+  @@map("offer_sections")
+}
+
+
+model Listing {
+  id              String        @id @default(cuid())
+  sellerId        String
+  eventId         String
+  sectionId       String
+  row             String?
+  seats           String[]      // Array of seat numbers
+  price           Decimal       @db.Decimal(10,2)
+  quantity        Int           @default(1)
+  notes           String?
+  status          ListingStatus @default(AVAILABLE)
+  sourceType      SourceType    @default(MANUAL)
+  externalId      String?       // For broker integrations
+  syncMetadata    Json?         // Broker-specific data
+  lastExternalUpdate DateTime?
+  syncStatus      SyncStatus    @default(SYNCED)
+  ticketFiles     String[]      // URLs to ticket images/PDFs
+  isVerified      Boolean       @default(false)
+  verifiedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relationships
+  seller          User          @relation(fields: [sellerId], references: [id])
+  event           Event         @relation(fields: [eventId], references: [id])
+  section         Section       @relation(fields: [sectionId], references: [id])
+  transaction     Transaction?
+
+  @@map("listings")
+}
+
+model Transaction {
+  id                    String            @id @default(cuid())
+  buyerId               String
+  sellerId              String
+  offerId               String            @unique
+  listingId             String            @unique
+  eventId               String
+  amount                Decimal           @db.Decimal(10,2)
+  platformFee           Decimal           @db.Decimal(10,2)
+  sellerAmount          Decimal           @db.Decimal(10,2)
+  stripePaymentIntent   String?
+  stripeTransferId      String?
+  status                TransactionStatus @default(PENDING)
+  ticketsDelivered      Boolean           @default(false)
+  ticketsDeliveredAt    DateTime?
+  refundAmount          Decimal?          @db.Decimal(10,2)
+  refundedAt            DateTime?
+  disputeReason         String?
+  notes                 String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  // Relationships
+  buyer                 User              @relation(fields: [buyerId], references: [id])
+  event                 Event             @relation(fields: [eventId], references: [id])
+  offer                 Offer             @relation(fields: [offerId], references: [id])
+  listing               Listing           @relation(fields: [listingId], references: [id])
+
+  @@map("transactions")
+}
+
+model BrokerIntegration {
+  id                String           @id @default(cuid())
+  userId            String
+  integrationType   IntegrationType
+  name              String
+  credentials       Json             // Encrypted broker credentials
+  syncSchedule      String           // Cron expression
+  isActive          Boolean          @default(true)
+  lastSyncAt        DateTime?
+  lastSyncStatus    SyncStatus       @default(PENDING)
+  errorCount        Int              @default(0)
+  maxErrors         Int              @default(5)
+  fieldMappings     Json?            // Custom field mappings
+  syncPreferences   Json?            // Sync preferences
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relationships
+  user              User             @relation(fields: [userId], references: [id])
+  syncLogs          BrokerSyncLog[]
+
+  @@map("broker_integrations")
+}
+
+model BrokerSyncLog {
+  id                  String             @id @default(cuid())
+  brokerIntegrationId String
+  syncType            SyncType           @default(FULL)
+  status              SyncStatus         @default(PENDING)
+  recordsProcessed    Int                @default(0)
+  recordsSucceeded    Int                @default(0)
+  recordsFailed       Int                @default(0)
+  errorMessages       String[]
+  processingTimeMs    Int?
+  startedAt           DateTime           @default(now())
+  completedAt         DateTime?
+
+  // Relationships
+  brokerIntegration   BrokerIntegration  @relation(fields: [brokerIntegrationId], references: [id])
+
+  @@map("broker_sync_logs")
+}
+
+model Notification {
+  id          String             @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String
+  data        Json?              // Additional notification data
+  isRead      Boolean            @default(false)
+  readAt      DateTime?
+  createdAt   DateTime           @default(now())
+
+  // Relationships
+  user        User               @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model SupportTicket {
+  id          String            @id @default(cuid())
+  userId      String
+  subject     String
+  message     String
+  status      TicketStatus      @default(OPEN)
+  priority    TicketPriority    @default(MEDIUM)
+  category    String?
+  assignedTo  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relationships
+  user        User              @relation(fields: [userId], references: [id])
+
+  @@map("support_tickets")
+}
+
+// Enums
+enum UserRole {
+  BUYER
+  SELLER
+  BROKER
+  ADMIN
+}
+
+enum EventType {
+  SPORTS
+  CONCERT
+  THEATER
+  COMEDY
+  OTHER
+}
+
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+  POSTPONED
+  COMPLETED
+}
+
+enum OfferStatus {
+  ACTIVE
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum ListingStatus {
+  AVAILABLE
+  SOLD
+  RESERVED
+  EXPIRED
+  CANCELLED
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  DISPUTED
+}
+
+enum SourceType {
+  MANUAL
+  SKYBOX
+  AUTOPROCESSOR
+  TICKETMASTER
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCING
+  SYNCED
+  FAILED
+  CONFLICT
+}
+
+enum IntegrationType {
+  SKYBOX
+  AUTOPROCESSOR
+  TICKET_EVOLUTION
+  CUSTOM_FTP
+}
+
+enum SyncType {
+  FULL
+  INCREMENTAL
+  MANUAL
+}
+
+enum NotificationType {
+  OFFER_ACCEPTED
+  OFFER_EXPIRED
+  PAYMENT_RECEIVED
+  TICKET_DELIVERED
+  SYSTEM_ALERT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
