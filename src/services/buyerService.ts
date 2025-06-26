@@ -1,10 +1,28 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { CreateOfferDTO, UpdateOfferDTO, OfferResponse } from "../types/buyer";
 import { getPaginationParams, createPaginationResult } from "../utils/pagination";
 import type { PaginationResult } from "../types/api";
 
 export class BuyerService {
   constructor(private prisma: PrismaClient) {}
+
+  private mapOffer(
+    offer: Prisma.OfferGetPayload<{ include: { sections: { select: { sectionId: true } } } }>
+  ): OfferResponse {
+    return {
+      id: offer.id,
+      eventId: offer.eventId,
+      buyerId: offer.buyerId,
+      maxPrice: Number(offer.maxPrice),
+      quantity: offer.quantity,
+      message: offer.message,
+      status: offer.status,
+      expiresAt: offer.expiresAt,
+      createdAt: offer.createdAt,
+      updatedAt: offer.updatedAt,
+      sectionIds: offer.sections.map((s) => s.sectionId),
+    };
+  }
 
   async createOffer(buyerId: string, data: CreateOfferDTO): Promise<OfferResponse> {
     const offer = await this.prisma.$transaction(async (tx) => {
@@ -35,10 +53,7 @@ export class BuyerService {
       select: { sectionId: true },
     });
 
-    return {
-      ...offer,
-      sectionIds: sections.map((s) => s.sectionId),
-    };
+    return this.mapOffer({ ...offer, sections });
   }
 
   async listOffers(
@@ -58,10 +73,7 @@ export class BuyerService {
       this.prisma.offer.count({ where: { buyerId } }),
     ]);
 
-    const mapped = offers.map((offer) => ({
-      ...offer,
-      sectionIds: offer.sections.map((s) => s.sectionId),
-    }));
+    const mapped = offers.map((offer) => this.mapOffer(offer));
 
     return createPaginationResult(mapped, total, page, limit);
   }
@@ -76,10 +88,7 @@ export class BuyerService {
       throw new Error("Offer not found");
     }
 
-    return {
-      ...offer,
-      sectionIds: offer.sections.map((s) => s.sectionId),
-    };
+    return this.mapOffer(offer);
   }
 
   async updateOffer(
@@ -118,10 +127,7 @@ export class BuyerService {
       select: { sectionId: true },
     });
 
-    return {
-      ...offer,
-      sectionIds: sections.map((s) => s.sectionId),
-    };
+    return this.mapOffer({ ...offer, sections });
   }
 
   async cancelOffer(buyerId: string, offerId: string): Promise<OfferResponse> {
@@ -131,9 +137,6 @@ export class BuyerService {
       include: { sections: { select: { sectionId: true } } },
     });
 
-    return {
-      ...offer,
-      sectionIds: offer.sections.map((s) => s.sectionId),
-    };
+    return this.mapOffer(offer);
   }
 }
