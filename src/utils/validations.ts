@@ -38,3 +38,13 @@ export const updateRoleSchema = z.object({
   userId: z.string(),
   role: z.enum(["BUYER", "SELLER", "BROKER", "ADMIN"]),
 });
+export const createOfferSchema = z.object({
+  eventId: z.string(),
+  maxPrice: z.number().positive(),
+  quantity: z.number().int().positive(),
+  sectionIds: z.array(z.string()).nonempty(),
+  message: z.string().optional(),
+  expiresAt: z.coerce.date(),
+});
+
+export const updateOfferSchema = createOfferSchema.partial();
