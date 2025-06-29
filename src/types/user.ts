@@ -1,53 +1,18 @@
-import type { User } from "@prisma/client";
-
-export interface CreateOfferDTO {
-  eventId: string;
-  maxPrice: number;
-  quantity: number;
-  sectionIds: string[];
-  message?: string;
-  expiresAt: Date;
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  profileImage?: string;
 }
 
-export interface CreateListingDTO {
-  eventId: string;
-  sectionId: string;
-  row?: string;
-  seats: string[];
-  price: number;
-  quantity: number;
-  notes?: string;
-  ticketFiles?: string[];
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
-export interface BulkListingDTO {
-  listings: CreateListingDTO[];
+export interface UserPreferences {
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  marketingEmails: boolean;
+  eventReminders: boolean;
 }
-
-export interface AcceptOfferDTO {
-  listingId: string;
-}
-
-export interface BrokerIntegrationDTO {
-  name: string;
-  type: "SKYBOX" | "AUTOPROCESSOR" | "TICKET_EVOLUTION" | "CUSTOM_FTP";
-  credentials: Record<string, any>;
-  syncSchedule: string;
-  fieldMappings?: Record<string, any>;
-}
-
-export type UserProfile = Pick<
-  User,
-  | "id"
-  | "email"
-  | "firstName"
-  | "lastName"
-  | "phone"
-  | "role"
-  | "profileImage"
-  | "stripeCustomerId"
-  | "stripeAccountId"
-  | "isEmailVerified"
-  | "lastLoginAt"
-  | "createdAt"
->;

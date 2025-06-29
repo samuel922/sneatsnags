@@ -48,3 +48,32 @@ export const createOfferSchema = z.object({
 });
 
 export const updateOfferSchema = createOfferSchema.partial();
+
+export const offerSearchSchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  sortBy: z.enum(["createdAt", "maxPrice", "expiresAt"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
+  eventId: z.string().cuid().optional(),
+  status: z.enum(["ACTIVE", "ACCEPTED", "EXPIRED", "CANCELLED"]).optional(),
+  minPrice: z.coerce.number().positive().optional(),
+  maxPrice: z.coerce.number().positive().optional(),
+});
+
+export const eventSearchSchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  sortBy: z.enum(["eventDate", "name", "createdAt"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  eventType: z
+    .enum(["SPORTS", "CONCERT", "THEATER", "COMEDY", "OTHER"])
+    .optional(),
+  category: z.string().optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
+  minPrice: z.coerce.number().positive().optional(),
+  maxPrice: z.coerce.number().positive().optional(),
+  search: z.string().optional(),
+});

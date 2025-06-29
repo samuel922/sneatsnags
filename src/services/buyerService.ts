@@ -4,7 +4,7 @@ import {
   getPaginationParams,
   createPaginationResult,
 } from "../utils/pagination";
-import type { PaginationResult } from "../types/api";
+import type { PaginationResponse } from "../types/api";
 
 export class BuyerService {
   constructor(private prisma: PrismaClient) {}
@@ -67,7 +67,7 @@ export class BuyerService {
   async listOffers(
     buyerId: string,
     query: any
-  ): Promise<PaginationResult<OfferResponse>> {
+  ): Promise<PaginationResponse<OfferResponse>> {
     const { page, limit, skip } = getPaginationParams(query);
 
     const [offers, total] = await Promise.all([
