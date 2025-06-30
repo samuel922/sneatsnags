@@ -1,5 +1,9 @@
 import { prisma } from "../utils/prisma";
-import { CreateEventRequest, EventSearchQuery } from "../types/event";
+import {
+  CreateEventRequest,
+  EventSearchQuery,
+  UpdateEventRequest,
+} from "../types/event";
 import { PaginationResponse } from "../types/api";
 import { logger } from "../utils/logger";
 
@@ -122,7 +126,7 @@ export class EventService {
     return event;
   }
 
-  async updateEvent(eventId: string, data: Partial<CreateEventRequest>) {
+  async updateEvent(eventId: string, data: UpdateEventRequest) {
     const event = await prisma.event.update({
       where: { id: eventId },
       data,

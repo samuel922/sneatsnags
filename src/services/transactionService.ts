@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { TransactionSearchQuery } from "../types/transaction";
+import { TransactionStatus } from "@prisma/client";
 import { PaginationResponse } from "../types/api";
 import { logger } from "../utils/logger";
 
@@ -169,7 +170,7 @@ export class TransactionService {
 
   async updateTransactionStatus(
     transactionId: string,
-    status: string,
+    status: TransactionStatus,
     notes?: string
   ) {
     const transaction = await prisma.transaction.update({

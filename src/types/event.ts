@@ -28,6 +28,8 @@ export interface CreateSectionRequest {
   priceLevel?: number;
 }
 
+export type UpdateEventRequest = Partial<Omit<CreateEventRequest, "sections">>;
+
 export interface EventSearchQuery extends PaginationQuery {
   city?: string;
   state?: string;
