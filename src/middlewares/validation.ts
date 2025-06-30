@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import { UserRole } from "@prisma/client";
+import { AuthenticatedRequest } from "../types/auth";
 
 export const validateQuery = (schema: z.ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -34,5 +36,25 @@ export const validateBody = (schema: z.ZodSchema) => {
       }
       next(error);
     }
+  };
+};
+
+export const validateRole = (allowedRoles: UserRole[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: "Authentication required",
+      });
+    }
+
+    if (!allowedRoles.includes(req.user.role as UserRole)) {
+      return res.status(403).json({
+        success: false,
+        error: "Insufficient permissions",
+      });
+    }
+
+    next();
   };
 };

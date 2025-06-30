@@ -356,4 +356,267 @@ export class OfferService {
       };
     });
   }
+
+  async getOffersPublic(params: {
+    skip: number;
+    take: number;
+    eventId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    status?: string;
+    city?: string;
+    state?: string;
+  }) {
+    const { skip, take, eventId, minPrice, maxPrice, status, city, state } = params;
+    
+    const where: any = {};
+    
+    if (eventId) where.eventId = eventId;
+    if (status) where.status = status;
+    
+    if (minPrice || maxPrice) {
+      where.maxPrice = {};
+      if (minPrice) where.maxPrice.gte = minPrice;
+      if (maxPrice) where.maxPrice.lte = maxPrice;
+    }
+    
+    if (city || state) {
+      where.event = {};
+      if (city) where.event.city = { contains: city, mode: "insensitive" };
+      if (state) where.event.state = { contains: state, mode: "insensitive" };
+    }
+
+    const [offers, total] = await Promise.all([
+      prisma.offer.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+        include: {
+          buyer: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          event: true,
+          sections: {
+            include: {
+              section: true,
+            },
+          },
+        },
+      }),
+      prisma.offer.count({ where }),
+    ]);
+
+    return { offers, total };
+  }
+
+  async getBuyerOffers(buyerId: string, params: {
+    skip: number;
+    take: number;
+    status?: string;
+    eventId?: string;
+  }) {
+    const { skip, take, status, eventId } = params;
+    
+    const where: any = { buyerId };
+    if (status) where.status = status;
+    if (eventId) where.eventId = eventId;
+
+    const [offers, total] = await Promise.all([
+      prisma.offer.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+        include: {
+          event: true,
+          sections: {
+            include: {
+              section: true,
+            },
+          },
+          transaction: true,
+        },
+      }),
+      prisma.offer.count({ where }),
+    ]);
+
+    return { offers, total };
+  }
+
+  async getOffersByEvent(eventId: string, params: {
+    skip: number;
+    take: number;
+    minPrice?: number;
+    maxPrice?: number;
+    status?: string;
+  }) {
+    const { skip, take, minPrice, maxPrice, status } = params;
+    
+    const where: any = { eventId };
+    if (status) where.status = status;
+    
+    if (minPrice || maxPrice) {
+      where.maxPrice = {};
+      if (minPrice) where.maxPrice.gte = minPrice;
+      if (maxPrice) where.maxPrice.lte = maxPrice;
+    }
+
+    const [offers, total] = await Promise.all([
+      prisma.offer.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { maxPrice: "desc" },
+        include: {
+          buyer: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          event: true,
+          sections: {
+            include: {
+              section: true,
+            },
+          },
+        },
+      }),
+      prisma.offer.count({ where }),
+    ]);
+
+    return { offers, total };
+  }
+
+  async extendOffer(offerId: string, buyerId: string, newExpiryDate: Date) {
+    const offer = await prisma.offer.findUnique({
+      where: { id: offerId, buyerId },
+    });
+
+    if (!offer) {
+      throw new Error("Offer not found or not owned by buyer");
+    }
+
+    if (offer.status !== "ACTIVE") {
+      throw new Error("Can only extend active offers");
+    }
+
+    return await prisma.offer.update({
+      where: { id: offerId },
+      data: { expiresAt: newExpiryDate },
+    });
+  }
+
+  async getOfferStats(eventId?: string) {
+    const where: any = {};
+    if (eventId) where.eventId = eventId;
+
+    const [totalOffers, activeOffers, acceptedOffers, avgPrice] = await Promise.all([
+      prisma.offer.count({ where }),
+      prisma.offer.count({ where: { ...where, status: "ACTIVE" } }),
+      prisma.offer.count({ where: { ...where, status: "ACCEPTED" } }),
+      prisma.offer.aggregate({
+        where,
+        _avg: { maxPrice: true },
+      }),
+    ]);
+
+    return {
+      totalOffers,
+      activeOffers,
+      acceptedOffers,
+      averagePrice: avgPrice._avg.maxPrice || 0,
+    };
+  }
+
+  async searchOffers(params: {
+    query: string;
+    eventId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    limit: number;
+  }) {
+    const { query, eventId, minPrice, maxPrice, limit } = params;
+    
+    const where: any = {
+      status: "ACTIVE",
+      expiresAt: { gte: new Date() },
+      OR: [
+        { message: { contains: query, mode: "insensitive" } },
+        { event: { name: { contains: query, mode: "insensitive" } } },
+      ],
+    };
+    
+    if (eventId) where.eventId = eventId;
+    
+    if (minPrice || maxPrice) {
+      where.maxPrice = {};
+      if (minPrice) where.maxPrice.gte = minPrice;
+      if (maxPrice) where.maxPrice.lte = maxPrice;
+    }
+
+    return await prisma.offer.findMany({
+      where,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        event: true,
+        sections: {
+          include: {
+            section: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getRecentOffers(params: {
+    limit: number;
+    eventId?: string;
+  }) {
+    const { limit, eventId } = params;
+    
+    const where: any = {
+      status: "ACTIVE",
+      expiresAt: { gte: new Date() },
+    };
+    
+    if (eventId) where.eventId = eventId;
+
+    return await prisma.offer.findMany({
+      where,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        event: true,
+        sections: {
+          include: {
+            section: true,
+          },
+        },
+      },
+    });
+  }
 }
+
+export const offerService = new OfferService();

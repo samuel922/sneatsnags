@@ -48,125 +48,93 @@ export class EventService {
 
     const where: any = {
       isActive: true,
-      status: "ACTIVE",
     };
 
-    if (city) where.city = { contains: city, mode: "insensitive" };
-    if (state) where.state = state;
-    if (eventType) where.eventType = eventType;
-    if (category) where.category = { contains: category, mode: "insensitive" };
+    if (city) {
+      where.city = { contains: city, mode: "insensitive" };
+    }
+
+    if (state) {
+      where.state = { contains: state, mode: "insensitive" };
+    }
+
+    if (eventType) {
+      where.eventType = eventType;
+    }
+
+    if (category) {
+      where.category = { contains: category, mode: "insensitive" };
+    }
+
     if (dateFrom || dateTo) {
       where.eventDate = {};
       if (dateFrom) where.eventDate.gte = new Date(dateFrom);
       if (dateTo) where.eventDate.lte = new Date(dateTo);
     }
+
     if (minPrice || maxPrice) {
-      where.AND = where.AND || [];
-      if (minPrice) where.AND.push({ minPrice: { gte: minPrice } });
-      if (maxPrice) where.AND.push({ maxPrice: { lte: maxPrice } });
-    }
-    if (search) {
       where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { venue: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+        {
+          minPrice: {
+            ...(minPrice && { gte: minPrice }),
+            ...(maxPrice && { lte: maxPrice }),
+          },
+        },
+        {
+          maxPrice: {
+            ...(minPrice && { gte: minPrice }),
+            ...(maxPrice && { lte: maxPrice }),
+          },
+        },
       ];
     }
 
-    const [events, total] = await Promise.all([
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { venue: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
       prisma.event.findMany({
         where,
+        skip: offset,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
         include: {
           sections: true,
           _count: {
             select: {
-              offers: { where: { status: "ACTIVE" } },
-              listings: { where: { status: "AVAILABLE" } },
+              offers: true,
+              listings: true,
             },
           },
         },
-        orderBy: { [sortBy]: sortOrder },
-        skip: offset,
-        take: limit,
       }),
       prisma.event.count({ where }),
     ]);
 
     return {
-      data: events,
+      data,
       pagination: {
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
+        hasNext: page < Math.ceil(total / limit),
         hasPrev: page > 1,
       },
     };
   }
 
-  async getEventById(eventId: string) {
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
+  async getEventById(id: string) {
+    return await prisma.event.findUnique({
+      where: { id },
       include: {
         sections: true,
-        _count: {
-          select: {
-            offers: { where: { status: "ACTIVE" } },
-            listings: { where: { status: "AVAILABLE" } },
-          },
-        },
-      },
-    });
-
-    if (!event) {
-      throw new Error("Event not found");
-    }
-
-    return event;
-  }
-
-  async updateEvent(eventId: string, data: UpdateEventRequest) {
-    const event = await prisma.event.update({
-      where: { id: eventId },
-      data,
-      include: {
-        sections: true,
-      },
-    });
-
-    logger.info(`Event updated: ${eventId}`);
-    return event;
-  }
-
-  async deleteEvent(eventId: string) {
-    // Check for active offers or listings
-    const [activeOffers, activeListings] = await Promise.all([
-      prisma.offer.count({
-        where: { eventId, status: "ACTIVE" },
-      }),
-      prisma.listing.count({
-        where: { eventId, status: "AVAILABLE" },
-      }),
-    ]);
-
-    if (activeOffers > 0 || activeListings > 0) {
-      throw new Error("Cannot delete event with active offers or listings");
-    }
-
-    await prisma.event.update({
-      where: { id: eventId },
-      data: { isActive: false },
-    });
-
-    logger.info(`Event deleted: ${eventId}`);
-    return { message: "Event deleted successfully" };
-  }
-
-  async getEventStats(eventId: string) {
-    const stats = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: {
         _count: {
           select: {
             offers: true,
@@ -176,28 +144,230 @@ export class EventService {
         },
       },
     });
+  }
 
-    if (!stats) {
-      throw new Error("Event not found");
-    }
+  async updateEvent(id: string, data: UpdateEventRequest) {
+    const event = await prisma.event.update({
+      where: { id },
+      data,
+      include: {
+        sections: true,
+      },
+    });
 
-    const [averageOfferPrice, averageListingPrice] = await Promise.all([
+    logger.info(`Event updated: ${id}`);
+    return event;
+  }
+
+  async deleteEvent(id: string) {
+    await prisma.event.delete({
+      where: { id },
+    });
+
+    logger.info(`Event deleted: ${id}`);
+  }
+
+  async getEventStats(eventId: string) {
+    const [stats, averageOfferPrice, averageListingPrice] = await Promise.all([
+      prisma.event.findUnique({
+        where: { id: eventId },
+        include: {
+          _count: {
+            select: {
+              offers: true,
+              listings: true,
+              transactions: true,
+            },
+          },
+        },
+      }),
       prisma.offer.aggregate({
-        where: { eventId, status: "ACTIVE" },
+        where: { eventId },
         _avg: { maxPrice: true },
       }),
       prisma.listing.aggregate({
-        where: { eventId, status: "AVAILABLE" },
+        where: { eventId },
         _avg: { price: true },
       }),
     ]);
 
     return {
-      totalOffers: stats._count.offers,
-      totalListings: stats._count.listings,
-      totalTransactions: stats._count.transactions,
+      totalOffers: stats?._count.offers || 0,
+      totalListings: stats?._count.listings || 0,
+      totalTransactions: stats?._count.transactions || 0,
       averageOfferPrice: averageOfferPrice._avg.maxPrice || 0,
       averageListingPrice: averageListingPrice._avg.price || 0,
     };
   }
+
+  async getEventSections(eventId: string) {
+    return await prisma.section.findMany({
+      where: { eventId },
+      orderBy: { name: "asc" },
+    });
+  }
+
+  async createSection(data: any) {
+    const section = await prisma.section.create({
+      data,
+      include: { event: true },
+    });
+    
+    logger.info(`Section created: ${section.id} for event: ${data.eventId}`);
+    return section;
+  }
+
+  async updateSection(sectionId: string, data: any) {
+    const section = await prisma.section.update({
+      where: { id: sectionId },
+      data,
+      include: { event: true },
+    });
+    
+    logger.info(`Section updated: ${sectionId}`);
+    return section;
+  }
+
+  async deleteSection(sectionId: string) {
+    await prisma.section.delete({
+      where: { id: sectionId },
+    });
+    
+    logger.info(`Section deleted: ${sectionId}`);
+  }
+
+  async searchEvents(params: {
+    query: string;
+    city?: string;
+    state?: string;
+    eventType?: string;
+    limit: number;
+  }) {
+    const { query, city, state, eventType, limit } = params;
+    
+    const where: any = {
+      isActive: true,
+      eventDate: { gte: new Date() },
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+        { venue: { contains: query, mode: "insensitive" } },
+      ],
+    };
+
+    if (city) where.city = { contains: city, mode: "insensitive" };
+    if (state) where.state = { contains: state, mode: "insensitive" };
+    if (eventType) where.eventType = eventType;
+
+    return await prisma.event.findMany({
+      where,
+      take: limit,
+      orderBy: { eventDate: "asc" },
+      include: {
+        sections: true,
+        _count: {
+          select: {
+            offers: true,
+            listings: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getPopularEvents(limit: number) {
+    return await prisma.event.findMany({
+      where: {
+        isActive: true,
+        eventDate: { gte: new Date() },
+      },
+      take: limit,
+      orderBy: [
+        { offers: { _count: "desc" } },
+        { listings: { _count: "desc" } },
+      ],
+      include: {
+        sections: true,
+        _count: {
+          select: {
+            offers: true,
+            listings: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getUpcomingEvents(params: {
+    limit: number;
+    city?: string;
+    state?: string;
+  }) {
+    const { limit, city, state } = params;
+    
+    const where: any = {
+      isActive: true,
+      eventDate: { gte: new Date() },
+    };
+
+    if (city) where.city = { contains: city, mode: "insensitive" };
+    if (state) where.state = { contains: state, mode: "insensitive" };
+
+    return await prisma.event.findMany({
+      where,
+      take: limit,
+      orderBy: { eventDate: "asc" },
+      include: {
+        sections: true,
+        _count: {
+          select: {
+            offers: true,
+            listings: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getAllEventsAdmin(params: {
+    skip: number;
+    take: number;
+    status?: string;
+    eventType?: string;
+    city?: string;
+    state?: string;
+  }) {
+    const { skip, take, status, eventType, city, state } = params;
+    
+    const where: any = {};
+    
+    if (status) where.status = status;
+    if (eventType) where.eventType = eventType;
+    if (city) where.city = { contains: city, mode: "insensitive" };
+    if (state) where.state = { contains: state, mode: "insensitive" };
+
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+        include: {
+          sections: true,
+          _count: {
+            select: {
+              offers: true,
+              listings: true,
+              transactions: true,
+            },
+          },
+        },
+      }),
+      prisma.event.count({ where }),
+    ]);
+
+    return { events, total };
+  }
 }
+
+export const eventService = new EventService();

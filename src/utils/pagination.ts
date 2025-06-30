@@ -1,8 +1,8 @@
-import { PaginationQuery, PaginationResult } from "../types/api";
+import { PaginationQuery, PaginationResponse } from "../types/api";
 
 export const getPaginationParams = (query: PaginationQuery) => {
-  const page = Math.max(1, parseInt(query.page || "1"));
-  const limit = Math.min(100, Math.max(1, parseInt(query.limit || "20")));
+  const page = Math.max(1, parseInt(String(query.page || "1")));
+  const limit = Math.min(100, Math.max(1, parseInt(String(query.limit || "20"))));
   const skip = (page - 1) * limit;
 
   return { page, limit, skip };
@@ -13,14 +13,17 @@ export const createPaginationResult = <T>(
   total: number,
   page: number,
   limit: number
-): PaginationResult<T> => {
+): PaginationResponse<T> => {
+  const totalPages = Math.ceil(total / limit);
   return {
     data,
     pagination: {
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
     },
   };
 };

@@ -1,3 +1,5 @@
+import { Request } from "express";
+
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -36,4 +38,13 @@ export interface AuthResponse {
   };
   token: string;
   refreshToken: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    [key: string]: any;
+  };
 }

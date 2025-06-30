@@ -8,6 +8,14 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { authRoutes } from "./routes/auth";
 import { userRoutes } from "./routes/user";
 import { buyerRoutes } from "./routes/buyer";
+import { sellerRoutes } from "./routes/seller";
+import { eventRoutes } from "./routes/event";
+import { offerRoutes } from "./routes/offer";
+import { listingRoutes } from "./routes/listing";
+import { transactionRoutes } from "./routes/transaction";
+import { brokerRoutes } from "./routes/broker";
+import { adminRoutes } from "./routes/admin";
+import webhookRoutes from "./routes/webhook";
 import { setupSwagger } from "./config/swagger";
 
 const app = express();
@@ -30,6 +38,9 @@ const limiter = rateLimit({
 
 app.use("/api", limiter);
 
+//Webhook routes (before body parsing middleware for raw body access)
+app.use("/api/webhooks", express.raw({ type: 'application/json' }), webhookRoutes);
+
 //Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -46,6 +57,13 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/buyers", buyerRoutes);
+app.use("/api/sellers", sellerRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/offers", offerRoutes);
+app.use("/api/listings", listingRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/brokers", brokerRoutes);
+app.use("/api/admin", adminRoutes);
 
 //Error handling
 app.use(errorHandler);

@@ -178,9 +178,13 @@ model Transaction {
   sellerAmount          Decimal           @db.Decimal(10,2)
   stripePaymentIntent   String?
   stripeTransferId      String?
+  stripeRefundId        String?
   status                TransactionStatus @default(PENDING)
+  paidAt                DateTime?
   ticketsDelivered      Boolean           @default(false)
   ticketsDeliveredAt    DateTime?
+  sellerPaidOut         Boolean           @default(false)
+  sellerPaidOutAt       DateTime?
   refundAmount          Decimal?          @db.Decimal(10,2)
   refundedAt            DateTime?
   disputeReason         String?

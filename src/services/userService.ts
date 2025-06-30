@@ -225,4 +225,127 @@ export class UserService {
 
     return { message: "All notifications marked as read" };
   }
+
+  async getAllUsers(params: {
+    skip: number;
+    take: number;
+    role?: string;
+    isActive?: boolean;
+    search?: string;
+  }) {
+    const { skip, take, role, isActive, search } = params;
+    
+    const where: any = {};
+    
+    if (role) where.role = role;
+    if (typeof isActive === 'boolean') where.isActive = isActive;
+    
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isEmailVerified: true,
+          isActive: true,
+          lastLoginAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return { users, total };
+  }
+
+  async updateUser(userId: string, data: any) {
+    return await prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async deactivateUser(userId: string, reason: string) {
+    return await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        isActive: false,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async reactivateUser(userId: string) {
+    return await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        isActive: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async getUserById(userId: string) {
+    return await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
 }
+
+export const userService = new UserService();
