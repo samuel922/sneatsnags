@@ -6,42 +6,42 @@ services:
     environment:
       # Database Configuration
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/sneatsnags
-      
+
       # JWT Configuration
       - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
       - JWT_REFRESH_SECRET=your-refresh-token-secret-change-this-in-production
       - JWT_EXPIRES_IN=1h
       - JWT_REFRESH_EXPIRES_IN=7d
-      
+
       # Server Configuration
       - NODE_ENV=development
       - PORT=5001
-      - FRONTEND_URL=http://localhost:3000
-      
+      - FRONTEND_URL=http://localhost:5173
+
       # Stripe Configuration (Required for payments)
       - STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
       - STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
       - STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
-      
+
       # Email Configuration
       - SMTP_HOST=smtp.gmail.com
       - SMTP_PORT=587
-      - SMTP_USER=your-email@gmail.com
-      - SMTP_PASS=your-app-password
-      - FROM_EMAIL=noreply@sneatsnags.com
+      - SMTP_USER=samuelgates271@gmail.com
+      - SMTP_PASS=swsekwdunecbckh
+      - FROM_EMAIL=samuelgates271@gmail.com
       - FROM_NAME=SneatSnags Platform
-      
+
       # Security Configuration
       - HMAC_VERIFICATION_CODE_SECRET=your-hmac-secret-change-this-in-production
-      
+
       # External API Configuration
       - TICKETMASTER_API_KEY=your-ticketmaster-api-key
       - TICKETMASTER_API_SECRET=your-ticketmaster-api-secret
-      
+
       # File Upload Configuration
       - MAX_FILE_SIZE=5242880
       - UPLOAD_PATH=/uploads
-      
+
       # Rate Limiting Configuration
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100

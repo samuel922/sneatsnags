@@ -19,7 +19,11 @@ export const register = async (
   try {
     const validatedData = registerSchema.parse(req.body);
     const result = await authService.register(validatedData);
-    res.status(201).json(result);
+    res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      data: result
+    });
   } catch (error: any) {
     logger.error("Registration error:", error);
     if (error.name === "ZodError") {
@@ -39,7 +43,11 @@ export const login = async (
   try {
     const validatedData = loginSchema.parse(req.body);
     const result = await authService.login(validatedData);
-    res.json(result);
+    res.json({
+      success: true,
+      message: "Login successful",
+      data: result
+    });
   } catch (error: any) {
     logger.error("Login error:", error);
     if (error.name === "ZodError") {

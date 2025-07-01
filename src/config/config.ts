@@ -20,9 +20,9 @@ export const config = {
   // Email
   SMTP_HOST: process.env.SMTP_HOST || "smtp.gmail.com",
   SMTP_PORT: parseInt(process.env.SMTP_PORT || "587"),
-  SMTP_USER: process.env.SMTP_USER || "",
-  SMTP_PASS: process.env.SMTP_PASS || "",
-  FROM_EMAIL: process.env.FROM_EMAIL || "noreply@automatchtickets.com",
+  SMTP_USER: process.env.SMTP_USER || "samuelgates271@gmail.com",
+  SMTP_PASS: process.env.SMTP_PASS || "swsekwdunecbckh ",
+  FROM_EMAIL: process.env.FROM_EMAIL || "samuelgates271@gmail.com",
   FROM_NAME: process.env.FROM_NAME || "AutoMatch Tickets",
 
   // Frontend

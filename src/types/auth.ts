@@ -36,8 +36,10 @@ export interface AuthResponse {
     role: string;
     isEmailVerified: boolean;
   };
-  token: string;
-  refreshToken: string;
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
 
 export interface AuthenticatedRequest extends Request {

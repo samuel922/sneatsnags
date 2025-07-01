@@ -8,7 +8,7 @@ import { logger } from "../utils/logger";
 import { loginSchema } from "../utils/validations";
 
 export class AuthService {
-  async register(data: RegisterRequest): Promise<{ message: string }> {
+  async register(data: RegisterRequest): Promise<AuthResponse> {
     const {
       email,
       password,
@@ -51,11 +51,25 @@ export class AuthService {
     //Send verification email
     await sendVerificationEmail(email, emailVerifyToken);
 
+    //Generate tokens for immediate login after registration
+    const token = generateToken({ userId: user.id });
+    const refreshToken = generateRefreshToken({ userId: user.id });
+
     logger.info(`User registered: ${email}`);
 
     return {
-      message:
-        "Registration successful. Please check your email to verify your account.",
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      },
+      tokens: {
+        accessToken: token,
+        refreshToken: refreshToken,
+      },
     };
   }
 
@@ -104,8 +118,10 @@ export class AuthService {
         role: user.role,
         isEmailVerified: user.isEmailVerified,
       },
-      token,
-      refreshToken,
+      tokens: {
+        accessToken: token,
+        refreshToken: refreshToken,
+      },
     };
   }
 

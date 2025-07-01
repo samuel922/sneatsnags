@@ -2,16 +2,27 @@ import nodemailer from "nodemailer";
 import { config } from "../config/config";
 import { logger } from "./logger";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: config.SMTP_USER,
-    pass: config.SMTP_PASS,
-  },
-});
+const transporter =
+  config.SMTP_USER && config.SMTP_PASS
+    ? nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: config.SMTP_USER,
+          pass: config.SMTP_PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      })
+    : null;
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
   try {
+    if (!transporter) {
+      logger.warn(`Email not configured - would send to ${to}: ${subject}`);
+      return;
+    }
+
     const info = await transporter.sendMail({
       from: `${config.FROM_NAME} <${config.FROM_EMAIL}>`,
       to,
