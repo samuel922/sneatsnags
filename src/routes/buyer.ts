@@ -10,6 +10,9 @@ import {
   getEvent,
   getEventOffers,
   getBuyerDashboard,
+  getBuyerStats,
+  searchTickets,
+  getBuyerTransactions,
 } from "../controllers/buyerController";
 
 import {
@@ -264,5 +267,15 @@ router.get("/events/popular", getPopularEvents);
  *         description: Suggested events retrieved successfully
  */
 router.get("/events/suggested", getSuggestedEvents);
+
+// New buyer endpoints
+router.get("/stats", getBuyerStats);
+router.get("/tickets/search", searchTickets);
+router.get("/transactions", getBuyerTransactions);
+router.put("/offers/:offerId", updateOffer);
+router.delete("/offers/:offerId", cancelOffer);
+router.get("/events", searchEvents);
+router.get("/events/:eventId", getEvent);
+router.get("/events/:eventId/offers", getEventOffers);
 
 export { router as buyerRoutes };

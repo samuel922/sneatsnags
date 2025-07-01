@@ -41,8 +41,27 @@ model User {
   brokerIntegrations BrokerIntegration[]
   notifications     Notification[]
   supportTickets    SupportTicket[]
+  preferences       UserPreferences?
 
   @@map("users")
+}
+
+model UserPreferences {
+  id                  String  @id @default(cuid())
+  userId              String  @unique
+  emailNotifications  Boolean @default(true)
+  smsNotifications    Boolean @default(false)
+  marketingEmails     Boolean @default(true)
+  eventReminders      Boolean @default(true)
+  offerAlerts         Boolean @default(true)
+  transactionUpdates  Boolean @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relationships
+  user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }
 
 model Event {

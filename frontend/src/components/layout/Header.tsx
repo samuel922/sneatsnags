@@ -39,11 +39,21 @@ export const Header: React.FC = () => {
   ];
 
   if (user?.role === UserRole.BUYER) {
-    userNavigation.push({ name: 'My Offers', href: '/my-offers', icon: Ticket });
+    userNavigation.splice(1, 0, 
+      { name: 'Buyer Dashboard', href: '/buyer/dashboard', icon: User },
+      { name: 'My Offers', href: '/my-offers', icon: Ticket },
+      { name: 'Search Tickets', href: '/tickets/search', icon: Search },
+      { name: 'Transactions', href: '/buyer/transactions', icon: Settings }
+    );
   }
 
   if (user?.role === UserRole.SELLER) {
-    userNavigation.push({ name: 'My Listings', href: '/my-listings', icon: Ticket });
+    userNavigation.splice(1, 0,
+      { name: 'Seller Dashboard', href: '/seller/dashboard', icon: User },
+      { name: 'My Listings', href: '/my-listings', icon: Ticket },
+      { name: 'Browse Offers', href: '/seller/offers', icon: Search },
+      { name: 'Transactions', href: '/seller/transactions', icon: Settings }
+    );
   }
 
   const isActivePath = (path: string) => location.pathname === path;

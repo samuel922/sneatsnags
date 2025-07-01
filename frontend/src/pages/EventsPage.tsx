@@ -32,7 +32,7 @@ export const EventsPage: React.FC = () => {
       });
       
       // Handle different possible response structures
-      const eventsData = response.data?.items || response.items || response.data || [];
+      const eventsData = response.data?.items || response.data || [];
       setEvents(Array.isArray(eventsData) ? eventsData : []);
     } catch (error) {
       console.error('Failed to fetch events:', error);
@@ -54,7 +54,7 @@ export const EventsPage: React.FC = () => {
       });
       
       // Handle different possible response structures
-      const eventsData = response.data?.items || response.items || response.data || [];
+      const eventsData = response.data?.items || response.data || [];
       setEvents(Array.isArray(eventsData) ? eventsData : []);
       setCurrentPage(1);
     } catch (error) {

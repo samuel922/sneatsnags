@@ -7,6 +7,7 @@ import { logger } from "./utils/logger";
 import { errorHandler } from "./middlewares/errorHandler";
 import { authRoutes } from "./routes/auth";
 import { userRoutes } from "./routes/user";
+import { profileRoutes } from "./routes/profile";
 import { buyerRoutes } from "./routes/buyer";
 import { sellerRoutes } from "./routes/seller";
 import { eventRoutes } from "./routes/event";
@@ -56,6 +57,7 @@ app.get("/health", (req, res) => {
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/profile", profileRoutes);
 app.use("/api/buyers", buyerRoutes);
 app.use("/api/sellers", sellerRoutes);
 app.use("/api/events", eventRoutes);

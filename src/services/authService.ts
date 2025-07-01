@@ -49,7 +49,7 @@ export class AuthService {
     });
 
     //Send verification email
-    await sendVerificationEmail(email, emailVerifyToken);
+    //await sendVerificationEmail(email, emailVerifyToken);
 
     //Generate tokens for immediate login after registration
     const token = generateToken({ userId: user.id });

@@ -1,5 +1,4 @@
 import { apiClient } from './api';
-import type { ApiResponse } from '../types/api';
 import type {
   Offer,
   CreateOfferRequest,

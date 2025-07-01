@@ -9,7 +9,15 @@ import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EventsPage } from './pages/EventsPage';
 import { CreateOfferPage } from './pages/CreateOfferPage';
-import { OffersList } from './components/offers/OffersList';
+import { BuyerDashboardPage } from './pages/BuyerDashboardPage';
+import { BuyerOffersPage } from './pages/BuyerOffersPage';
+import { TicketSearchPage } from './pages/TicketSearchPage';
+import { SellerDashboardPage } from './pages/SellerDashboardPage';
+import { SellerListingsPage } from './pages/SellerListingsPage';
+import { SellerOffersPage } from './pages/SellerOffersPage';
+import { BuyerTransactionsPage } from './pages/BuyerTransactionsPage';
+import { SellerTransactionsPage } from './pages/SellerTransactionsPage';
+import { BuyerProfile } from './components/profile/BuyerProfile';
 import { UserRole } from './types/auth';
 
 const queryClient = new QueryClient({
@@ -52,13 +60,28 @@ function App() {
                     
                     {/* Buyer routes */}
                     <Route
+                      path="/buyer/dashboard"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
+                          <BuyerDashboardPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
                       path="/my-offers"
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
-                          <div className="max-w-7xl mx-auto px-4 py-8">
-                            <h1 className="text-2xl font-bold mb-6">My Offers</h1>
-                            <OffersList showUserOffersOnly={true} />
-                          </div>
+                          <BuyerOffersPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/tickets/search"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
+                          <TicketSearchPage />
                         </ProtectedRoute>
                       }
                     />
@@ -72,15 +95,57 @@ function App() {
                       }
                     />
                     
+                    <Route
+                      path="/buyer/transactions"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
+                          <BuyerTransactionsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
                     {/* Seller routes */}
+                    <Route
+                      path="/seller/dashboard"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
+                          <SellerDashboardPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
                     <Route
                       path="/my-listings"
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
-                          <div className="max-w-7xl mx-auto px-4 py-8">
-                            <h1 className="text-2xl font-bold">My Listings</h1>
-                            <p className="text-gray-600 mt-2">Coming soon...</p>
-                          </div>
+                          <SellerListingsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/seller/listings"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
+                          <SellerListingsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/seller/offers"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
+                          <SellerOffersPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/seller/transactions"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
+                          <SellerTransactionsPage />
                         </ProtectedRoute>
                       }
                     />
@@ -109,11 +174,8 @@ function App() {
                     <Route
                       path="/profile"
                       element={
-                        <ProtectedRoute>
-                          <div className="max-w-7xl mx-auto px-4 py-8">
-                            <h1 className="text-2xl font-bold">Profile</h1>
-                            <p className="text-gray-600 mt-2">Coming soon...</p>
-                          </div>
+                        <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
+                          <BuyerProfile />
                         </ProtectedRoute>
                       }
                     />

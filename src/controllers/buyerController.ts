@@ -1,12 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { OfferService } from "../services/offerService";
 import { EventService } from "../services/eventService";
+import { BuyerService } from "../services/buyerService";
 import { AuthenticatedRequest } from "../middlewares/auth";
 import { logger } from "../utils/logger";
 import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const offerService = new OfferService();
 const eventService = new EventService();
+const buyerService = new BuyerService(prisma);
 
 // Validation schemas
 const createOfferSchema = z
@@ -276,6 +280,72 @@ export const getBuyerDashboard = async (
     res.json({ success: true, data: dashboard });
   } catch (error: any) {
     logger.error("Get buyer dashboard error:", error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+export const getBuyerStats = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const buyerId = req.user!.id;
+    const stats = await buyerService.getBuyerStats(buyerId);
+    res.json({ success: true, data: stats });
+  } catch (error: any) {
+    logger.error("Get buyer stats error:", error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+export const searchTickets = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const query = {
+      ...req.query,
+      page: parseInt(req.query.page as string) || 1,
+      limit: parseInt(req.query.limit as string) || 20,
+      minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
+      maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
+    };
+
+    const tickets = await buyerService.searchAvailableTickets(query);
+    res.json({
+      success: true,
+      data: tickets.data,
+      pagination: tickets.pagination,
+    });
+  } catch (error: any) {
+    logger.error("Search tickets error:", error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+export const getBuyerTransactions = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const buyerId = req.user!.id;
+    const query = {
+      ...req.query,
+      page: parseInt(req.query.page as string) || 1,
+      limit: parseInt(req.query.limit as string) || 20,
+    };
+
+    const transactions = await buyerService.getBuyerTransactions(buyerId, query);
+    res.json({
+      success: true,
+      data: transactions.data,
+      pagination: transactions.pagination,
+    });
+  } catch (error: any) {
+    logger.error("Get buyer transactions error:", error);
     res.status(400).json({ success: false, error: error.message });
   }
 };

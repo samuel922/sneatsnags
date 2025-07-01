@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { offerService } from '../../services/offerService';
 import { useAuth } from '../../contexts/AuthContext';
-import type { CreateOfferFormData, PriceSuggestion } from '../../types/offer';
+import type { PriceSuggestion } from '../../types/offer';
 import type { Event } from '../../types/event';
 
 const createOfferSchema = z.object({
@@ -15,9 +15,11 @@ const createOfferSchema = z.object({
     'Price must be a positive number'
   ),
   quantity: z.number().min(1, 'Quantity must be at least 1').max(10, 'Maximum 10 tickets'),
-  message: z.string().optional(),
+  message: z.string(),
   expirationDays: z.number().min(1, 'Expiration must be at least 1 day').max(30, 'Maximum 30 days')
 });
+
+type CreateOfferSchemaType = z.infer<typeof createOfferSchema>;
 
 interface CreateOfferFormProps {
   event: Event;
@@ -42,7 +44,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({
     watch,
     setValue,
     formState: { errors }
-  } = useForm<CreateOfferFormData>({
+  } = useForm<CreateOfferSchemaType>({
     resolver: zodResolver(createOfferSchema),
     defaultValues: {
       eventId: event.id,
@@ -87,7 +89,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({
     setSelectedSections(watchedSections || []);
   }, [watchedSections]);
 
-  const onSubmit = async (data: CreateOfferFormData) => {
+  const onSubmit = async (data: CreateOfferSchemaType) => {
     if (!user) {
       alert('You must be logged in to create an offer');
       return;

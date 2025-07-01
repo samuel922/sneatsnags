@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { offerService } from '../../services/offerService';
-import type { Offer, OfferSearchQuery } from '../../types/offer';
+import type { Offer } from '../../types/offer';
 
 interface OffersListProps {
   eventId?: string;

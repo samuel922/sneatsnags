@@ -147,4 +147,160 @@ export class BuyerService {
 
     return this.mapOffer(offer);
   }
+
+  async getBuyerStats(buyerId: string): Promise<{
+    totalOffers: number;
+    activeOffers: number;
+    acceptedOffers: number;
+    totalSpent: number;
+    averageOfferPrice: number;
+  }> {
+    const [totalOffers, activeOffers, acceptedOffers, transactions] = await Promise.all([
+      this.prisma.offer.count({ where: { buyerId } }),
+      this.prisma.offer.count({ where: { buyerId, status: "ACTIVE" } }),
+      this.prisma.offer.count({ where: { buyerId, status: "ACCEPTED" } }),
+      this.prisma.transaction.findMany({
+        where: { buyerId, status: "COMPLETED" },
+        select: { amount: true }
+      })
+    ]);
+
+    const totalSpent = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+    
+    const avgPriceResult = await this.prisma.offer.aggregate({
+      where: { buyerId },
+      _avg: { maxPrice: true }
+    });
+
+    return {
+      totalOffers,
+      activeOffers,
+      acceptedOffers,
+      totalSpent,
+      averageOfferPrice: Number(avgPriceResult._avg.maxPrice) || 0
+    };
+  }
+
+  async searchAvailableTickets(query: {
+    eventId?: string;
+    city?: string;
+    state?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sectionId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginationResponse<any>> {
+    const { page = 1, limit = 20 } = query;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      status: "ACTIVE",
+      event: {}
+    };
+
+    if (query.eventId) {
+      where.eventId = query.eventId;
+    }
+
+    if (query.city) {
+      where.event.city = { contains: query.city, mode: "insensitive" };
+    }
+
+    if (query.state) {
+      where.event.state = { contains: query.state, mode: "insensitive" };
+    }
+
+    if (query.minPrice || query.maxPrice) {
+      where.price = {};
+      if (query.minPrice) where.price.gte = query.minPrice;
+      if (query.maxPrice) where.price.lte = query.maxPrice;
+    }
+
+    const [listings, total] = await Promise.all([
+      this.prisma.listing.findMany({
+        where,
+        include: {
+          event: {
+            select: {
+              id: true,
+              name: true,
+              eventDate: true,
+              venue: true,
+              city: true,
+              state: true
+            }
+          },
+          seller: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit
+      }),
+      this.prisma.listing.count({ where })
+    ]);
+
+    return createPaginationResult(listings, total, page, limit);
+  }
+
+  async getBuyerTransactions(buyerId: string, query: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginationResponse<any>> {
+    const { page = 1, limit = 20, status } = query;
+    const skip = (page - 1) * limit;
+
+    const where: any = { buyerId };
+    if (status) {
+      where.status = status;
+    }
+
+    const [transactions, total] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where,
+        include: {
+          offer: {
+            include: {
+              event: {
+                select: {
+                  id: true,
+                  name: true,
+                  eventDate: true,
+                  venue: true,
+                  city: true,
+                  state: true
+                }
+              }
+            }
+          },
+          listing: {
+            include: {
+              seller: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit
+      }),
+      this.prisma.transaction.count({ where })
+    ]);
+
+    return createPaginationResult(transactions, total, page, limit);
+  }
 }
