@@ -3,8 +3,6 @@ import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
   ChangePasswordRequest,
   User,
 } from '../types/auth';
@@ -44,12 +42,12 @@ export const authService = {
     }
   },
 
-  async forgotPassword(email: ForgotPasswordRequest): Promise<void> {
-    await apiClient.post('/auth/forgot-password', email);
+  async forgotPassword(email: string): Promise<void> {
+    await apiClient.post('/auth/forgot-password', { email });
   },
 
-  async resetPassword(resetData: ResetPasswordRequest): Promise<void> {
-    await apiClient.post('/auth/reset-password', resetData);
+  async resetPassword(token: string, password: string): Promise<void> {
+    await apiClient.post('/auth/reset-password', { token, password });
   },
 
   async changePassword(passwordData: ChangePasswordRequest): Promise<void> {

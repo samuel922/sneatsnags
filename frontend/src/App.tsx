@@ -1,23 +1,32 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
+import { StripeProvider } from './contexts/StripeContext';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EventsPage } from './pages/EventsPage';
+import { EventDetailPage } from './pages/EventDetailPage';
 import { CreateOfferPage } from './pages/CreateOfferPage';
 import { BuyerDashboardPage } from './pages/BuyerDashboardPage';
 import { BuyerOffersPage } from './pages/BuyerOffersPage';
 import { TicketSearchPage } from './pages/TicketSearchPage';
 import { SellerDashboardPage } from './pages/SellerDashboardPage';
-import { SellerListingsPage } from './pages/SellerListingsPage';
 import { SellerOffersPage } from './pages/SellerOffersPage';
 import { BuyerTransactionsPage } from './pages/BuyerTransactionsPage';
 import { SellerTransactionsPage } from './pages/SellerTransactionsPage';
 import { BuyerProfile } from './components/profile/BuyerProfile';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { AdminUsersPage } from './pages/AdminUsersPage';
+import { ListingManagementPage } from './pages/ListingManagementPage';
+import { BrowseTicketsPage } from './pages/BrowseTicketsPage';
+import { BrowseOffersPage } from './pages/BrowseOffersPage';
 import { UserRole } from './types/auth';
 
 const queryClient = new QueryClient({
@@ -33,11 +42,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
+        <StripeProvider>
+          <Router>
           <Routes>
             {/* Public routes without layout */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             {/* Routes with layout */}
             <Route
@@ -47,6 +59,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/events" element={<EventsPage />} />
+                    <Route path="/events/:id" element={<EventDetailPage />} />
                     
                     {/* Protected routes */}
                     <Route
@@ -104,6 +117,34 @@ function App() {
                       }
                     />
                     
+                    <Route
+                      path="/checkout/:transactionId"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
+                          <CheckoutPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    {/* Admin routes */}
+                    <Route
+                      path="/admin/dashboard"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <AdminDashboardPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/users"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <AdminUsersPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
                     {/* Seller routes */}
                     <Route
                       path="/seller/dashboard"
@@ -118,7 +159,7 @@ function App() {
                       path="/my-listings"
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
-                          <SellerListingsPage />
+                          <ListingManagementPage />
                         </ProtectedRoute>
                       }
                     />
@@ -127,7 +168,7 @@ function App() {
                       path="/seller/listings"
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
-                          <SellerListingsPage />
+                          <ListingManagementPage />
                         </ProtectedRoute>
                       }
                     />
@@ -151,25 +192,8 @@ function App() {
                     />
                     
                     {/* Public marketplace routes */}
-                    <Route
-                      path="/listings"
-                      element={
-                        <div className="max-w-7xl mx-auto px-4 py-8">
-                          <h1 className="text-2xl font-bold">Browse Tickets</h1>
-                          <p className="text-gray-600 mt-2">Coming soon...</p>
-                        </div>
-                      }
-                    />
-                    
-                    <Route
-                      path="/offers"
-                      element={
-                        <div className="max-w-7xl mx-auto px-4 py-8">
-                          <h1 className="text-2xl font-bold">Browse Offers</h1>
-                          <p className="text-gray-600 mt-2">Coming soon...</p>
-                        </div>
-                      }
-                    />
+                    <Route path="/listings" element={<BrowseTicketsPage />} />
+                    <Route path="/offers" element={<BrowseOffersPage />} />
                     
                     <Route
                       path="/profile"
@@ -205,7 +229,8 @@ function App() {
               }
             />
           </Routes>
-        </Router>
+          </Router>
+        </StripeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

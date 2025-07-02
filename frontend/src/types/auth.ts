@@ -5,6 +5,8 @@ export interface User {
   lastName: string;
   role: UserRole;
   isVerified: boolean;
+  isActive: boolean;
+  lastLoginAt?: string;
   profileImage?: string;
   stripeCustomerId?: string;
   stripeAccountId?: string;

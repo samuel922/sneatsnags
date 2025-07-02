@@ -8,6 +8,7 @@ export interface Listing {
     venue: string;
     city: string;
     state: string;
+    imageUrl?: string;
   };
   sellerId: string;
   seller: {

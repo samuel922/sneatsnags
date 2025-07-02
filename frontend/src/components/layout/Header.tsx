@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, Ticket, Search, Bell, ChevronDown } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, Ticket, Search, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
+import { NotificationDropdown } from '../notifications/NotificationDropdown';
 import { UserRole } from '../../types/auth';
 
 export const Header: React.FC = () => {
@@ -12,6 +13,19 @@ export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isProfileOpen && !target.closest('.profile-dropdown')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +70,13 @@ export const Header: React.FC = () => {
     );
   }
 
+  if (user?.role === UserRole.ADMIN) {
+    userNavigation.splice(1, 0,
+      { name: 'Admin Dashboard', href: '/admin/dashboard', icon: User },
+      { name: 'Users Management', href: '/admin/users', icon: Settings }
+    );
+  }
+
   const isActivePath = (path: string) => location.pathname === path;
 
   return (
@@ -75,7 +96,7 @@ export const Header: React.FC = () => {
             </div>
             <div className="ml-3">
               <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                AutoMatch
+                SneatSnags
               </span>
               <div className="text-xs text-gray-500 -mt-1 hidden lg:block">Tickets</div>
             </div>
@@ -114,13 +135,10 @@ export const Header: React.FC = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
                 {/* Notifications */}
-                <button className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-                </button>
+                <NotificationDropdown />
 
                 {/* User Menu */}
-                <div className="relative">
+                <div className="relative profile-dropdown">
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/50 transition-all duration-300 group"
@@ -244,6 +262,36 @@ export const Header: React.FC = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
+              
+              {isAuthenticated && (
+                <div className="border-t border-white/20 pt-4 mt-4 space-y-3">
+                  <div className="px-4 py-3 text-sm font-medium text-gray-500">Account</div>
+                  {userNavigation.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-white/50 transition-all duration-300"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Icon className="h-5 w-5 text-gray-500" />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/50 transition-all duration-300 w-full"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
               
               {!isAuthenticated && (
                 <div className="border-t border-white/20 pt-4 mt-4 space-y-3">
