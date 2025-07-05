@@ -24,6 +24,13 @@ import { BuyerProfile } from './components/profile/BuyerProfile';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
+import { AnalyticsPage } from './pages/admin/AnalyticsPage';
+import { MonitoringPage } from './pages/admin/MonitoringPage';
+import { SupportPage } from './pages/admin/SupportPage';
+import { SettingsPage } from './pages/admin/SettingsPage';
+import { ActivityPage } from './pages/admin/ActivityPage';
+import { AdminEventsPage } from './pages/admin/AdminEventsPage';
+import { TransactionsPage } from './pages/admin/TransactionsPage';
 import { ListingManagementPage } from './pages/ListingManagementPage';
 import { BrowseTicketsPage } from './pages/BrowseTicketsPage';
 import { BrowseOffersPage } from './pages/BrowseOffersPage';
@@ -141,6 +148,114 @@ function App() {
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
                           <AdminUsersPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/analytics"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <AnalyticsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/monitoring"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <MonitoringPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/support"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <SupportPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/settings"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <SettingsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/activity"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <ActivityPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/events"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <AdminEventsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/events/create"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <AdminEventsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/transactions"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <TransactionsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/refunds"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <TransactionsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/reports"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <AnalyticsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/communications"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <SupportPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/admin/feedback"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                          <SupportPage />
                         </ProtectedRoute>
                       }
                     />

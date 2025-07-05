@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../types/auth';
+import SweetAlert from '../utils/sweetAlert';
 
 export const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -32,10 +33,11 @@ export const EventsPage: React.FC = () => {
       });
       
       // Handle different possible response structures
-      const eventsData = response.data?.items || response.data || [];
+      const eventsData = response.data || [];
       setEvents(Array.isArray(eventsData) ? eventsData : []);
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      SweetAlert.error('Failed to Load Events', 'Unable to load events at this time. Please try again.');
       setEvents([]);
     } finally {
       setLoading(false);
@@ -54,7 +56,7 @@ export const EventsPage: React.FC = () => {
       });
       
       // Handle different possible response structures
-      const eventsData = response.data?.items || response.data || [];
+      const eventsData = response.data || [];
       setEvents(Array.isArray(eventsData) ? eventsData : []);
       setCurrentPage(1);
     } catch (error) {
@@ -91,7 +93,7 @@ export const EventsPage: React.FC = () => {
     }
     
     if (user.role !== UserRole.BUYER) {
-      alert('Only buyers can make offers');
+      SweetAlert.warning('Access Restricted', 'Only buyers can make offers');
       return;
     }
     

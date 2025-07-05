@@ -1,12 +1,13 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import type { ApiResponse, ApiError, QueryParams } from '../types/api';
+import SweetAlert from '../utils/sweetAlert';
 
 class ApiClient {
   private client: AxiosInstance;
   private baseURL: string;
 
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+    this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
     
     this.client = axios.create({
       baseURL: this.baseURL,
@@ -66,6 +67,11 @@ class ApiClient {
           status: error.response?.status || 500,
           errors: error.response?.data?.errors,
         };
+
+        // Handle common errors automatically
+        if (error.response?.status === 500) {
+          SweetAlert.error('Server Error', 'We\'re experiencing technical difficulties. Please try again later.');
+        }
 
         return Promise.reject(apiError);
       }

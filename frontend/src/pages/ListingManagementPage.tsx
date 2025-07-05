@@ -19,9 +19,9 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { CreateListingForm } from '../components/listings/CreateListingForm';
-import { listingService } from '../services/listingService';
+import { listingServiceWithAlerts } from '../services/listingServiceWithAlerts';
+import SweetAlert from '../utils/sweetAlert';
 import type { Listing, ListingStatus } from '../types/listing';
-import type { PaginatedResponse } from '../types/api';
 
 export const ListingManagementPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,17 +40,19 @@ export const ListingManagementPage: React.FC = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const response: PaginatedResponse<Listing> = await listingService.getMyListings({
+      const response = await listingServiceWithAlerts.getSellerListings({
         page: currentPage,
         limit: 20,
         status: selectedStatus || undefined,
       });
 
-      setListings(response.data.items || []);
-      setTotalListings(response.data.total || 0);
+      if (response) {
+        setListings(response.data || []);
+        setTotalListings(response.pagination?.total || 0);
+      }
     } catch (err) {
       console.error('Failed to fetch listings:', err);
-      console.error('Failed to load listings:', err);
+      SweetAlert.error('Failed to Load Listings', 'Unable to load your listings at this time.');
     } finally {
       setLoading(false);
     }
@@ -63,24 +65,16 @@ export const ListingManagementPage: React.FC = () => {
   };
 
   const handleDeleteListing = async (listingId: string) => {
-    if (!confirm('Are you sure you want to delete this listing?')) return;
-
-    try {
-      await listingService.deleteListing(listingId);
+    const success = await listingServiceWithAlerts.deleteListing(listingId);
+    if (success) {
       fetchListings();
-    } catch (err) {
-      console.error('Failed to delete listing:', err);
-      alert('Failed to delete listing');
     }
   };
 
   const handleMarkAsSold = async (listingId: string) => {
-    try {
-      await listingService.markAsSold(listingId);
+    const success = await listingServiceWithAlerts.markAsSold(listingId);
+    if (success) {
       fetchListings();
-    } catch (err) {
-      console.error('Failed to mark as sold:', err);
-      alert('Failed to mark listing as sold');
     }
   };
 

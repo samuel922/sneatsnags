@@ -7,7 +7,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { eventService } from '../../services/eventService';
-import { listingService } from '../../services/listingService';
+import { listingServiceWithAlerts } from '../../services/listingServiceWithAlerts';
 import type { Event, EventSection } from '../../types/event';
 import type { CreateListingRequest } from '../../types/listing';
 
@@ -119,11 +119,18 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
         notes: data.notes || undefined,
       };
 
-      const listing = await listingService.createListing(listingData);
+      const listing = await listingServiceWithAlerts.createListing(listingData);
+
+      if (!listing) {
+        return; // Error already handled by SweetAlert
+      }
 
       // Upload ticket files if provided
       if (ticketFiles && ticketFiles.length > 0) {
-        await listingService.uploadTicketFiles(listing.id, ticketFiles);
+        const uploadSuccess = await listingServiceWithAlerts.uploadTicketFiles(listing.id, ticketFiles);
+        if (!uploadSuccess) {
+          return; // Error already handled by SweetAlert
+        }
       }
 
       reset();
@@ -131,7 +138,6 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
       onSuccess();
     } catch (error) {
       console.error('Failed to create listing:', error);
-      alert('Failed to create listing. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -464,4 +464,9 @@ router.get("/activity-logs", adminController.getActivityLogs);
  */
 router.get("/export", adminController.exportData);
 
+// System monitoring routes
+router.get("/system/metrics", adminController.getSystemMetrics);
+router.get("/system/services", adminController.getServiceStatus);
+router.get("/system/alerts", adminController.getSystemAlerts);
+
 export { router as adminRoutes };
