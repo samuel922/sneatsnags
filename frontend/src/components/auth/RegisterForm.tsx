@@ -9,6 +9,7 @@ import { Input } from '../ui/Input';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { UserRole } from '../../types/auth';
 import type { ApiError } from '../../types/api';
+import SweetAlert from '../../utils/sweetAlert';
 import { Mail, Lock, User, Eye, EyeOff, UserPlus, Briefcase } from 'lucide-react';
 
 const registerSchema = z.object({
@@ -54,10 +55,13 @@ export const RegisterForm: React.FC = () => {
         lastName: data.lastName,
         role: data.role as any,
       });
+      SweetAlert.success('Welcome to SneatSnags!', 'Your account has been created successfully');
       navigate('/dashboard');
     } catch (error) {
       const apiErr = error as ApiError;
-      setApiError(apiErr.message || 'Registration failed');
+      const errorMessage = apiErr.message || 'Registration failed';
+      setApiError(errorMessage);
+      SweetAlert.error('Registration Failed', errorMessage);
     }
   };
 

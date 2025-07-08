@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import { PrismaClient, EventType, EventStatus } from "@prisma/client";
+=======
+import { PrismaClient, EventType, EventStatus, UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+>>>>>>> 28525a7f07a9d8aaf8cb73453553059abfaa69b8
 
 const prisma = new PrismaClient();
 
@@ -13,6 +18,60 @@ async function main() {
   await prisma.transaction.deleteMany();
   await prisma.section.deleteMany();
   await prisma.event.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Create admin user
+  console.log('👨‍💼 Creating admin user...');
+  const adminPassword = await bcrypt.hash('admin123', 12);
+  
+  const adminUser = await prisma.user.create({
+    data: {
+      email: 'admin@sneatsnags.com',
+      password: adminPassword,
+      firstName: 'Admin',
+      lastName: 'User',
+      role: UserRole.ADMIN,
+      isEmailVerified: true,
+      isActive: true,
+    },
+  });
+
+  console.log('✅ Admin user created:');
+  console.log('📧 Email: admin@sneatsnags.com');
+  console.log('🔑 Password: admin123');
+
+  // Create sample buyer and seller users
+  console.log('👥 Creating sample users...');
+  
+  const buyerPassword = await bcrypt.hash('buyer123', 12);
+  const buyerUser = await prisma.user.create({
+    data: {
+      email: 'buyer@sneatsnags.com',
+      password: buyerPassword,
+      firstName: 'John',
+      lastName: 'Buyer',
+      role: UserRole.BUYER,
+      isEmailVerified: true,
+      isActive: true,
+    },
+  });
+
+  const sellerPassword = await bcrypt.hash('seller123', 12);
+  const sellerUser = await prisma.user.create({
+    data: {
+      email: 'seller@sneatsnags.com',
+      password: sellerPassword,
+      firstName: 'Jane',
+      lastName: 'Seller',
+      role: UserRole.SELLER,
+      isEmailVerified: true,
+      isActive: true,
+    },
+  });
+
+  console.log('✅ Sample users created:');
+  console.log('🛒 Buyer - Email: buyer@sneatsnags.com, Password: buyer123');
+  console.log('💰 Seller - Email: seller@sneatsnags.com, Password: seller123');
 
   // Create 10 sample events
   console.log("🎪 Creating events...");

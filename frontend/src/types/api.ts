@@ -7,17 +7,15 @@ export interface ApiResponse<T = any> {
 }
 
 export interface PaginatedResponse<T> {
-  success: boolean;
-  message: string;
-  data: {
-    items: T[];
-    total: number;
+  data: T[];
+  pagination: {
     page: number;
-    pages: number;
     limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
   };
-  error?: string;
-  errors?: Record<string, string[]>;
 }
 
 export interface ApiError {

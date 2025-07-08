@@ -9,6 +9,7 @@ import { Input } from '../ui/Input';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import type { ApiError } from '../../types/api';
 import { socialAuthService } from '../../services/socialAuthService';
+import SweetAlert from '../../utils/sweetAlert';
 import { Mail, Lock, Eye, EyeOff, Ticket } from 'lucide-react';
 
 const loginSchema = z.object({
@@ -36,10 +37,13 @@ export const LoginForm: React.FC = () => {
     try {
       setApiError('');
       await login(data.email, data.password);
+      SweetAlert.success('Welcome back!', 'You have successfully logged in');
       navigate('/dashboard');
     } catch (error) {
       const apiErr = error as ApiError;
-      setApiError(apiErr.message || 'Login failed');
+      const errorMessage = apiErr.message || 'Login failed';
+      setApiError(errorMessage);
+      SweetAlert.error('Login Failed', errorMessage);
     }
   };
 

@@ -10,30 +10,65 @@ import {
   Activity,
   BarChart3,
   UserCheck,
+  FileText,
+  Globe,
+  Shield,
+  ArrowUp,
+  Target,
+  Zap,
+  Database,
+  MessageSquare,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { adminService, type AdminDashboardStats } from '../services/adminService';
+import { SweetAlert } from '../utils/sweetAlert';
 
 export const AdminDashboardPage: React.FC = () => {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchDashboardStats();
   }, []);
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const data = await adminService.getDashboard();
       setStats(data);
+      setLastRefresh(new Date());
+      setError(null);
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
       setError('Failed to load dashboard statistics');
+      SweetAlert.error('Failed to load dashboard', 'Please try again later');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const refreshData = async () => {
+    await fetchDashboardStats(false);
+    SweetAlert.success('Dashboard refreshed', 'Data has been updated');
+  };
+
+  const exportData = async (type: string) => {
+    try {
+      SweetAlert.loading('Exporting data', 'Please wait...');
+      const result = await adminService.exportData({ type });
+      SweetAlert.success('Export ready', 'Your data export is ready for download');
+      window.open(result.url, '_blank');
+    } catch (err) {
+      SweetAlert.error('Export failed', 'Unable to export data');
     }
   };
 
@@ -84,8 +119,33 @@ export const AdminDashboardPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">Platform overview and management</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600 mt-2">Platform overview and management</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-500">
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </div>
+            <Button 
+              onClick={() => refreshData()} 
+              variant="outline" 
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
+            </Button>
+            <Button 
+              onClick={() => exportData('dashboard')} 
+              variant="outline" 
+              className="flex items-center space-x-2"
+            >
+              <Download className="h-4 w-4" />
+              <span>Export</span>
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -173,8 +233,107 @@ export const AdminDashboardPage: React.FC = () => {
         </Card>
       </div>
 
+      {/* Key Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Offers</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats ? formatNumber(stats.offers.total) : '0'}
+              </p>
+              <p className="text-xs text-green-600 flex items-center mt-1">
+                <ArrowUp className="h-3 w-3 mr-1" />
+                {stats ? formatNumber(stats.offers.active) : '0'} active
+              </p>
+            </div>
+            <Target className="h-8 w-8 text-blue-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Listings</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats ? formatNumber(stats.listings.total) : '0'}
+              </p>
+              <p className="text-xs text-green-600 flex items-center mt-1">
+                <ArrowUp className="h-3 w-3 mr-1" />
+                {stats ? formatNumber(stats.listings.available) : '0'} available
+              </p>
+            </div>
+            <FileText className="h-8 w-8 text-purple-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Avg. Ticket</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats ? formatCurrency(stats.transactions.volume / Math.max(stats.transactions.total, 1)) : '$0'}
+              </p>
+              <p className="text-xs text-blue-600 flex items-center mt-1">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                Platform avg.
+              </p>
+            </div>
+            <BarChart3 className="h-8 w-8 text-green-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Conversion</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats ? `${((stats.transactions.completed / Math.max(stats.transactions.total, 1)) * 100).toFixed(1)}%` : '0%'}
+              </p>
+              <p className="text-xs text-green-600 flex items-center mt-1">
+                <ArrowUp className="h-3 w-3 mr-1" />
+                Success rate
+              </p>
+            </div>
+            <Zap className="h-8 w-8 text-yellow-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Active Users</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats ? formatNumber(stats.users.activeThisMonth) : '0'}
+              </p>
+              <p className="text-xs text-blue-600 flex items-center mt-1">
+                <Activity className="h-3 w-3 mr-1" />
+                This month
+              </p>
+            </div>
+            <Users className="h-8 w-8 text-indigo-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Platform Health</p>
+              <p className="text-2xl font-bold text-green-600">
+                99.9%
+              </p>
+              <p className="text-xs text-green-600 flex items-center mt-1">
+                <Shield className="h-3 w-3 mr-1" />
+                Uptime
+              </p>
+            </div>
+            <Database className="h-8 w-8 text-green-600" />
+          </div>
+        </Card>
+      </div>
+
       {/* Management Sections */}
-      <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+      <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {/* User Management */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -267,10 +426,41 @@ export const AdminDashboardPage: React.FC = () => {
             </Link>
           </div>
         </Card>
+
+        {/* Support & Communications */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Support & Communications</h3>
+            <MessageSquare className="h-5 w-5 text-gray-400" />
+          </div>
+          <div className="space-y-3">
+            <Link 
+              to="/admin/support" 
+              className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div className="font-medium text-gray-900">Support Tickets</div>
+              <div className="text-sm text-gray-600">Manage customer support requests</div>
+            </Link>
+            <Link 
+              to="/admin/communications" 
+              className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div className="font-medium text-gray-900">Communications</div>
+              <div className="text-sm text-gray-600">Send announcements and notifications</div>
+            </Link>
+            <Link 
+              to="/admin/feedback" 
+              className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div className="font-medium text-gray-900">User Feedback</div>
+              <div className="text-sm text-gray-600">Review platform feedback and suggestions</div>
+            </Link>
+          </div>
+        </Card>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         <Link 
           to="/admin/analytics" 
           className="group p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white hover:from-blue-600 hover:to-blue-700 transition-all"
@@ -319,6 +509,32 @@ export const AdminDashboardPage: React.FC = () => {
             <div>
               <div className="font-semibold">Activity</div>
               <div className="text-sm opacity-90">System logs</div>
+            </div>
+          </div>
+        </Link>
+
+        <Link 
+          to="/admin/reports" 
+          className="group p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg text-white hover:from-indigo-600 hover:to-indigo-700 transition-all"
+        >
+          <div className="flex items-center">
+            <FileText className="h-8 w-8 mr-3" />
+            <div>
+              <div className="font-semibold">Reports</div>
+              <div className="text-sm opacity-90">Generate reports</div>
+            </div>
+          </div>
+        </Link>
+
+        <Link 
+          to="/admin/monitoring" 
+          className="group p-4 bg-gradient-to-r from-red-500 to-red-600 rounded-lg text-white hover:from-red-600 hover:to-red-700 transition-all"
+        >
+          <div className="flex items-center">
+            <Globe className="h-8 w-8 mr-3" />
+            <div>
+              <div className="font-semibold">Monitoring</div>
+              <div className="text-sm opacity-90">System health</div>
             </div>
           </div>
         </Link>

@@ -12,6 +12,11 @@ export const listingController = {
       const { page, limit, skip } = getPaginationParams(req.query);
       const { eventId, sectionId, minPrice, maxPrice, status, city, state } = req.query;
 
+      // Validate price range
+      if (minPrice && maxPrice && parseFloat(minPrice as string) > parseFloat(maxPrice as string)) {
+        return res.status(400).json(errorResponse("Minimum price cannot be greater than maximum price"));
+      }
+
       const result = await listingService.getListings({
         skip,
         take: limit,
@@ -31,10 +36,13 @@ export const listingController = {
         limit
       );
 
-      res.json(successResponse(paginatedResult, "Listings retrieved"));
-    } catch (error) {
+      res.json(successResponse(paginatedResult, "Listings retrieved successfully"));
+    } catch (error: any) {
       logger.error("Get listings error:", error);
-      res.status(500).json(errorResponse("Failed to retrieve listings"));
+      const message = error.message?.includes("database") 
+        ? "We're experiencing technical difficulties. Please try again later."
+        : "Unable to retrieve listings at this time. Please try again.";
+      res.status(500).json(errorResponse(message));
     }
   },
 
@@ -134,8 +142,17 @@ export const listingController = {
     try {
       const { q, eventId, minPrice, maxPrice, sectionId, limit = 10 } = req.query;
       
-      if (!q) {
-        return res.status(400).json(errorResponse("Search query is required"));
+      if (!q || (q as string).trim().length === 0) {
+        return res.status(400).json(errorResponse("Please enter a search term"));
+      }
+
+      if ((q as string).trim().length < 2) {
+        return res.status(400).json(errorResponse("Search term must be at least 2 characters long"));
+      }
+
+      // Validate price range
+      if (minPrice && maxPrice && parseFloat(minPrice as string) > parseFloat(maxPrice as string)) {
+        return res.status(400).json(errorResponse("Minimum price cannot be greater than maximum price"));
       }
 
       const listings = await listingService.searchListings({
@@ -147,10 +164,17 @@ export const listingController = {
         limit: parseInt(limit as string),
       });
 
-      res.json(successResponse(listings, "Search completed"));
-    } catch (error) {
+      const message = listings.length > 0 
+        ? `Found ${listings.length} listing${listings.length === 1 ? '' : 's'} matching your search`
+        : "No listings found matching your search criteria";
+
+      res.json(successResponse(listings, message));
+    } catch (error: any) {
       logger.error("Search listings error:", error);
-      res.status(500).json(errorResponse("Failed to search listings"));
+      const message = error.message?.includes("database") 
+        ? "Search is temporarily unavailable. Please try again later."
+        : "Unable to search listings at this time. Please try again.";
+      res.status(500).json(errorResponse(message));
     }
   },
 
@@ -191,11 +215,39 @@ export const listingController = {
       const sellerId = req.user!.id;
       const listingData = { ...req.body, sellerId };
       
+      // Basic validation
+      if (!listingData.eventId || !listingData.sectionId) {
+        return res.status(400).json(errorResponse("Event and section are required"));
+      }
+      
+      if (!listingData.price || listingData.price <= 0) {
+        return res.status(400).json(errorResponse("Valid price is required"));
+      }
+      
+      if (!listingData.quantity || listingData.quantity <= 0) {
+        return res.status(400).json(errorResponse("Valid quantity is required"));
+      }
+      
       const listing = await listingService.createListing(sellerId, listingData);
       res.status(201).json(successResponse(listing, "Listing created successfully"));
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Create listing error:", error);
-      res.status(500).json(errorResponse("Failed to create listing"));
+      
+      let message = "Unable to create listing. Please try again.";
+      let statusCode = 500;
+      
+      if (error.message?.includes("Invalid event or section")) {
+        message = "The selected event or section is not valid. Please check your selection.";
+        statusCode = 400;
+      } else if (error.message?.includes("Event is not active")) {
+        message = "This event is no longer accepting new listings.";
+        statusCode = 400;
+      } else if (error.message?.includes("duplicate") || error.message?.includes("unique")) {
+        message = "You already have a listing for these seats. Please update your existing listing instead.";
+        statusCode = 409;
+      }
+      
+      res.status(statusCode).json(errorResponse(message));
     }
   },
 
@@ -205,11 +257,30 @@ export const listingController = {
       const sellerId = req.user!.id;
       const { id } = req.params;
       
+      if (!id) {
+        return res.status(400).json(errorResponse("Listing ID is required"));
+      }
+      
       const listing = await listingService.updateListing(id, sellerId, req.body);
       res.json(successResponse(listing, "Listing updated successfully"));
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Update listing error:", error);
-      res.status(500).json(errorResponse("Failed to update listing"));
+      
+      let message = "Unable to update listing. Please try again.";
+      let statusCode = 500;
+      
+      if (error.message?.includes("not found") || error.message?.includes("Not found")) {
+        message = "Listing not found or you don't have permission to update it.";
+        statusCode = 404;
+      } else if (error.message?.includes("sold")) {
+        message = "Cannot update a listing that has already been sold.";
+        statusCode = 400;
+      } else if (error.message?.includes("unauthorized")) {
+        message = "You can only update your own listings.";
+        statusCode = 403;
+      }
+      
+      res.status(statusCode).json(errorResponse(message));
     }
   },
 
@@ -234,17 +305,49 @@ export const listingController = {
       const { id } = req.params;
       const files = req.files as Express.Multer.File[];
       
+      if (!id) {
+        return res.status(400).json(errorResponse("Listing ID is required"));
+      }
+      
       if (!files || files.length === 0) {
-        return res.status(400).json(errorResponse("No files uploaded"));
+        return res.status(400).json(errorResponse("Please select at least one ticket file to upload"));
+      }
+
+      // Validate file types and sizes
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      
+      for (const file of files) {
+        if (!allowedTypes.includes(file.mimetype)) {
+          return res.status(400).json(errorResponse("Only JPEG, PNG, and PDF files are allowed"));
+        }
+        if (file.size > maxSize) {
+          return res.status(400).json(errorResponse("Files must be smaller than 10MB"));
+        }
       }
 
       const fileUrls = files.map(file => `/uploads/${file.filename}`);
       const listing = await listingService.addTicketFiles(id, sellerId, fileUrls);
       
-      res.json(successResponse(listing, "Ticket files uploaded successfully"));
-    } catch (error) {
+      res.json(successResponse(listing, `${files.length} ticket file${files.length === 1 ? '' : 's'} uploaded successfully`));
+    } catch (error: any) {
       logger.error("Upload ticket files error:", error);
-      res.status(500).json(errorResponse("Failed to upload ticket files"));
+      
+      let message = "Unable to upload ticket files. Please try again.";
+      let statusCode = 500;
+      
+      if (error.message?.includes("not found") || error.message?.includes("Not found")) {
+        message = "Listing not found or you don't have permission to upload files for it.";
+        statusCode = 404;
+      } else if (error.message?.includes("unauthorized")) {
+        message = "You can only upload files for your own listings.";
+        statusCode = 403;
+      } else if (error.message?.includes("sold")) {
+        message = "Cannot upload files for a listing that has already been sold.";
+        statusCode = 400;
+      }
+      
+      res.status(statusCode).json(errorResponse(message));
     }
   },
 
