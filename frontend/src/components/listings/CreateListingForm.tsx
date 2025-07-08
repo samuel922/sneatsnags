@@ -7,15 +7,15 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { eventService } from '../../services/eventService';
-import { listingService } from '../../services/listingService';
+import { sellerService } from '../../services/sellerService';
 import type { Event, EventSection } from '../../types/event';
 import type { CreateListingRequest } from '../../types/listing';
 
 const createListingSchema = z.object({
   eventId: z.string().min(1, 'Event is required'),
-  sectionId: z.string().optional(),
+  sectionId: z.string().min(1, 'Section is required'),
   quantity: z.number().min(1, 'Quantity must be at least 1').max(20, 'Maximum 20 tickets per listing'),
-  pricePerTicket: z.number().min(0.01, 'Price must be greater than 0'),
+  price: z.number().min(0.01, 'Price must be greater than 0'),
   seatNumbers: z.string().optional(),
   row: z.string().optional(),
   notes: z.string().max(500, 'Notes must be less than 500 characters').optional(),
@@ -52,13 +52,13 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
     defaultValues: {
       eventId: defaultEventId || '',
       quantity: 1,
-      pricePerTicket: 0,
+      price: 0,
     },
   });
 
   const watchedEventId = watch('eventId');
   const watchedQuantity = watch('quantity');
-  const watchedPrice = watch('pricePerTicket');
+  const watchedPrice = watch('price');
 
   useEffect(() => {
     fetchEvents();
@@ -74,10 +74,18 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
   const fetchEvents = async () => {
     try {
       setEventsLoading(true);
+      console.log('Fetching events...');
       const response = await eventService.getEvents({ limit: 100 });
-      setEvents(response.data.items || []);
+      console.log('Events API response:', response);
+      console.log('Events data:', response.data);
+      console.log('Number of events:', response.data?.length || 0);
+      
+      // The eventService returns { data: Event[], pagination: {...} }
+      setEvents(response.data || []);
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      console.error('Error details:', error);
+      setEvents([]);
     } finally {
       setEventsLoading(false);
     }
@@ -109,21 +117,26 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
     try {
       setLoading(true);
 
+      // Convert seat numbers string to array
+      const seats = data.seatNumbers ? 
+        data.seatNumbers.split(',').map(seat => seat.trim()).filter(seat => seat) : 
+        [];
+
       const listingData: CreateListingRequest = {
         eventId: data.eventId,
-        sectionId: data.sectionId || undefined,
+        sectionId: data.sectionId,
         quantity: data.quantity,
-        pricePerTicket: data.pricePerTicket,
-        seatNumbers: data.seatNumbers || undefined,
+        price: data.price,
+        seats,
         row: data.row || undefined,
         notes: data.notes || undefined,
       };
 
-      const listing = await listingService.createListing(listingData);
+      const listing = await sellerService.createListing(listingData);
 
       // Upload ticket files if provided
       if (ticketFiles && ticketFiles.length > 0) {
-        await listingService.uploadTicketFiles(listing.id, ticketFiles);
+        await sellerService.uploadTicketFiles(listing.id, Array.from(ticketFiles));
       }
 
       reset();
@@ -186,20 +199,23 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
           {/* Section Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Section (Optional)
+              Section *
             </label>
             <select
               {...register('sectionId')}
               disabled={!selectedEventId || loading}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
             >
-              <option value="">General Admission</option>
+              <option value="">Select a section</option>
               {sections.map((section) => (
                 <option key={section.id} value={section.id}>
                   {section.name}
                 </option>
               ))}
             </select>
+            {errors.sectionId && (
+              <p className="mt-1 text-sm text-red-600">{errors.sectionId.message}</p>
+            )}
           </div>
 
           {/* Quantity */}
@@ -230,11 +246,11 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
               type="number"
               step="0.01"
               min="0.01"
-              {...register('pricePerTicket', { valueAsNumber: true })}
+              {...register('price', { valueAsNumber: true })}
               disabled={loading}
             />
-            {errors.pricePerTicket && (
-              <p className="mt-1 text-sm text-red-600">{errors.pricePerTicket.message}</p>
+            {errors.price && (
+              <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
             )}
           </div>
 

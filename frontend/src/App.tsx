@@ -25,6 +25,7 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
 import { ListingManagementPage } from './pages/ListingManagementPage';
+import { CreateListingPage } from './pages/CreateListingPage';
 import { BrowseTicketsPage } from './pages/BrowseTicketsPage';
 import { BrowseOffersPage } from './pages/BrowseOffersPage';
 import { UserRole } from './types/auth';
@@ -169,6 +170,15 @@ function App() {
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
                           <ListingManagementPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/seller/listings/new"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
+                          <CreateListingPage />
                         </ProtectedRoute>
                       }
                     />

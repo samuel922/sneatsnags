@@ -46,6 +46,9 @@ app.use("/api/webhooks", express.raw({ type: 'application/json' }), webhookRoute
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+//Static file serving
+app.use('/uploads', express.static('uploads'));
+
 //Swagger documentation
 setupSwagger(app);
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, User, LogOut, Settings, Ticket, Search, ChevronDown } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
 import { NotificationDropdown } from '../notifications/NotificationDropdown';
 import { UserRole } from '../../types/auth';

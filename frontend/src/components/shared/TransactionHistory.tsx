@@ -4,7 +4,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { buyerService } from '../../services/buyerService';
 import { sellerService } from '../../services/sellerService';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { UserRole } from '../../types/auth';
 
 interface TransactionHistoryProps {

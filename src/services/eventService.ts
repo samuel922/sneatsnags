@@ -98,7 +98,7 @@ export class EventService {
       ];
     }
 
-    const [data, total] = await Promise.all([
+    const [events, total] = await Promise.all([
       prisma.event.findMany({
         where,
         skip: offset,
@@ -117,6 +117,17 @@ export class EventService {
       prisma.event.count({ where }),
     ]);
 
+    // Map database fields to frontend expected fields
+    const data = events.map(event => ({
+      ...event,
+      date: event.eventDate.toISOString(),
+      time: event.eventDate.toISOString(),
+      totalCapacity: event.totalSeats || 0,
+      ticketsAvailable: event.availableSeats || 0,
+      minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+      maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+    }));
+
     return {
       data,
       pagination: {
@@ -131,7 +142,7 @@ export class EventService {
   }
 
   async getEventById(id: string) {
-    return await prisma.event.findUnique({
+    const event = await prisma.event.findUnique({
       where: { id },
       include: {
         sections: true,
@@ -144,6 +155,21 @@ export class EventService {
         },
       },
     });
+
+    if (!event) {
+      return null;
+    }
+
+    // Map database fields to frontend expected fields
+    return {
+      ...event,
+      date: event.eventDate.toISOString(),
+      time: event.eventDate.toISOString(),
+      totalCapacity: event.totalSeats || 0,
+      ticketsAvailable: event.availableSeats || 0,
+      minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+      maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+    };
   }
 
   async updateEvent(id: string, data: UpdateEventRequest) {
@@ -201,10 +227,19 @@ export class EventService {
   }
 
   async getEventSections(eventId: string) {
-    return await prisma.section.findMany({
+    const sections = await prisma.section.findMany({
       where: { eventId },
       orderBy: { name: "asc" },
     });
+
+    // Map database fields to frontend expected fields
+    return sections.map(section => ({
+      ...section,
+      capacity: section.seatCount || 0,
+      minPrice: 0, // Sections don't have price in the current schema
+      maxPrice: 0, // Sections don't have price in the current schema
+      isActive: true, // Default to active
+    }));
   }
 
   async createSection(data: any) {
@@ -259,7 +294,7 @@ export class EventService {
     if (state) where.state = { contains: state, mode: "insensitive" };
     if (eventType) where.eventType = eventType;
 
-    return await prisma.event.findMany({
+    const events = await prisma.event.findMany({
       where,
       take: limit,
       orderBy: { eventDate: "asc" },
@@ -273,10 +308,21 @@ export class EventService {
         },
       },
     });
+
+    // Map database fields to frontend expected fields
+    return events.map(event => ({
+      ...event,
+      date: event.eventDate.toISOString(),
+      time: event.eventDate.toISOString(),
+      totalCapacity: event.totalSeats || 0,
+      ticketsAvailable: event.availableSeats || 0,
+      minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+      maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+    }));
   }
 
   async getPopularEvents(limit: number) {
-    return await prisma.event.findMany({
+    const events = await prisma.event.findMany({
       where: {
         isActive: true,
         eventDate: { gte: new Date() },
@@ -296,6 +342,17 @@ export class EventService {
         },
       },
     });
+
+    // Map database fields to frontend expected fields
+    return events.map(event => ({
+      ...event,
+      date: event.eventDate.toISOString(),
+      time: event.eventDate.toISOString(),
+      totalCapacity: event.totalSeats || 0,
+      ticketsAvailable: event.availableSeats || 0,
+      minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+      maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+    }));
   }
 
   async getUpcomingEvents(params: {
@@ -313,7 +370,7 @@ export class EventService {
     if (city) where.city = { contains: city, mode: "insensitive" };
     if (state) where.state = { contains: state, mode: "insensitive" };
 
-    return await prisma.event.findMany({
+    const events = await prisma.event.findMany({
       where,
       take: limit,
       orderBy: { eventDate: "asc" },
@@ -327,6 +384,17 @@ export class EventService {
         },
       },
     });
+
+    // Map database fields to frontend expected fields
+    return events.map(event => ({
+      ...event,
+      date: event.eventDate.toISOString(),
+      time: event.eventDate.toISOString(),
+      totalCapacity: event.totalSeats || 0,
+      ticketsAvailable: event.availableSeats || 0,
+      minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+      maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+    }));
   }
 
   async getAllEventsAdmin(params: {

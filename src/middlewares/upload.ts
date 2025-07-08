@@ -4,7 +4,7 @@ import { config } from "../config/config";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, path.join(process.cwd(), "uploads"));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -20,11 +20,12 @@ const fileFilter = (
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  // Allow images only
-  if (file.mimetype.startsWith("image/")) {
+  // Allow images and PDFs for ticket files
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed"));
+    cb(new Error("Only image files (JPEG, PNG, GIF) and PDF files are allowed"));
   }
 };
 

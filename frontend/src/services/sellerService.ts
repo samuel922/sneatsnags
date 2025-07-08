@@ -137,8 +137,15 @@ export interface AvailableOffer {
 
 class SellerService {
   async getDashboard(): Promise<SellerStats> {
-    const response = await api.get('/sellers/dashboard');
-    return response.data.data;
+    try {
+      console.log('Calling seller dashboard API...');
+      const response = await api.get('/sellers/dashboard');
+      console.log('Seller dashboard response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Seller dashboard API error:', error);
+      throw error;
+    }
   }
 
   async getListings(query?: {
@@ -156,20 +163,17 @@ class SellerService {
     };
   }> {
     const response = await api.get('/sellers/listings', { params: query });
-    return {
-      data: response.data.data,
-      pagination: response.data.pagination,
-    };
+    return response.data;
   }
 
   async createListing(listingData: CreateListingRequest): Promise<SellerListing> {
     const response = await api.post('/sellers/listings', listingData);
-    return response.data.data;
+    return response.data;
   }
 
   async updateListing(listingId: string, updates: UpdateListingRequest): Promise<SellerListing> {
     const response = await api.put(`/sellers/listings/${listingId}`, updates);
-    return response.data.data;
+    return response.data;
   }
 
   async deleteListing(listingId: string): Promise<void> {
@@ -190,20 +194,17 @@ class SellerService {
     };
   }> {
     const response = await api.get('/sellers/transactions', { params: query });
-    return {
-      data: response.data.data,
-      pagination: response.data.pagination,
-    };
+    return response.data;
   }
 
   async acceptOffer(offerId: string, listingId: string): Promise<SellerTransaction> {
     const response = await api.post(`/sellers/offers/${offerId}/accept`, { listingId });
-    return response.data.data;
+    return response.data;
   }
 
   async markTicketsDelivered(transactionId: string): Promise<SellerTransaction> {
     const response = await api.post(`/sellers/transactions/${transactionId}/deliver`);
-    return response.data.data;
+    return response.data;
   }
 
   async uploadTicketFiles(listingId: string, files: File[]): Promise<SellerListing> {
@@ -217,7 +218,7 @@ class SellerService {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data.data;
+    return response.data;
   }
 
   async getAvailableOffers(query?: {
@@ -236,10 +237,7 @@ class SellerService {
     };
   }> {
     const response = await api.get('/sellers/offers', { params: query });
-    return {
-      data: response.data.data,
-      pagination: response.data.pagination,
-    };
+    return response.data;
   }
 }
 

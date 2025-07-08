@@ -152,11 +152,20 @@ export const sellerController = {
       const { listingId } = req.params;
       const files = req.files as Express.Multer.File[];
       
+      logger.info(`Upload request: sellerId=${sellerId}, listingId=${listingId}, files=${files?.length || 0}`);
+      
       if (!files || files.length === 0) {
         return res.status(400).json(errorResponse("No files uploaded"));
       }
 
+      // Log file details
+      files.forEach((file, index) => {
+        logger.info(`File ${index}: ${file.filename}, path: ${file.path}, size: ${file.size}`);
+      });
+
       const fileUrls = files.map(file => `/uploads/${file.filename}`);
+      logger.info(`Generated file URLs: ${JSON.stringify(fileUrls)}`);
+      
       const listing = await listingService.addTicketFiles(listingId, sellerId, fileUrls);
       
       res.json(successResponse(listing, "Ticket files uploaded successfully"));

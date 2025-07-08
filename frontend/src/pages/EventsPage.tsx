@@ -6,7 +6,7 @@ import type { Event } from '../types/event';
 import { EventCategory } from '../types/event';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types/auth';
 
 export const EventsPage: React.FC = () => {

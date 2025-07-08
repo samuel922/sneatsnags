@@ -15,7 +15,7 @@ import { eventService } from '../services/eventService';
 import type { Event, EventSection } from '../types/event';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types/auth';
 
 export const EventDetailPage: React.FC = () => {

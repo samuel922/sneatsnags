@@ -46,19 +46,17 @@ export type ListingStatus = typeof ListingStatus[keyof typeof ListingStatus];
 
 export interface CreateListingRequest {
   eventId: string;
-  sectionId?: string;
-  quantity: number;
-  pricePerTicket: number;
-  seatNumbers?: string;
+  sectionId: string;
   row?: string;
+  seats: string[];
+  price: number;
+  quantity: number;
   notes?: string;
+  ticketFiles?: string[];
 }
 
 export interface UpdateListingRequest {
-  quantity?: number;
-  pricePerTicket?: number;
-  seatNumbers?: string;
-  row?: string;
+  price?: number;
   notes?: string;
   status?: ListingStatus;
 }
