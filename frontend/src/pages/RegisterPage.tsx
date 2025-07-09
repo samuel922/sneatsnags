@@ -1,20 +1,89 @@
 import React from 'react';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { RegisterForm } from '../components/auth/RegisterForm';
 
+const StyledContainer = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #e8f5e8 0%, #e0f2fe 50%, #f3e5f5 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(3),
+  position: 'relative',
+  overflow: 'hidden',
+}));
+
+const BackgroundOrb = styled(Box)<{ delay?: string }>(({ theme, delay }) => ({
+  position: 'absolute',
+  borderRadius: '50%',
+  filter: 'blur(60px)',
+  opacity: 0.4,
+  animation: 'float 8s ease-in-out infinite',
+  animationDelay: delay || '0s',
+  '@keyframes float': {
+    '0%, 100%': {
+      transform: 'translateY(0px) translateX(0px)',
+    },
+    '33%': {
+      transform: 'translateY(-30px) translateX(10px)',
+    },
+    '66%': {
+      transform: 'translateY(10px) translateX(-20px)',
+    },
+  },
+}));
+
+const ContentWrapper = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 10,
+  width: '100%',
+  maxWidth: '500px',
+  [theme.breakpoints.up('sm')]: {
+    maxWidth: '550px',
+  },
+}));
+
 export const RegisterPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <StyledContainer>
+      {/* Background Orbs */}
+      <BackgroundOrb
+        sx={{
+          top: '16%',
+          left: '33%',
+          width: { xs: '160px', sm: '240px', md: '320px' },
+          height: { xs: '160px', sm: '240px', md: '320px' },
+          background: 'linear-gradient(45deg, #4CAF50 30%, #2196F3 90%)',
+        }}
+      />
+      <BackgroundOrb
+        delay="3s"
+        sx={{
+          bottom: '16%',
+          right: '33%',
+          width: { xs: '160px', sm: '240px', md: '320px' },
+          height: { xs: '160px', sm: '240px', md: '320px' },
+          background: 'linear-gradient(45deg, #9C27B0 30%, #E91E63 90%)',
+        }}
+      />
+      <BackgroundOrb
+        delay="1.5s"
+        sx={{
+          top: '50%',
+          left: '16%',
+          width: { xs: '120px', sm: '180px', md: '240px' },
+          height: { xs: '120px', sm: '180px', md: '240px' },
+          background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 90%)',
+        }}
+      />
       
-      {/* Animated Gradient Orbs */}
-      <div className="absolute top-1/6 left-1/3 w-80 h-80 bg-gradient-to-r from-green-400 to-blue-500 rounded-full filter blur-3xl opacity-40 animate-pulse floating"></div>
-      <div className="absolute bottom-1/6 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full filter blur-3xl opacity-40 animate-pulse floating" style={{ animationDelay: '3s' }}></div>
-      <div className="absolute top-1/2 left-1/6 w-64 h-64 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full filter blur-3xl opacity-30 animate-pulse floating" style={{ animationDelay: '1.5s' }}></div>
-      
-      <div className="relative z-10 w-full max-w-lg">
+      <ContentWrapper>
         <RegisterForm />
-      </div>
-    </div>
+      </ContentWrapper>
+    </StyledContainer>
   );
 };

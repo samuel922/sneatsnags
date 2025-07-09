@@ -300,6 +300,13 @@ export const adminController = {
           role: 'SELLER'
         },
         take: 5,
+        include: {
+          _count: {
+            select: {
+              sellerListings: true
+            }
+          }
+        },
         orderBy: {
           createdAt: 'desc'
         }
@@ -325,7 +332,7 @@ export const adminController = {
         })),
         topSellers: topSellers.map(seller => ({
           name: `${seller.firstName} ${seller.lastName}`,
-          sales: seller._count.listings,
+          sales: seller._count.sellerListings,
           revenue: 0 // Will be calculated from transactions
         })),
         platformMetrics: {
@@ -379,11 +386,11 @@ export const adminController = {
       const users = await prisma.user.findMany({
         where,
         include: {
-          offers: {
+          buyerOffers: {
             take: 1,
             orderBy: { createdAt: 'desc' }
           },
-          listings: {
+          sellerListings: {
             take: 1,
             orderBy: { createdAt: 'desc' }
           }
@@ -413,13 +420,13 @@ export const adminController = {
         return {
           id: `ticket_${user.id}_${index}`,
           userId: user.id,
-          subject: user.offers.length > 0 ? 'Issue with offer submission' : 
-                   user.listings.length > 0 ? 'Problem with listing' : 
+          subject: user.buyerOffers.length > 0 ? 'Issue with offer submission' : 
+                   user.sellerListings.length > 0 ? 'Problem with listing' : 
                    'General inquiry',
-          description: user.offers.length > 0 ? 
-                      `Having trouble with my offer for event. The offer amount is ${user.offers[0]?.maxPrice || 0}` :
-                      user.listings.length > 0 ?
-                      `Issue with my listing. Listed ${user.listings[0]?.quantity || 0} tickets` :
+          description: user.buyerOffers.length > 0 ? 
+                      `Having trouble with my offer for event. The offer amount is ${user.buyerOffers[0]?.maxPrice || 0}` :
+                      user.sellerListings.length > 0 ?
+                      `Issue with my listing. Listed ${user.sellerListings[0]?.quantity || 0} tickets` :
                       'General support request from user',
           category: randomCategory,
           priority: randomPriority,
@@ -567,11 +574,11 @@ export const adminController = {
       const users = await prisma.user.findMany({
         where: userId ? { id: userId as string } : undefined,
         include: {
-          offers: {
+          buyerOffers: {
             take: 5,
             orderBy: { createdAt: 'desc' }
           },
-          listings: {
+          sellerListings: {
             take: 5,
             orderBy: { createdAt: 'desc' }
           }
@@ -587,7 +594,7 @@ export const adminController = {
 
       // Create mock activity logs from user data
       const logs = users.flatMap(user => [
-        ...user.offers.map(offer => ({
+        ...user.buyerOffers.map((offer: any) => ({
           id: `offer_${offer.id}`,
           userId: user.id,
           action: 'create_offer',
@@ -596,7 +603,7 @@ export const adminController = {
           userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', // Mock user agent
           createdAt: offer.createdAt.toISOString()
         })),
-        ...user.listings.map(listing => ({
+        ...user.sellerListings.map((listing: any) => ({
           id: `listing_${listing.id}`,
           userId: user.id,
           action: 'create_listing',

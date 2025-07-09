@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import { PrismaClient, EventType, EventStatus } from "@prisma/client";
-=======
-import { PrismaClient, EventType, EventStatus, UserRole } from '@prisma/client';
+import { PrismaClient, EventType, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
->>>>>>> 28525a7f07a9d8aaf8cb73453553059abfaa69b8
 
 const prisma = new PrismaClient();
 
@@ -24,7 +20,7 @@ async function main() {
   console.log('👨‍💼 Creating admin user...');
   const adminPassword = await bcrypt.hash('admin123', 12);
   
-  const adminUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'admin@sneatsnags.com',
       password: adminPassword,
@@ -44,7 +40,7 @@ async function main() {
   console.log('👥 Creating sample users...');
   
   const buyerPassword = await bcrypt.hash('buyer123', 12);
-  const buyerUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'buyer@sneatsnags.com',
       password: buyerPassword,
@@ -57,7 +53,7 @@ async function main() {
   });
 
   const sellerPassword = await bcrypt.hash('seller123', 12);
-  const sellerUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'seller@sneatsnags.com',
       password: sellerPassword,

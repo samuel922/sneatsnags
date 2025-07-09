@@ -1,17 +1,41 @@
 import React from 'react';
+import { Box, Container } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { Header } from './Header';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
+const StyledBox = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e8f4fd 100%)',
+  paddingTop: theme.spacing(2),
+  [theme.breakpoints.up('lg')]: {
+    paddingTop: theme.spacing(3),
+  },
+}));
+
+const MainContent = styled('main')(({ theme }) => ({
+  paddingTop: theme.spacing(10),
+  paddingBottom: theme.spacing(4),
+  [theme.breakpoints.up('sm')]: {
+    paddingTop: theme.spacing(12),
+  },
+  [theme.breakpoints.up('lg')]: {
+    paddingTop: theme.spacing(14),
+  },
+}));
+
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <StyledBox>
       <Header />
-      <main className="pt-16 lg:pt-20">
-        {children}
-      </main>
-    </div>
+      <MainContent>
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+          {children}
+        </Container>
+      </MainContent>
+    </StyledBox>
   );
 };

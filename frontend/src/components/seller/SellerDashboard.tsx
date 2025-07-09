@@ -1,35 +1,25 @@
-import { useQuery } from '@tanstack/react-query';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { sellerService, type SellerStats } from '../../services/sellerService';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export const SellerDashboard = () => {
-  const { data: stats, isLoading, error } = useQuery<SellerStats>({
-    queryKey: ['seller-dashboard'],
-    queryFn: () => sellerService.getDashboard(),
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-red-600 p-8">
-        <p>Error loading dashboard. Please try again.</p>
-      </div>
-    );
-  }
+  const { user } = useAuth();
+  
+  // Mock stats for demonstration
+  const stats = {
+    totalListings: 0,
+    activeListings: 0,
+    soldListings: 0,
+    totalRevenue: 0,
+  };
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Seller Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Welcome back, {user?.firstName}!
+        </h1>
         <Link to="/seller/listings/new">
           <Button>Create New Listing</Button>
         </Link>
@@ -41,7 +31,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Total Listings</h3>
             <p className="text-3xl font-bold text-blue-600 mt-2">
-              {stats?.totalListings || 0}
+              {stats.totalListings}
             </p>
           </div>
         </Card>
@@ -50,7 +40,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Active Listings</h3>
             <p className="text-3xl font-bold text-green-600 mt-2">
-              {stats?.activeListings || 0}
+              {stats.activeListings}
             </p>
           </div>
         </Card>
@@ -59,7 +49,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Sold Listings</h3>
             <p className="text-3xl font-bold text-purple-600 mt-2">
-              {stats?.soldListings || 0}
+              {stats.soldListings}
             </p>
           </div>
         </Card>
@@ -68,7 +58,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Total Revenue</h3>
             <p className="text-3xl font-bold text-emerald-600 mt-2">
-              ${Number(stats?.totalRevenue || 0).toFixed(2)}
+              ${Number(stats.totalRevenue).toFixed(2)}
             </p>
           </div>
         </Card>
@@ -99,26 +89,47 @@ export const SellerDashboard = () => {
 
         <Card>
           <div className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">New listing created</span>
-                <span className="text-gray-500">2 hours ago</span>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Getting Started</h3>
+            <div className="space-y-4">
+              <div className="flex items-center p-4 bg-blue-50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold">1</span>
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-medium">Create Your First Listing</h4>
+                  <p className="text-sm text-gray-600">Start selling tickets by creating your first listing</p>
+                </div>
+                <Link to="/seller/listings/new" className="ml-auto">
+                  <Button size="sm">Create Listing</Button>
+                </Link>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Offer accepted</span>
-                <span className="text-gray-500">1 day ago</span>
+
+              <div className="flex items-center p-4 bg-green-50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold">2</span>
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-medium">Manage Your Listings</h4>
+                  <p className="text-sm text-gray-600">View and edit your active listings</p>
+                </div>
+                <Link to="/seller/listings" className="ml-auto">
+                  <Button size="sm">Manage Listings</Button>
+                </Link>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Payment received</span>
-                <span className="text-gray-500">3 days ago</span>
+
+              <div className="flex items-center p-4 bg-purple-50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold">3</span>
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-medium">Review Offers</h4>
+                  <p className="text-sm text-gray-600">Accept or negotiate offers from buyers</p>
+                </div>
+                <Link to="/seller/offers" className="ml-auto">
+                  <Button size="sm">Browse Offers</Button>
+                </Link>
               </div>
             </div>
-            <Link to="/seller/transactions" className="block mt-4">
-              <Button variant="outline" size="sm" className="w-full">
-                View All Activity
-              </Button>
-            </Link>
           </div>
         </Card>
 
@@ -129,7 +140,7 @@ export const SellerDashboard = () => {
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Success Rate</span>
                 <span className="font-semibold text-green-600">
-                  {stats?.totalListings && stats?.soldListings 
+                  {stats.totalListings && stats.soldListings 
                     ? Math.round((stats.soldListings / stats.totalListings) * 100) 
                     : 0}%
                 </span>
@@ -137,7 +148,7 @@ export const SellerDashboard = () => {
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Avg. Sale Price</span>
                 <span className="font-semibold">
-                  ${stats?.soldListings && stats?.totalRevenue 
+                  ${stats.soldListings && stats.totalRevenue 
                     ? (Number(stats.totalRevenue) / stats.soldListings).toFixed(2)
                     : '0.00'}
                 </span>
@@ -145,7 +156,7 @@ export const SellerDashboard = () => {
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Active vs Total</span>
                 <span className="font-semibold">
-                  {stats?.totalListings && stats?.activeListings
+                  {stats.totalListings && stats.activeListings
                     ? Math.round((stats.activeListings / stats.totalListings) * 100)
                     : 0}%
                 </span>
@@ -181,6 +192,11 @@ export const SellerDashboard = () => {
           </div>
         </div>
       </Card>
+
+      {/* Demo Notice */}
+      <div className="text-center text-gray-600 mt-8">
+        <p className="text-sm">This is a demo version with sample data</p>
+      </div>
     </div>
   );
 };

@@ -3,14 +3,27 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Alert,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Divider,
+  Avatar,
+  TextField,
+  InputAdornment
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import type { ApiError } from '../../types/api';
 import { socialAuthService } from '../../services/socialAuthService';
 import SweetAlert from '../../utils/sweetAlert';
-import { Mail, Lock, Eye, EyeOff, Ticket } from 'lucide-react';
+import { Mail, Lock, Ticket } from 'lucide-react';
+import { UserRole } from '../../types/auth';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -36,9 +49,19 @@ export const LoginForm: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setApiError('');
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
       SweetAlert.success('Welcome back!', 'You have successfully logged in');
-      navigate('/dashboard');
+      
+      // Navigate to role-specific dashboard
+      if (user.role === UserRole.BUYER) {
+        navigate('/buyer/dashboard');
+      } else if (user.role === UserRole.SELLER) {
+        navigate('/seller/dashboard');
+      } else if (user.role === UserRole.ADMIN) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       const apiErr = error as ApiError;
       const errorMessage = apiErr.message || 'Login failed';
@@ -68,163 +91,319 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto animate-fade-in">
-      <Card variant="glass" className="backdrop-blur-xl border-white/30 shadow-2xl relative z-10">
-        <CardHeader className="text-center space-y-6">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Ticket className="h-8 w-8 text-white" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              Welcome Back
-            </h2>
-            <p className="text-gray-600">Sign in to your SneatSnags account</p>
-          </div>
-        </CardHeader>
+    <Card variant="glass" sx={{ maxWidth: '100%', mx: 'auto' }}>
+      <CardHeader>
+        <Box sx={{ textAlign: 'center', mb: 2 }}>
+          <Avatar
+            sx={{
+              width: 64,
+              height: 64,
+              mx: 'auto',
+              mb: 2,
+              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            }}
+          >
+            <Ticket size={32} style={{ color: 'white' }} />
+          </Avatar>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #1e293b 0%, #64748b 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 1,
+            }}
+          >
+            Welcome Back
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Sign in to your SneatSnags account
+          </Typography>
+        </Box>
+      </CardHeader>
 
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {apiError && (
-              <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-xl animate-shake">
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-red-500 mr-3 animate-pulse"></div>
-                  {apiError}
-                </div>
-              </div>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {apiError && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3, 
+                borderRadius: 2,
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                '& .MuiAlert-icon': {
+                  color: '#ef4444',
+                }
+              }}
+            >
+              {apiError}
+            </Alert>
+          )}
+
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              fullWidth
+              label="Email Address"
+              type="email"
+              placeholder="Enter your email"
+              variant="outlined"
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              {...register('email')}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Mail size={20} color="#64748b" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '12px',
+                  minHeight: '48px',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#2563eb',
+                    borderWidth: '2px',
+                    boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
+                  },
+                  '&.Mui-error fieldset': {
+                    borderColor: '#ef4444',
+                  },
+                  '&.Mui-error:hover fieldset': {
+                    borderColor: '#ef4444',
+                  },
+                  '&.Mui-error.Mui-focused fieldset': {
+                    borderColor: '#ef4444',
+                    boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#64748b',
+                  fontWeight: 500,
+                  '&.Mui-focused': {
+                    color: '#2563eb',
+                    fontWeight: 600,
+                  },
+                  '&.Mui-error': {
+                    color: '#ef4444',
+                  },
+                },
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              variant="outlined"
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              {...register('password')}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock size={20} color="#64748b" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '12px',
+                  minHeight: '48px',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#2563eb',
+                    borderWidth: '2px',
+                    boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
+                  },
+                  '&.Mui-error fieldset': {
+                    borderColor: '#ef4444',
+                  },
+                  '&.Mui-error:hover fieldset': {
+                    borderColor: '#ef4444',
+                  },
+                  '&.Mui-error.Mui-focused fieldset': {
+                    borderColor: '#ef4444',
+                    boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#64748b',
+                  fontWeight: 500,
+                  '&.Mui-focused': {
+                    color: '#2563eb',
+                    fontWeight: 600,
+                  },
+                  '&.Mui-error': {
+                    color: '#ef4444',
+                  },
+                },
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  sx={{
+                    '& .MuiSvgIcon-root': {
+                      color: 'primary.main',
+                    }
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" color="text.secondary">
+                  Remember me
+                </Typography>
+              }
+            />
+
+            <Typography
+              component={Link}
+              to="/forgot-password"
+              variant="body2"
+              sx={{
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Forgot password?
+            </Typography>
+          </Box>
+
+          <Button
+            type="submit"
+            variant="gradient"
+            size="lg"
+            sx={{ width: '100%', mb: 3 }}
+            isLoading={isSubmitting}
+          >
+            {!isSubmitting ? (
+              <>
+                <Lock size={20} style={{ marginRight: 8 }} />
+                Sign In
+              </>
+            ) : (
+              'Signing In...'
             )}
+          </Button>
 
-            <div className="space-y-4">
-              <Input
-                label="Email Address"
-                type="email"
-                placeholder="Enter your email"
-                variant="glass"
-                icon={<Mail className="h-5 w-5" />}
-                error={errors.email?.message}
-                {...register('email')}
-              />
+          <Box sx={{ position: 'relative', mb: 3 }}>
+            <Divider sx={{ color: 'text.secondary', '&::before, &::after': { borderColor: 'rgba(255, 255, 255, 0.2)' } }}>
+              <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
+                Or continue with
+              </Typography>
+            </Divider>
+          </Box>
 
-              <div className="relative">
-                <Input
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  variant="glass"
-                  icon={<Lock className="h-5 w-5" />}
-                  iconPosition="left"
-                  error={errors.password?.message}
-                  className="pr-12"
-                  {...register('password')}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-[calc(50%+12px)] transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 bg-white/50 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="text-sm text-gray-700">Remember me</span>
-              </label>
-
-              <Link
-                to="/forgot-password"
-                className="text-sm text-blue-600 hover:text-blue-500 font-medium transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3 }}>
             <Button
-              type="submit"
-              variant="gradient"
-              size="lg"
-              className="w-full"
-              isLoading={isSubmitting}
+              type="button"
+              variant="outline"
+              size="md"
+              sx={{ minWidth: '140px' }}
+              onClick={handleGoogleLogin}
             >
-              {!isSubmitting && (
-                <>
-                  <Lock className="h-5 w-5 mr-2" />
-                  Sign In
-                </>
-              )}
+              <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: 8 }}>
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              Google
             </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white/50 backdrop-blur-sm text-gray-500 rounded-full">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full bg-white/50 backdrop-blur-sm border-white/30 hover:bg-white/70"
-                onClick={handleGoogleLogin}
-              >
-                <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Google
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full bg-white/50 backdrop-blur-sm border-white/30 hover:bg-white/70"
-                onClick={handleFacebookLogin}
-              >
-                <svg className="h-5 w-5 mr-2" fill="#1877F2" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Facebook
-              </Button>
-            </div>
-
-          </form>
-        </CardContent>
-
-        <div className="text-center pt-6 border-t border-white/20">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link
-              to="/register"
-              className="font-semibold text-blue-600 hover:text-blue-500 transition-colors"
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              sx={{ minWidth: '140px' }}
+              onClick={handleFacebookLogin}
             >
-              Create one now
-            </Link>
-          </p>
-        </div>
-      </Card>
-    </div>
+              <svg width="20" height="20" fill="#1877F2" viewBox="0 0 24 24" style={{ marginRight: 8 }}>
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              Facebook
+            </Button>
+          </Box>
+        </form>
+      </CardContent>
+
+      <Box sx={{ textAlign: 'center', pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
+        <Typography variant="body2" color="text.secondary">
+          Don't have an account?{' '}
+          <Typography
+            component={Link}
+            to="/register"
+            variant="body2"
+            sx={{
+              color: 'primary.main',
+              textDecoration: 'none',
+              fontWeight: 600,
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            Create one now
+          </Typography>
+        </Typography>
+      </Box>
+    </Card>
   );
 };

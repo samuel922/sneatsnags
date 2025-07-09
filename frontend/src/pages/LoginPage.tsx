@@ -1,19 +1,76 @@
 import React from 'react';
+import { Box, Container, useTheme, useMediaQuery } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { LoginForm } from '../components/auth/LoginForm';
 
+const StyledContainer = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #e0f2fe 0%, #f3e5f5 50%, #fce4ec 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(3),
+  position: 'relative',
+  overflow: 'hidden',
+}));
+
+const BackgroundOrb = styled(Box)<{ delay?: string }>(({ theme, delay }) => ({
+  position: 'absolute',
+  borderRadius: '50%',
+  filter: 'blur(60px)',
+  opacity: 0.3,
+  animation: 'float 6s ease-in-out infinite',
+  animationDelay: delay || '0s',
+  '@keyframes float': {
+    '0%, 100%': {
+      transform: 'translateY(0px)',
+    },
+    '50%': {
+      transform: 'translateY(-20px)',
+    },
+  },
+}));
+
+const ContentWrapper = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 10,
+  width: '100%',
+  maxWidth: '400px',
+  [theme.breakpoints.up('sm')]: {
+    maxWidth: '450px',
+  },
+}));
+
 export const LoginPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <StyledContainer>
+      {/* Background Orbs */}
+      <BackgroundOrb
+        sx={{
+          top: '25%',
+          left: '25%',
+          width: { xs: '200px', sm: '300px', md: '400px' },
+          height: { xs: '200px', sm: '300px', md: '400px' },
+          background: 'linear-gradient(45deg, #2196F3 30%, #9C27B0 90%)',
+        }}
+      />
+      <BackgroundOrb
+        delay="2s"
+        sx={{
+          bottom: '25%',
+          right: '25%',
+          width: { xs: '200px', sm: '300px', md: '400px' },
+          height: { xs: '200px', sm: '300px', md: '400px' },
+          background: 'linear-gradient(45deg, #E91E63 30%, #F44336 90%)',
+        }}
+      />
       
-      {/* Gradient Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-pink-400 to-red-500 rounded-full filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
-      
-      <div className="relative z-10 w-full max-w-md">
+      <ContentWrapper>
         <LoginForm />
-      </div>
-    </div>
+      </ContentWrapper>
+    </StyledContainer>
   );
 };

@@ -1,89 +1,188 @@
 import React from 'react';
-import { cn } from '../../utils/cn';
+import { TextField, InputAdornment, FormHelperText } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import type { TextFieldProps } from '@mui/material/TextField';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
+interface InputProps extends Omit<TextFieldProps, 'variant'> {
   variant?: 'default' | 'glass' | 'floating';
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
+  helperText?: string;
 }
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
+const StyledTextField = styled(TextField)<{ customvariant: string }>(({ theme, customvariant }) => {
+  const variants = {
+    default: {
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        transition: 'all 0.2s ease-in-out',
+        '& fieldset': {
+          borderColor: '#e2e8f0',
+          borderWidth: '1px',
+          transition: 'all 0.2s ease-in-out',
+        },
+        '&:hover fieldset': {
+          borderColor: '#2563eb',
+          boxShadow: '0 0 0 1px rgba(37, 99, 235, 0.1)',
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#2563eb',
+          borderWidth: '2px',
+          boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
+        },
+        '&.Mui-error fieldset': {
+          borderColor: '#ef4444',
+          '&:hover': {
+            borderColor: '#ef4444',
+          },
+        },
+        '&.Mui-error.Mui-focused fieldset': {
+          borderColor: '#ef4444',
+          boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
+        },
+      },
+      '& .MuiInputLabel-root': {
+        color: '#64748b',
+        fontWeight: 500,
+        fontSize: '0.875rem',
+        '&.Mui-focused': {
+          color: '#2563eb',
+          fontWeight: 600,
+        },
+        '&.Mui-error': {
+          color: '#ef4444',
+        },
+      },
+    },
+    glass: {
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '12px',
+        transition: 'all 0.2s ease-in-out',
+        '& fieldset': {
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          borderWidth: '1px',
+        },
+        '&:hover fieldset': {
+          borderColor: 'rgba(255, 255, 255, 0.5)',
+          boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.2)',
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#2563eb',
+          borderWidth: '2px',
+          boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
+        },
+      },
+      '& .MuiInputLabel-root': {
+        color: '#64748b',
+        fontWeight: 500,
+        '&.Mui-focused': {
+          color: '#2563eb',
+          fontWeight: 600,
+        },
+      },
+    },
+    floating: {
+      '& .MuiInput-root': {
+        backgroundColor: 'transparent',
+        '&:before': {
+          borderBottom: '2px solid #e2e8f0',
+          transition: 'all 0.2s ease-in-out',
+        },
+        '&:hover:before': {
+          borderBottom: '2px solid #2563eb',
+        },
+        '&:after': {
+          borderBottom: '2px solid #2563eb',
+        },
+      },
+      '& .MuiInputLabel-root': {
+        color: '#64748b',
+        fontWeight: 500,
+        '&.Mui-focused': {
+          color: '#2563eb',
+          fontWeight: 600,
+        },
+      },
+    },
+  };
+
+  return {
+    ...variants[customvariant as keyof typeof variants],
+    '& .MuiOutlinedInput-input': {
+      padding: '14px 16px',
+      fontSize: '0.875rem',
+      fontFamily: 'inherit',
+      lineHeight: 1.5,
+    },
+    '& .MuiInput-input': {
+      padding: '14px 0',
+      fontSize: '0.875rem',
+      fontFamily: 'inherit',
+      lineHeight: 1.5,
+    },
+    '& .MuiFormHelperText-root': {
+      fontSize: '0.75rem',
+      marginTop: '6px',
+      marginLeft: '4px',
+      lineHeight: 1.4,
+      '&.Mui-error': {
+        color: '#ef4444',
+        fontWeight: 500,
+      },
+    },
+  };
+});
+
+const Input = React.forwardRef<HTMLDivElement, InputProps>(
   ({ 
-    className, 
-    label, 
-    error, 
-    helperText, 
     variant = 'default',
     icon,
     iconPosition = 'left',
-    type = 'text', 
+    helperText,
+    error,
+    sx,
+    InputProps,
     ...props 
   }, ref) => {
-    const baseStyles = "flex h-12 w-full rounded-xl px-4 py-3 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-    
-    const variants = {
-      default: 'border-2 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500 shadow-sm hover:shadow-md',
-      glass: 'glass border-white/20 text-slate-900 placeholder:text-slate-500 focus:border-white/30 focus:ring-blue-500 shadow-lg',
-      floating: 'border-0 border-b-2 border-slate-200 bg-transparent rounded-none px-0 focus:border-blue-500 focus:ring-0 focus:ring-offset-0',
-    };
+    const startAdornment = icon && iconPosition === 'left' ? (
+      <InputAdornment position="start">
+        {icon}
+      </InputAdornment>
+    ) : undefined;
 
-    const iconStyles = icon ? (iconPosition === 'left' ? 'pl-12' : 'pr-12') : '';
+    const endAdornment = icon && iconPosition === 'right' ? (
+      <InputAdornment position="end">
+        {icon}
+      </InputAdornment>
+    ) : undefined;
 
     return (
-      <div className="w-full space-y-2">
-        {label && variant !== 'floating' && (
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            {label}
-          </label>
-        )}
-        
-        <div className="relative">
-          {icon && iconPosition === 'left' && (
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">
-              {icon}
-            </div>
-          )}
-          
-          <input
-            type={type}
-            className={cn(
-              baseStyles,
-              variants[variant],
-              iconStyles,
-              error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
-              className
-            )}
-            ref={ref}
-            {...props}
-          />
-          
-          {icon && iconPosition === 'right' && (
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400">
-              {icon}
-            </div>
-          )}
-          
-          {variant === 'floating' && label && (
-            <label className={cn(
-              "absolute left-0 top-1/2 transform -translate-y-1/2 text-slate-500 transition-all duration-300 pointer-events-none",
-              "peer-focus:top-0 peer-focus:text-sm peer-focus:text-blue-600",
-              props.value && "top-0 text-sm text-blue-600"
-            )}>
-              {label}
-            </label>
-          )}
-        </div>
-        
-        {error && (
-          <p className="text-sm text-red-600 font-medium animate-pulse">{error}</p>
-        )}
-        {helperText && !error && (
-          <p className="text-sm text-slate-500">{helperText}</p>
-        )}
-      </div>
+      <StyledTextField
+        customvariant={variant}
+        ref={ref}
+        variant={variant === 'floating' ? 'standard' : 'outlined'}
+        error={error}
+        helperText={helperText}
+        InputProps={{
+          startAdornment,
+          endAdornment,
+          ...InputProps,
+        }}
+        sx={{
+          width: '100%',
+          '& .MuiOutlinedInput-root': {
+            minHeight: '48px',
+          },
+          '& .MuiInputBase-input': {
+            padding: '14px 16px',
+          },
+          ...sx,
+        }}
+        {...props}
+      />
     );
   }
 );

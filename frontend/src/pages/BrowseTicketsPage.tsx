@@ -1,67 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Calendar, MapPin, DollarSign, Clock, Ticket, Heart, Grid, List } from 'lucide-react';
-import { listingService } from '../services/listingService';
-import { eventService } from '../services/eventService';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
-import type { Listing } from '../types/listing';
-import type { Event } from '../types/event';
 
 export const BrowseTicketsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedEvent, setSelectedEvent] = useState(searchParams.get('event') || '');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchListings();
-    fetchEvents();
-  }, [searchTerm, selectedEvent, priceRange, sortBy, currentPage]);
+  // Mock data for demonstration
+  const mockEvents = [
+    { id: '1', name: 'Concert at Madison Square Garden' },
+    { id: '2', name: 'NBA Finals Game 7' },
+    { id: '3', name: 'Broadway Show - Hamilton' },
+  ];
 
-  const fetchListings = async () => {
-    try {
-      setLoading(true);
-      const params = {
-        page: currentPage,
-        limit: 12,
-        search: searchTerm || undefined,
-        eventId: selectedEvent || undefined,
-        minPrice: priceRange.min ? parseFloat(priceRange.min) : undefined,
-        maxPrice: priceRange.max ? parseFloat(priceRange.max) : undefined,
-        sortBy: sortBy as 'newest' | 'oldest' | 'priceAsc' | 'priceDesc',
-        status: 'ACTIVE'
-      };
-
-      const response = searchTerm 
-        ? await listingService.searchListings(searchTerm, params)
-        : await listingService.getListings(params);
-      setListings(response.data.items);
-      setTotalPages(response.data.pages);
-    } catch (error) {
-      console.error('Failed to fetch listings:', error);
-    } finally {
-      setLoading(false);
+  const mockListings = [
+    {
+      id: '1',
+      event: {
+        id: '1',
+        name: 'Concert at Madison Square Garden',
+        date: '2024-02-15T19:00:00Z',
+        venue: 'Madison Square Garden',
+        imageUrl: 'https://via.placeholder.com/400x300?text=Concert'
+      },
+      section: { name: 'Floor' },
+      row: 'A',
+      seatNumbers: '1,2',
+      quantity: 2,
+      pricePerTicket: 150,
+      createdAt: '2024-01-10T10:00:00Z'
+    },
+    {
+      id: '2',
+      event: {
+        id: '2',
+        name: 'NBA Finals Game 7',
+        date: '2024-03-20T20:00:00Z',
+        venue: 'Staples Center',
+        imageUrl: 'https://via.placeholder.com/400x300?text=NBA'
+      },
+      section: { name: 'Lower Bowl' },
+      row: 'B',
+      seatNumbers: '5,6',
+      quantity: 2,
+      pricePerTicket: 300,
+      createdAt: '2024-01-11T10:00:00Z'
+    },
+    {
+      id: '3',
+      event: {
+        id: '3',
+        name: 'Broadway Show - Hamilton',
+        date: '2024-02-28T19:30:00Z',
+        venue: 'Richard Rodgers Theatre',
+        imageUrl: 'https://via.placeholder.com/400x300?text=Broadway'
+      },
+      section: { name: 'Orchestra' },
+      row: 'C',
+      seatNumbers: '10,11',
+      quantity: 2,
+      pricePerTicket: 200,
+      createdAt: '2024-01-12T10:00:00Z'
     }
-  };
+  ];
 
-  const fetchEvents = async () => {
-    try {
-      const response = await eventService.getEvents({ limit: 50 });
-      setEvents(response.data?.items || []);
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
-      setEvents([]);
+  const filteredListings = mockListings.filter(listing => {
+    if (searchTerm && !listing.event.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
     }
-  };
+    if (selectedEvent && listing.event.id !== selectedEvent) {
+      return false;
+    }
+    if (priceRange.min && listing.pricePerTicket < parseFloat(priceRange.min)) {
+      return false;
+    }
+    if (priceRange.max && listing.pricePerTicket > parseFloat(priceRange.max)) {
+      return false;
+    }
+    return true;
+  });
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +173,7 @@ export const BrowseTicketsPage: React.FC = () => {
                     className="w-full px-4 py-2 glass rounded-xl border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">All Events</option>
-                    {(events || []).map((event) => (
+                    {mockEvents.map((event) => (
                       <option key={event.id} value={event.id}>
                         {event.name}
                       </option>
@@ -238,7 +264,7 @@ export const BrowseTicketsPage: React.FC = () => {
               </Card>
             ))}
           </div>
-        ) : listings.length === 0 ? (
+        ) : filteredListings.length === 0 ? (
           <Card variant="glass" className="text-center py-12">
             <CardContent>
               <Ticket className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -254,7 +280,7 @@ export const BrowseTicketsPage: React.FC = () => {
                 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
                 : 'grid-cols-1'
             }`}>
-              {listings.map((listing) => (
+              {filteredListings.map((listing) => (
                 <Card key={listing.id} variant="glass" className="group hover:shadow-2xl transition-all duration-300">
                   {listing.event.imageUrl && (
                     <div className="aspect-video relative overflow-hidden rounded-t-2xl">
@@ -321,39 +347,11 @@ export const BrowseTicketsPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-2">
-                <Button
-                  variant="outline"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                >
-                  Previous
-                </Button>
-                
-                {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                  const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={currentPage === pageNum ? 'primary' : 'outline'}
-                      onClick={() => setCurrentPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-                
-                <Button
-                  variant="outline"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
+            {/* Results Info */}
+            <div className="text-center text-gray-600 mt-8">
+              <p>Showing {filteredListings.length} of {mockListings.length} available tickets</p>
+              <p className="text-sm mt-1">This is a demo version with sample data</p>
+            </div>
           </>
         )}
       </div>

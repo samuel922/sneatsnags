@@ -48,8 +48,8 @@ export interface CreateListingRequest {
   eventId: string;
   sectionId: string;
   row?: string;
-  seats: string[];
-  price: number;
+  seatNumbers?: string;
+  pricePerTicket: number;
   quantity: number;
   notes?: string;
   ticketFiles?: string[];

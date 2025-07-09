@@ -1,63 +1,170 @@
 import React from 'react';
-import { cn } from '../../utils/cn';
+import { Button as MuiButton, CircularProgress } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import type { ButtonProps as MuiButtonProps } from '@mui/material/Button';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<MuiButtonProps, 'variant' | 'size'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'gradient' | 'glass';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   isLoading?: boolean;
   animated?: boolean;
 }
 
+const StyledButton = styled(MuiButton)<{ customvariant: string; customsize: string }>(({ theme, customvariant, customsize }) => {
+  const variants = {
+    primary: {
+      background: 'linear-gradient(45deg, #2563eb 30%, #3b82f6 90%)',
+      color: 'white',
+      border: 'none',
+      '&:hover': {
+        background: 'linear-gradient(45deg, #1d4ed8 30%, #2563eb 90%)',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
+      },
+    },
+    secondary: {
+      background: '#f8fafc',
+      color: '#334155',
+      border: '1px solid #e2e8f0',
+      '&:hover': {
+        background: '#f1f5f9',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      },
+    },
+    outline: {
+      border: '2px solid #2563eb',
+      color: '#2563eb',
+      background: 'transparent',
+      '&:hover': {
+        background: '#2563eb',
+        color: 'white',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
+      },
+    },
+    ghost: {
+      color: '#475569',
+      background: 'transparent',
+      border: 'none',
+      '&:hover': {
+        background: '#f1f5f9',
+        color: '#334155',
+        transform: 'translateY(-1px)',
+      },
+    },
+    destructive: {
+      background: 'linear-gradient(45deg, #ef4444 30%, #dc2626 90%)',
+      color: 'white',
+      border: 'none',
+      '&:hover': {
+        background: 'linear-gradient(45deg, #dc2626 30%, #b91c1c 90%)',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+      },
+    },
+    gradient: {
+      background: 'linear-gradient(45deg, #7c3aed 30%, #a855f7 50%, #2563eb 90%)',
+      color: 'white',
+      border: 'none',
+      '&:hover': {
+        background: 'linear-gradient(45deg, #6d28d9 30%, #9333ea 50%, #1d4ed8 90%)',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+      },
+    },
+    glass: {
+      background: 'rgba(255, 255, 255, 0.25)',
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      color: '#334155',
+      '&:hover': {
+        background: 'rgba(255, 255, 255, 0.35)',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      },
+    },
+  };
+
+  const sizes = {
+    xs: {
+      padding: '4px 12px',
+      fontSize: '0.75rem',
+      minHeight: '28px',
+      lineHeight: 1.2,
+    },
+    sm: {
+      padding: '6px 16px',
+      fontSize: '0.875rem',
+      minHeight: '36px',
+      lineHeight: 1.3,
+    },
+    md: {
+      padding: '10px 20px',
+      fontSize: '0.875rem',
+      minHeight: '44px',
+      lineHeight: 1.4,
+    },
+    lg: {
+      padding: '12px 28px',
+      fontSize: '1rem',
+      minHeight: '52px',
+      lineHeight: 1.5,
+    },
+    xl: {
+      padding: '16px 36px',
+      fontSize: '1.125rem',
+      minHeight: '60px',
+      lineHeight: 1.5,
+    },
+  };
+
+  return {
+    ...variants[customvariant as keyof typeof variants],
+    ...sizes[customsize as keyof typeof sizes],
+    borderRadius: '12px',
+    fontWeight: 600,
+    textTransform: 'none' as const,
+    transition: 'all 0.2s ease-in-out',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    '&:disabled': {
+      opacity: 0.6,
+      cursor: 'not-allowed',
+      transform: 'none',
+      background: '#f1f5f9',
+      color: '#94a3b8',
+      border: '1px solid #e2e8f0',
+    },
+  };
+});
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ 
-    className, 
     variant = 'primary', 
     size = 'md', 
     isLoading, 
-    animated = true,
     children, 
     disabled, 
+    sx,
     ...props 
   }, ref) => {
-    const variants = {
-      primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-105 focus:ring-blue-500 border-0',
-      secondary: 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-900 shadow-md hover:shadow-lg hover:scale-105 focus:ring-slate-500 border border-slate-200',
-      outline: 'border-2 border-blue-600 bg-transparent text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-105 focus:ring-blue-500 shadow-md hover:shadow-lg',
-      ghost: 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-500 hover:scale-105',
-      destructive: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg hover:shadow-xl hover:scale-105 focus:ring-red-500 border-0',
-      gradient: 'bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 focus:ring-purple-500 border-0 btn-shine',
-      glass: 'glass text-slate-900 shadow-lg hover:shadow-xl hover:scale-105 focus:ring-blue-500 border-0',
-    };
-
-    const sizes = {
-      xs: 'px-2.5 py-1.5 text-xs rounded-md',
-      sm: 'px-3 py-2 text-sm rounded-lg',
-      md: 'px-4 py-2.5 text-sm rounded-lg',
-      lg: 'px-6 py-3 text-base rounded-xl',
-      xl: 'px-8 py-4 text-lg rounded-xl',
-    };
-
     return (
-      <button
-        className={cn(
-          'inline-flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed',
-          animated && 'transform',
-          variants[variant],
-          sizes[size],
-          className
-        )}
+      <StyledButton
+        customvariant={variant}
+        customsize={size}
         disabled={disabled || isLoading}
         ref={ref}
+        sx={sx}
         {...props}
       >
         {isLoading && (
-          <div className="flex items-center">
-            <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            <span>Loading...</span>
-          </div>
+          <>
+            <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+            Loading...
+          </>
         )}
         {!isLoading && children}
-      </button>
+      </StyledButton>
     );
   }
 );

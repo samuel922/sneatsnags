@@ -1,31 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, Ticket, Search, ChevronDown } from 'lucide-react';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button as MuiButton, 
+  IconButton, 
+  Menu as MuiMenu, 
+  MenuItem, 
+  Box, 
+  Container,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
+  Avatar,
+  Divider,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { 
+  Menu as MenuIcon, 
+  Close as CloseIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  Settings as SettingsIcon,
+  ConfirmationNumber as TicketIcon,
+  Search as SearchIcon,
+  ExpandMore as ExpandMoreIcon,
+  Dashboard as DashboardIcon,
+  Event as EventIcon,
+  LocalOffer as OfferIcon
+} from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
 import { NotificationDropdown } from '../notifications/NotificationDropdown';
 import { UserRole } from '../../types/auth';
 
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(10px)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  color: theme.palette.text.primary,
+  transition: 'all 0.3s ease-in-out',
+  minHeight: '64px',
+  [theme.breakpoints.up('sm')]: {
+    minHeight: '70px',
+  },
+}));
+
+const LogoText = styled(Typography)(({ theme }) => ({
+  fontWeight: 700,
+  fontSize: '1.5rem',
+  background: 'linear-gradient(45deg, #2563eb, #7c3aed)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  textDecoration: 'none',
+  cursor: 'pointer',
+}));
+
 export const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-
-  // Close profile dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (isProfileOpen && !target.closest('.profile-dropdown')) {
-        setIsProfileOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isProfileOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,290 +82,276 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/');
-    setIsProfileOpen(false);
+    handleProfileMenuClose();
   };
 
   const navigation = [
-    { name: 'Events', href: '/events', icon: '🎪' },
-    { name: 'Browse Tickets', href: '/listings', icon: '🎫' },
-    { name: 'Browse Offers', href: '/offers', icon: '💰' },
+    { name: 'Events', href: '/events', icon: <EventIcon /> },
+    { name: 'Browse Tickets', href: '/listings', icon: <TicketIcon /> },
+    { name: 'Browse Offers', href: '/offers', icon: <OfferIcon /> },
   ];
 
-  const userNavigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: User },
-    { name: 'Profile', href: '/profile', icon: Settings },
-  ];
+  const getUserNavigation = () => {
+    if (!user) return [];
+    
+    const baseNav = [
+      { name: 'Profile', href: '/profile', icon: <PersonIcon /> },
+    ];
 
-  if (user?.role === UserRole.BUYER) {
-    userNavigation.splice(1, 0, 
-      { name: 'Buyer Dashboard', href: '/buyer/dashboard', icon: User },
-      { name: 'My Offers', href: '/my-offers', icon: Ticket },
-      { name: 'Search Tickets', href: '/tickets/search', icon: Search },
-      { name: 'Transactions', href: '/buyer/transactions', icon: Settings }
-    );
-  }
+    if (user.role === UserRole.BUYER) {
+      baseNav.unshift(
+        { name: 'Buyer Dashboard', href: '/buyer/dashboard', icon: <DashboardIcon /> }
+      );
+      baseNav.push(
+        { name: 'My Offers', href: '/my-offers', icon: <OfferIcon /> },
+        { name: 'Search Tickets', href: '/tickets/search', icon: <SearchIcon /> }
+      );
+    }
 
-  if (user?.role === UserRole.SELLER) {
-    userNavigation.splice(1, 0,
-      { name: 'Seller Dashboard', href: '/seller/dashboard', icon: User },
-      { name: 'My Listings', href: '/my-listings', icon: Ticket },
-      { name: 'Browse Offers', href: '/seller/offers', icon: Search },
-      { name: 'Transactions', href: '/seller/transactions', icon: Settings }
-    );
-  }
+    if (user.role === UserRole.SELLER) {
+      baseNav.unshift(
+        { name: 'Seller Dashboard', href: '/seller/dashboard', icon: <DashboardIcon /> }
+      );
+      baseNav.push(
+        { name: 'My Listings', href: '/my-listings', icon: <TicketIcon /> },
+        { name: 'Browse Offers', href: '/seller/offers', icon: <OfferIcon /> }
+      );
+    }
 
-  if (user?.role === UserRole.ADMIN) {
-    userNavigation.splice(1, 0,
-      { name: 'Admin Dashboard', href: '/admin/dashboard', icon: User },
-      { name: 'Users Management', href: '/admin/users', icon: Settings }
-    );
-  }
+    if (user.role === UserRole.ADMIN) {
+      baseNav.unshift(
+        { name: 'Admin Dashboard', href: '/admin/dashboard', icon: <DashboardIcon /> }
+      );
+      baseNav.push(
+        { name: 'Admin Panel', href: '/admin/dashboard', icon: <SettingsIcon /> }
+      );
+    }
 
-  const isActivePath = (path: string) => location.pathname === path;
+    return baseNav;
+  };
 
-  return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'glass border-b border-white/20 shadow-xl' 
-        : 'bg-transparent'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 lg:h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center group">
-            <div className="relative">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <Ticket className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
-              </div>
-            </div>
-            <div className="ml-3">
-              <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                SneatSnags
-              </span>
-              <div className="text-xs text-gray-500 -mt-1 hidden lg:block">Tickets</div>
-            </div>
-          </Link>
+  const renderDesktopNav = () => (
+    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+      {navigation.map((item) => (
+        <MuiButton
+          key={item.name}
+          component={Link}
+          to={item.href}
+          startIcon={item.icon}
+          sx={{
+            color: 'text.primary',
+            textTransform: 'none',
+            fontWeight: 500,
+            '&:hover': {
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            },
+          }}
+        >
+          {item.name}
+        </MuiButton>
+      ))}
+    </Box>
+  );
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  isActivePath(item.href)
-                    ? 'bg-blue-100/80 text-blue-700 shadow-md'
-                    : 'text-gray-700 hover:bg-white/50 hover:text-blue-600'
-                }`}
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.name}</span>
-              </Link>
-            ))}
-          </nav>
-
-          {/* Right side - Auth & User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Search Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden lg:flex"
-              onClick={() => navigate('/events')}
+  const renderMobileNav = () => (
+    <Drawer
+      anchor="left"
+      open={isMenuOpen}
+      onClose={() => setIsMenuOpen(false)}
+      sx={{
+        '& .MuiDrawer-paper': {
+          width: 280,
+          boxSizing: 'border-box',
+        },
+      }}
+    >
+      <Box sx={{ p: 2 }}>
+        <LogoText>SneatSnags</LogoText>
+      </Box>
+      <Divider />
+      <List>
+        {navigation.map((item) => (
+          <ListItem key={item.name} disablePadding>
+            <ListItemButton
+              component={Link}
+              to={item.href}
+              onClick={() => setIsMenuOpen(false)}
             >
-              <Search className="h-4 w-4" />
-            </Button>
-
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-3">
-                {/* Notifications */}
-                <NotificationDropdown />
-
-                {/* User Menu */}
-                <div className="relative profile-dropdown">
-                  <button
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/50 transition-all duration-300 group"
-                  >
-                    <div className="relative">
-                      <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
-                        <span className="text-white font-semibold text-sm lg:text-base">
-                          {user?.firstName?.[0]}{user?.lastName?.[0]}
-                        </span>
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                    </div>
-                    <div className="hidden lg:block text-left">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {user?.firstName} {user?.lastName}
-                      </div>
-                      <div className="text-xs text-gray-500 capitalize">
-                        {user?.role.toLowerCase()}
-                      </div>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-64 glass rounded-2xl shadow-2xl border border-white/20 py-2 z-50 animate-scale-in">
-                      <div className="px-4 py-3 border-b border-white/20">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                            <span className="text-white font-semibold">
-                              {user?.firstName?.[0]}{user?.lastName?.[0]}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {user?.firstName} {user?.lastName}
-                            </div>
-                            <div className="text-sm text-gray-500">{user?.email}</div>
-                            <div className="text-xs text-blue-600 capitalize font-medium">
-                              {user?.role.toLowerCase()} account
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="py-2">
-                        {userNavigation.map((item) => {
-                          const Icon = item.icon;
-                          return (
-                            <Link
-                              key={item.name}
-                              to={item.href}
-                              className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-white/50 transition-colors"
-                              onClick={() => setIsProfileOpen(false)}
-                            >
-                              <Icon className="h-4 w-4 mr-3 text-gray-500" />
-                              {item.name}
-                            </Link>
-                          );
-                        })}
-                      </div>
-
-                      <div className="border-t border-white/20 py-2">
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50/50 transition-colors"
-                        >
-                          <LogOut className="h-4 w-4 mr-3" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <Link to="/login">
-                  <Button variant="ghost" size="sm" className="hidden sm:flex">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button variant="primary" size="sm" className="shadow-lg hover:shadow-xl">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-white/50 transition-all duration-300"
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden glass rounded-2xl mt-2 mb-4 shadow-2xl border border-white/20 animate-scale-in">
-            <div className="px-4 py-6 space-y-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      {isAuthenticated && (
+        <>
+          <Divider />
+          <List>
+            {getUserNavigation().map((item) => (
+              <ListItem key={item.name} disablePadding>
+                <ListItemButton
+                  component={Link}
                   to={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-300 ${
-                    isActivePath(item.href)
-                      ? 'bg-blue-100/80 text-blue-700'
-                      : 'text-gray-700 hover:bg-white/50'
-                  }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <span className="text-xl">{item.icon}</span>
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-              
-              {isAuthenticated && (
-                <div className="border-t border-white/20 pt-4 mt-4 space-y-3">
-                  <div className="px-4 py-3 text-sm font-medium text-gray-500">Account</div>
-                  {userNavigation.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-white/50 transition-all duration-300"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Icon className="h-5 w-5 text-gray-500" />
-                        <span>{item.name}</span>
-                      </Link>
-                    );
-                  })}
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </>
+      )}
+    </Drawer>
+  );
+
+  const renderUserMenu = () => (
+    <MuiMenu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={handleProfileMenuClose}
+      PaperProps={{
+        sx: {
+          mt: 1,
+          minWidth: 200,
+          borderRadius: 2,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        },
+      }}
+    >
+      <Box sx={{ px: 2, py: 1 }}>
+        <Typography variant="subtitle2" color="text.secondary">
+          {user?.firstName} {user?.lastName}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {user?.email}
+        </Typography>
+      </Box>
+      <Divider />
+      {getUserNavigation().map((item) => (
+        <MenuItem
+          key={item.name}
+          component={Link}
+          to={item.href}
+          onClick={handleProfileMenuClose}
+        >
+          <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItemText primary={item.name} />
+        </MenuItem>
+      ))}
+      <Divider />
+      <MenuItem onClick={handleLogout}>
+        <ListItemIcon>
+          <LogoutIcon />
+        </ListItemIcon>
+        <ListItemText primary="Logout" />
+      </MenuItem>
+    </MuiMenu>
+  );
+
+  return (
+    <>
+      <StyledAppBar 
+        position="fixed" 
+        sx={{ 
+          background: isScrolled 
+            ? 'rgba(255, 255, 255, 0.95)' 
+            : 'rgba(255, 255, 255, 0.9)',
+        }}
+      >
+        <Container maxWidth="xl">
+          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+            {/* Logo */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {isMobile && (
+                <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={() => setIsMenuOpen(true)}
+                  sx={{ mr: 2 }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+              <LogoText
+                component={Link}
+                to="/"
+                sx={{ textDecoration: 'none' }}
+              >
+                SneatSnags
+              </LogoText>
+            </Box>
+
+            {/* Desktop Navigation */}
+            {renderDesktopNav()}
+
+            {/* Right side - Auth buttons or user menu */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {isAuthenticated ? (
+                <>
+                  <NotificationDropdown />
+                  <IconButton
+                    onClick={handleProfileMenuOpen}
+                    sx={{ 
+                      border: '2px solid',
+                      borderColor: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                      },
                     }}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/50 transition-all duration-300 w-full"
                   >
-                    <LogOut className="h-5 w-5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              )}
-              
-              {!isAuthenticated && (
-                <div className="border-t border-white/20 pt-4 mt-4 space-y-3">
-                  <Link
+                    <Avatar 
+                      sx={{ 
+                        width: 32, 
+                        height: 32,
+                        bgcolor: 'primary.main',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                    </Avatar>
+                  </IconButton>
+                  {renderUserMenu()}
+                </>
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    component={Link}
                     to="/login"
-                    className="block w-full"
-                    onClick={() => setIsMenuOpen(false)}
+                    variant="ghost"
+                    size="sm"
                   >
-                    <Button variant="ghost" className="w-full">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link
+                    Login
+                  </Button>
+                  <Button
+                    component={Link}
                     to="/register"
-                    className="block w-full"
-                    onClick={() => setIsMenuOpen(false)}
+                    variant="primary"
+                    size="sm"
                   >
-                    <Button variant="primary" className="w-full">
-                      Sign Up
-                    </Button>
-                  </Link>
-                </div>
+                    Sign Up
+                  </Button>
+                </Box>
               )}
-            </div>
-          </div>
-        )}
-      </div>
-    </header>
+            </Box>
+          </Toolbar>
+        </Container>
+      </StyledAppBar>
+
+      {/* Mobile Navigation Drawer */}
+      {renderMobileNav()}
+    </>
   );
 };

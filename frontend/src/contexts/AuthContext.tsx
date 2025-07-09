@@ -7,14 +7,14 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (userData: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
     role: UserRole;
-  }) => Promise<void>;
+  }) => Promise<User>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
   hasRole: (role: UserRole) => boolean;
@@ -61,11 +61,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
       const response = await authService.login({ email, password });
       setUser(response.user);
+      return response.user;
     } catch (error) {
       throw error;
     } finally {
@@ -79,11 +80,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     firstName: string;
     lastName: string;
     role: UserRole;
-  }) => {
+  }): Promise<User> => {
     setIsLoading(true);
     try {
       const response = await authService.register(userData);
       setUser(response.user);
+      return response.user;
     } catch (error) {
       throw error;
     } finally {

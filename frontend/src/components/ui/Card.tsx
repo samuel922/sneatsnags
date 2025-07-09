@@ -1,58 +1,126 @@
 import React from 'react';
-import { cn } from '../../utils/cn';
+import { Card as MuiCard, CardContent as MuiCardContent, CardActions as MuiCardActions } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import type { CardProps as MuiCardProps } from '@mui/material/Card';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends MuiCardProps {
   variant?: 'default' | 'glass' | 'gradient' | 'elevated' | 'bordered' | 'interactive';
   hover?: boolean;
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
-interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface CardContentProps extends React.ComponentProps<typeof MuiCardContent> {}
+interface CardFooterProps extends React.ComponentProps<typeof MuiCardActions> {}
+
+const StyledCard = styled(MuiCard)<{ customvariant: string; customhover: boolean; custompadding: string }>(({ theme, customvariant, customhover, custompadding }) => {
+  const variants = {
+    default: {
+      backgroundColor: '#ffffff',
+      border: '1px solid #e2e8f0',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    },
+    glass: {
+      backgroundColor: 'rgba(255, 255, 255, 0.25)',
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+    gradient: {
+      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+      border: '1px solid #e2e8f0',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    },
+    elevated: {
+      backgroundColor: '#ffffff',
+      border: 'none',
+      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+    },
+    bordered: {
+      backgroundColor: '#ffffff',
+      border: '2px solid #e2e8f0',
+      boxShadow: 'none',
+    },
+    interactive: {
+      backgroundColor: '#ffffff',
+      border: '1px solid #e2e8f0',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      cursor: 'pointer',
+      '&:hover': {
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+        transform: 'translateY(-2px)',
+      },
+    },
+  };
+
+  const paddings = {
+    none: { 
+      '& .MuiCardContent-root': { padding: 0 },
+      '& .MuiCardContent-root:last-child': { paddingBottom: 0 },
+    },
+    sm: { 
+      '& .MuiCardContent-root': { padding: '16px' },
+      '& .MuiCardContent-root:last-child': { paddingBottom: '16px' },
+    },
+    md: { 
+      '& .MuiCardContent-root': { padding: '24px' },
+      '& .MuiCardContent-root:last-child': { paddingBottom: '24px' },
+    },
+    lg: { 
+      '& .MuiCardContent-root': { padding: '32px' },
+      '& .MuiCardContent-root:last-child': { paddingBottom: '32px' },
+    },
+    xl: { 
+      '& .MuiCardContent-root': { padding: '40px' },
+      '& .MuiCardContent-root:last-child': { paddingBottom: '40px' },
+    },
+  };
+
+  const hoverStyles = customhover ? {
+    '&:hover': {
+      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+      transform: 'translateY(-2px)',
+    },
+  } : {};
+
+  return {
+    ...variants[customvariant as keyof typeof variants],
+    ...paddings[custompadding as keyof typeof paddings],
+    borderRadius: '16px',
+    transition: 'all 0.3s ease-in-out',
+    overflow: 'hidden',
+    ...hoverStyles,
+  };
+});
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', hover = false, padding = 'md', children, ...props }, ref) => {
-    const variants = {
-      default: 'bg-white border border-slate-200 shadow-sm',
-      glass: 'glass shadow-xl border-white/20',
-      gradient: 'bg-gradient-to-br from-white to-slate-50 border border-slate-200 shadow-lg',
-      elevated: 'bg-white shadow-2xl border-0',
-      bordered: 'bg-white border-2 border-slate-200 shadow-none',
-      interactive: 'bg-white border border-slate-200 shadow-md hover:shadow-xl cursor-pointer',
-    };
-
-    const paddings = {
-      none: '',
-      sm: 'p-4',
-      md: 'p-6',
-      lg: 'p-8',
-      xl: 'p-10',
-    };
-
+  ({ variant = 'default', hover = false, padding = 'md', children, sx, ...props }, ref) => {
     return (
-      <div
+      <StyledCard
+        customvariant={variant}
+        customhover={hover}
+        custompadding={padding}
         ref={ref}
-        className={cn(
-          'rounded-2xl transition-all duration-300',
-          variants[variant],
-          paddings[padding],
-          hover && 'hover-lift',
-          className
-        )}
+        sx={sx}
         {...props}
       >
         {children}
-      </div>
+      </StyledCard>
     );
   }
 );
 
 const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ className, children, ...props }, ref) => (
+  ({ className, children, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 pb-6', className)}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+        paddingBottom: '24px',
+        ...style,
+      }}
       {...props}
     >
       {children}
@@ -61,22 +129,28 @@ const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 );
 
 const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
-  ({ className, children, ...props }, ref) => (
-    <div ref={ref} className={cn('', className)} {...props}>
+  ({ children, ...props }, ref) => (
+    <MuiCardContent ref={ref} {...props}>
       {children}
-    </div>
+    </MuiCardContent>
   )
 );
 
 const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
-  ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex items-center pt-6', className)}
+  ({ children, ...props }, ref) => (
+    <MuiCardActions 
+      ref={ref} 
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        paddingTop: '24px',
+        paddingX: '24px',
+        paddingBottom: '24px',
+      }} 
       {...props}
     >
       {children}
-    </div>
+    </MuiCardActions>
   )
 );
 
