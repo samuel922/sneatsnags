@@ -1,17 +1,52 @@
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { sellerService } from '../../services/sellerService';
 
 export const SellerDashboard = () => {
   const { user } = useAuth();
-  
-  // Mock stats for demonstration
-  const stats = {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
     totalListings: 0,
     activeListings: 0,
     soldListings: 0,
     totalRevenue: 0,
+  });
+
+  useEffect(() => {
+    fetchSellerStats();
+  }, []);
+
+  const fetchSellerStats = async () => {
+    try {
+      setLoading(true);
+      const [listingsResponse, transactionsResponse] = await Promise.all([
+        sellerService.getListings(),
+        sellerService.getTransactions()
+      ]);
+      
+      const listings = listingsResponse.data || [];
+      const transactions = transactionsResponse.data || [];
+      
+      const activeListings = listings.filter(listing => listing.status === 'ACTIVE').length;
+      const soldListings = listings.filter(listing => listing.status === 'SOLD').length;
+      const totalRevenue = transactions
+        .filter(transaction => transaction.status === 'COMPLETED')
+        .reduce((sum, transaction) => sum + transaction.amount, 0);
+      
+      setStats({
+        totalListings: listings.length,
+        activeListings,
+        soldListings,
+        totalRevenue,
+      });
+    } catch (error) {
+      console.error('Failed to fetch seller stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,7 +66,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Total Listings</h3>
             <p className="text-3xl font-bold text-blue-600 mt-2">
-              {stats.totalListings}
+              {loading ? '...' : stats.totalListings}
             </p>
           </div>
         </Card>
@@ -40,7 +75,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Active Listings</h3>
             <p className="text-3xl font-bold text-green-600 mt-2">
-              {stats.activeListings}
+              {loading ? '...' : stats.activeListings}
             </p>
           </div>
         </Card>
@@ -49,7 +84,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Sold Listings</h3>
             <p className="text-3xl font-bold text-purple-600 mt-2">
-              {stats.soldListings}
+              {loading ? '...' : stats.soldListings}
             </p>
           </div>
         </Card>
@@ -58,7 +93,7 @@ export const SellerDashboard = () => {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Total Revenue</h3>
             <p className="text-3xl font-bold text-emerald-600 mt-2">
-              ${Number(stats.totalRevenue).toFixed(2)}
+              {loading ? '...' : `$${Number(stats.totalRevenue).toFixed(2)}`}
             </p>
           </div>
         </Card>
@@ -193,10 +228,6 @@ export const SellerDashboard = () => {
         </div>
       </Card>
 
-      {/* Demo Notice */}
-      <div className="text-center text-gray-600 mt-8">
-        <p className="text-sm">This is a demo version with sample data</p>
-      </div>
     </div>
   );
 };

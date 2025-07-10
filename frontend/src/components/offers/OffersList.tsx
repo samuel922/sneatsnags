@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { offerService } from '../../services/offerService';
+import { buyerService } from '../../services/buyerService';
 import type { Offer } from '../../types/offer';
 
 interface OffersListProps {
@@ -24,7 +25,8 @@ export const OffersList: React.FC<OffersListProps> = ({
         let offersData: Offer[] = [];
         
         if (showUserOffersOnly) {
-          offersData = await offerService.getMyOffers();
+          const result = await buyerService.getMyOffers();
+          offersData = result.data;
         } else if (eventId) {
           const result = await offerService.getOffersByEvent(eventId, { limit });
           offersData = result.offers;
@@ -46,7 +48,7 @@ export const OffersList: React.FC<OffersListProps> = ({
 
   const handleCancelOffer = async (offerId: string) => {
     try {
-      await offerService.cancelOffer(offerId);
+      await buyerService.cancelOffer(offerId);
       setOffers(offers.map(offer => 
         offer.id === offerId 
           ? { ...offer, status: 'CANCELLED' as const }

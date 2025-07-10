@@ -1,10 +1,47 @@
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { buyerService } from '../../services/buyerService';
 
 export const BuyerDashboard = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activeOffers: 0,
+    acceptedOffers: 0,
+    totalOffers: 0,
+  });
+
+  useEffect(() => {
+    fetchBuyerStats();
+  }, []);
+
+  const fetchBuyerStats = async () => {
+    try {
+      setLoading(true);
+      const [offersResponse, transactionsResponse] = await Promise.all([
+        buyerService.getMyOffers(),
+        buyerService.getTransactions()
+      ]);
+      
+      const offers = offersResponse.data || [];
+      const activeOffers = offers.filter(offer => offer.status === 'PENDING').length;
+      const acceptedOffers = offers.filter(offer => offer.status === 'ACCEPTED').length;
+      const totalOffers = offers.length;
+      
+      setStats({
+        activeOffers,
+        acceptedOffers,
+        totalOffers,
+      });
+    } catch (error) {
+      console.error('Failed to fetch buyer stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -22,21 +59,27 @@ export const BuyerDashboard = () => {
         <Card>
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Active Offers</h3>
-            <p className="text-3xl font-bold text-blue-600 mt-2">0</p>
+            <p className="text-3xl font-bold text-blue-600 mt-2">
+              {loading ? '...' : stats.activeOffers}
+            </p>
           </div>
         </Card>
 
         <Card>
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Accepted Offers</h3>
-            <p className="text-3xl font-bold text-green-600 mt-2">0</p>
+            <p className="text-3xl font-bold text-green-600 mt-2">
+              {loading ? '...' : stats.acceptedOffers}
+            </p>
           </div>
         </Card>
 
         <Card>
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-700">Total Offers</h3>
-            <p className="text-3xl font-bold text-gray-600 mt-2">0</p>
+            <p className="text-3xl font-bold text-gray-600 mt-2">
+              {loading ? '...' : stats.totalOffers}
+            </p>
           </div>
         </Card>
       </div>
@@ -67,8 +110,8 @@ export const BuyerDashboard = () => {
                 <h3 className="font-medium">Search Tickets</h3>
                 <p className="text-sm text-gray-600">Find tickets that match your criteria</p>
               </div>
-              <Link to="/tickets/search" className="ml-auto">
-                <Button size="sm">Search Tickets</Button>
+              <Link to="/listings" className="ml-auto">
+                <Button size="sm">Browse Tickets</Button>
               </Link>
             </div>
 
@@ -80,8 +123,8 @@ export const BuyerDashboard = () => {
                 <h3 className="font-medium">Make Offers</h3>
                 <p className="text-sm text-gray-600">Submit offers on tickets you want to buy</p>
               </div>
-              <Link to="/listings" className="ml-auto">
-                <Button size="sm">Browse Listings</Button>
+              <Link to="/offers" className="ml-auto">
+                <Button size="sm">Browse Offers</Button>
               </Link>
             </div>
           </div>
@@ -93,8 +136,8 @@ export const BuyerDashboard = () => {
         <div className="p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link to="/tickets/search">
-              <Button className="w-full">Search Tickets</Button>
+            <Link to="/listings">
+              <Button className="w-full">Browse Tickets</Button>
             </Link>
             <Link to="/my-offers">
               <Button variant="outline" className="w-full">View My Offers</Button>

@@ -9,6 +9,14 @@ export const listingService = {
     return response.data!;
   },
 
+  async getListingsSilent(params?: QueryParams & ListingFilters): Promise<PaginatedResponse<Listing>> {
+    const response = await apiClient.getSilent<any>('/listings', params);
+    return {
+      data: response.data?.data || [],
+      pagination: response.data?.pagination
+    };
+  },
+
   async getListing(id: string): Promise<Listing> {
     const response = await apiClient.get<Listing>(`/listings/${id}`);
     return response.data!;
@@ -83,8 +91,11 @@ export const listingService = {
 
   // Seller-specific routes
   async getSellerListings(params?: QueryParams): Promise<PaginatedResponse<Listing>> {
-    const response = await apiClient.get<PaginatedResponse<Listing>>('/sellers/listings', params);
-    return response.data!;
+    const response = await apiClient.get<any>('/sellers/listings', params);
+    return {
+      data: response.data?.data || [],
+      pagination: response.data?.pagination
+    };
   },
 
   async createSellerListing(listingData: CreateListingRequest): Promise<Listing> {

@@ -5,8 +5,11 @@ import type { PaginatedResponse, QueryParams } from '../types/api';
 export const transactionService = {
   // User transaction methods
   async getMyTransactions(params?: QueryParams & TransactionFilters): Promise<PaginatedResponse<Transaction>> {
-    const response = await apiClient.get<PaginatedResponse<Transaction>>('/transactions/my-transactions', params);
-    return response.data!;
+    const response = await apiClient.get<any>('/transactions/my-transactions', params);
+    return {
+      data: response.data?.data || [],
+      pagination: response.data?.pagination
+    };
   },
 
   async getTransaction(id: string): Promise<Transaction> {
@@ -87,8 +90,11 @@ export const transactionService = {
 
   // Seller methods
   async getSellerTransactions(params?: QueryParams): Promise<PaginatedResponse<Transaction>> {
-    const response = await apiClient.get<PaginatedResponse<Transaction>>('/sellers/transactions', params);
-    return response.data!;
+    const response = await apiClient.get<any>('/sellers/transactions', params);
+    return {
+      data: response.data?.data || [],
+      pagination: response.data?.pagination
+    };
   },
 
   async markTicketsDelivered(id: string): Promise<Transaction> {

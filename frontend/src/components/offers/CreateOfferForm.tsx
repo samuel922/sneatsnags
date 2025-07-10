@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { buyerService } from '../../services/buyerService';
 import { offerService } from '../../services/offerService';
 import { useAuth } from '../../hooks/useAuth';
 import type { PriceSuggestion } from '../../types/offer';
@@ -110,7 +111,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({
         expiresAt: expirationDate.toISOString()
       };
 
-      const newOffer = await offerService.createOffer(offerData);
+      const newOffer = await buyerService.createOffer(offerData);
       
       if (onSuccess) {
         onSuccess(newOffer);

@@ -11,34 +11,46 @@ export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
     
-    if (response.success && response.data) {
-      localStorage.setItem('accessToken', response.data.tokens.accessToken);
-      localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    // Handle both ApiResponse format and direct data format
+    const authData = response.data || response;
+    
+    if (authData && authData.tokens && authData.user) {
+      localStorage.setItem('accessToken', authData.tokens.accessToken);
+      localStorage.setItem('refreshToken', authData.tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(authData.user));
     }
     
-    return response.data!;
+    return authData;
   },
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/auth/register', userData);
     
-    if (response.success && response.data) {
-      localStorage.setItem('accessToken', response.data.tokens.accessToken);
-      localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    // Handle both ApiResponse format and direct data format
+    const authData = response.data || response;
+    
+    if (authData && authData.tokens && authData.user) {
+      localStorage.setItem('accessToken', authData.tokens.accessToken);
+      localStorage.setItem('refreshToken', authData.tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(authData.user));
     }
     
-    return response.data!;
+    return authData;
   },
 
   async logout(): Promise<void> {
     try {
+      console.log('AuthService: Attempting logout API call...');
       await apiClient.post('/auth/logout');
+      console.log('AuthService: Logout API call succeeded');
+    } catch (error) {
+      console.error('AuthService: Logout API call failed:', error);
     } finally {
+      console.log('AuthService: Clearing localStorage...');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      console.log('AuthService: localStorage cleared');
     }
   },
 
@@ -60,17 +72,20 @@ export const authService = {
 
   async getProfile(): Promise<User> {
     const response = await apiClient.get<User>('/users/profile');
-    return response.data!;
+    return response.data || response;
   },
 
   async updateProfile(userData: Partial<User>): Promise<User> {
     const response = await apiClient.put<User>('/users/profile', userData);
     
-    if (response.success && response.data) {
-      localStorage.setItem('user', JSON.stringify(response.data));
+    // Handle both ApiResponse format and direct data format
+    const userData_result = response.data || response;
+    
+    if (userData_result) {
+      localStorage.setItem('user', JSON.stringify(userData_result));
     }
     
-    return response.data!;
+    return userData_result;
   },
 
   getCurrentUser(): User | null {

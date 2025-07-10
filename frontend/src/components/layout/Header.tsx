@@ -96,11 +96,34 @@ export const Header: React.FC = () => {
     handleProfileMenuClose();
   };
 
-  const navigation = [
-    { name: 'Events', href: '/events', icon: <EventIcon /> },
-    { name: 'Browse Tickets', href: '/listings', icon: <TicketIcon /> },
-    { name: 'Browse Offers', href: '/offers', icon: <OfferIcon /> },
-  ];
+  const getMainNavigation = () => {
+    const baseNav = [
+      { name: 'Events', href: '/events', icon: <EventIcon /> },
+    ];
+
+    if (user?.role === UserRole.BUYER) {
+      baseNav.push(
+        { name: 'Browse Tickets', href: '/listings', icon: <TicketIcon /> },
+        { name: 'Browse Offers', href: '/offers', icon: <OfferIcon /> }
+      );
+    } else if (user?.role === UserRole.SELLER) {
+      baseNav.push(
+        { name: 'Browse Offers', href: '/seller/offers', icon: <OfferIcon /> }
+      );
+    } else if (user?.role === UserRole.ADMIN) {
+      baseNav.push(
+        { name: 'Browse Tickets', href: '/listings', icon: <TicketIcon /> },
+        { name: 'Browse Offers', href: '/offers', icon: <OfferIcon /> }
+      );
+    } else {
+      // For non-authenticated users, show public pages
+      baseNav.push(
+        { name: 'Browse Tickets', href: '/listings', icon: <TicketIcon /> }
+      );
+    }
+
+    return baseNav;
+  };
 
   const getUserNavigation = () => {
     if (!user) return [];
@@ -124,7 +147,7 @@ export const Header: React.FC = () => {
         { name: 'Seller Dashboard', href: '/seller/dashboard', icon: <DashboardIcon /> }
       );
       baseNav.push(
-        { name: 'My Listings', href: '/my-listings', icon: <TicketIcon /> },
+        { name: 'My Listings', href: '/seller/listings', icon: <TicketIcon /> },
         { name: 'Browse Offers', href: '/seller/offers', icon: <OfferIcon /> }
       );
     }
@@ -134,7 +157,9 @@ export const Header: React.FC = () => {
         { name: 'Admin Dashboard', href: '/admin/dashboard', icon: <DashboardIcon /> }
       );
       baseNav.push(
-        { name: 'Admin Panel', href: '/admin/dashboard', icon: <SettingsIcon /> }
+        { name: 'Users', href: '/admin/users', icon: <PersonIcon /> },
+        { name: 'Events', href: '/admin/events', icon: <EventIcon /> },
+        { name: 'Analytics', href: '/admin/analytics', icon: <SettingsIcon /> }
       );
     }
 
@@ -143,7 +168,7 @@ export const Header: React.FC = () => {
 
   const renderDesktopNav = () => (
     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
-      {navigation.map((item) => (
+      {getMainNavigation().map((item) => (
         <MuiButton
           key={item.name}
           component={Link}
@@ -181,7 +206,7 @@ export const Header: React.FC = () => {
       </Box>
       <Divider />
       <List>
-        {navigation.map((item) => (
+        {getMainNavigation().map((item) => (
           <ListItem key={item.name} disablePadding>
             <ListItemButton
               component={Link}

@@ -1,93 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Calendar, MapPin, DollarSign, Clock, Ticket, Heart, Grid, List } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
+import { eventService } from '../services/eventService';
+import { listingService } from '../services/listingService';
+import type { Event, Listing } from '../types';
 
 export const BrowseTicketsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedEvent, setSelectedEvent] = useState(searchParams.get('event') || '');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
 
-  // Mock data for demonstration
-  const mockEvents = [
-    { id: '1', name: 'Concert at Madison Square Garden' },
-    { id: '2', name: 'NBA Finals Game 7' },
-    { id: '3', name: 'Broadway Show - Hamilton' },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const mockListings = [
-    {
-      id: '1',
-      event: {
-        id: '1',
-        name: 'Concert at Madison Square Garden',
-        date: '2024-02-15T19:00:00Z',
-        venue: 'Madison Square Garden',
-        imageUrl: 'https://via.placeholder.com/400x300?text=Concert'
-      },
-      section: { name: 'Floor' },
-      row: 'A',
-      seatNumbers: '1,2',
-      quantity: 2,
-      pricePerTicket: 150,
-      createdAt: '2024-01-10T10:00:00Z'
-    },
-    {
-      id: '2',
-      event: {
-        id: '2',
-        name: 'NBA Finals Game 7',
-        date: '2024-03-20T20:00:00Z',
-        venue: 'Staples Center',
-        imageUrl: 'https://via.placeholder.com/400x300?text=NBA'
-      },
-      section: { name: 'Lower Bowl' },
-      row: 'B',
-      seatNumbers: '5,6',
-      quantity: 2,
-      pricePerTicket: 300,
-      createdAt: '2024-01-11T10:00:00Z'
-    },
-    {
-      id: '3',
-      event: {
-        id: '3',
-        name: 'Broadway Show - Hamilton',
-        date: '2024-02-28T19:30:00Z',
-        venue: 'Richard Rodgers Theatre',
-        imageUrl: 'https://via.placeholder.com/400x300?text=Broadway'
-      },
-      section: { name: 'Orchestra' },
-      row: 'C',
-      seatNumbers: '10,11',
-      quantity: 2,
-      pricePerTicket: 200,
-      createdAt: '2024-01-12T10:00:00Z'
-    }
-  ];
+  useEffect(() => {
+    applyFilters();
+  }, [listings, searchTerm, selectedEvent, priceRange, sortBy]);
 
-  const filteredListings = mockListings.filter(listing => {
-    if (searchTerm && !listing.event.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Try to fetch from API, but handle failures gracefully
+      let eventsData: Event[] = [];
+      let listingsData: Listing[] = [];
+      
+      try {
+        const eventsResponse = await eventService.getEventsSilent();
+        eventsData = eventsResponse.data || [];
+      } catch (eventsError) {
+        console.warn('Events API not available:', eventsError);
+        // Events API failed - this is expected if backend isn't ready
+      }
+      
+      try {
+        const listingsResponse = await listingService.getListingsSilent({ status: 'ACTIVE' });
+        listingsData = listingsResponse.data || [];
+      } catch (listingsError) {
+        console.warn('Listings API not available:', listingsError);
+        // Listings API failed - this is expected if backend isn't ready
+      }
+      
+      setEvents(eventsData);
+      setListings(listingsData);
+      
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+      // Set empty arrays on any error
+      setEvents([]);
+      setListings([]);
+    } finally {
+      setLoading(false);
     }
-    if (selectedEvent && listing.event.id !== selectedEvent) {
-      return false;
-    }
-    if (priceRange.min && listing.pricePerTicket < parseFloat(priceRange.min)) {
-      return false;
-    }
-    if (priceRange.max && listing.pricePerTicket > parseFloat(priceRange.max)) {
-      return false;
-    }
-    return true;
-  });
+  };
+
+  const applyFilters = () => {
+    let filtered = listings.filter(listing => {
+      if (searchTerm && !listing.event.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      if (selectedEvent && listing.event.id !== selectedEvent) {
+        return false;
+      }
+      if (priceRange.min && listing.pricePerTicket < parseFloat(priceRange.min)) {
+        return false;
+      }
+      if (priceRange.max && listing.pricePerTicket > parseFloat(priceRange.max)) {
+        return false;
+      }
+      return true;
+    });
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'priceAsc':
+          return a.pricePerTicket - b.pricePerTicket;
+        case 'priceDesc':
+          return b.pricePerTicket - a.pricePerTicket;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredListings(filtered);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +186,7 @@ export const BrowseTicketsPage: React.FC = () => {
                     className="w-full px-4 py-2 glass rounded-xl border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">All Events</option>
-                    {mockEvents.map((event) => (
+                    {events.map((event) => (
                       <option key={event.id} value={event.id}>
                         {event.name}
                       </option>
@@ -349,8 +362,7 @@ export const BrowseTicketsPage: React.FC = () => {
 
             {/* Results Info */}
             <div className="text-center text-gray-600 mt-8">
-              <p>Showing {filteredListings.length} of {mockListings.length} available tickets</p>
-              <p className="text-sm mt-1">This is a demo version with sample data</p>
+              <p>Showing {filteredListings.length} of {listings.length} available tickets</p>
             </div>
           </>
         )}

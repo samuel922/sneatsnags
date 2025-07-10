@@ -41,7 +41,10 @@ export const BrowseOffersPage: React.FC = () => {
         sortBy: sortBy as 'newest' | 'oldest' | 'priceAsc' | 'priceDesc',
       };
 
-      const response = await offerService.searchOffers('', params);
+      // Use getOffers instead of searchOffers when no search term
+      const response = searchTerm 
+        ? await offerService.searchOffers(searchTerm, params)
+        : await offerService.getOffers(params);
       setOffers(response.offers);
       setTotalPages(Math.ceil(response.total / 12));
     } catch (error) {
@@ -54,9 +57,10 @@ export const BrowseOffersPage: React.FC = () => {
   const fetchEvents = async () => {
     try {
       const response = await eventService.getEvents({ limit: 50 });
-      setEvents(response.data.items);
+      setEvents(response.data || []);
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setEvents([]);
     }
   };
 
@@ -285,8 +289,9 @@ export const BrowseOffersPage: React.FC = () => {
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {offers.map((offer) => (
-                <Card key={offer.id} variant="glass" className="group hover:shadow-2xl transition-all duration-300">
-                  <CardContent className="p-6">
+                <Link key={offer.id} to={`/offers/${offer.id}`}>
+                  <Card variant="glass" className="group hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                    <CardContent className="p-6">
                     <div className="space-y-4">
                       {/* Status Badge */}
                       <div className="flex items-center justify-between">
@@ -373,17 +378,14 @@ export const BrowseOffersPage: React.FC = () => {
                           {new Date(offer.createdAt).toLocaleDateString()}
                         </div>
                         
-                        {offer.status === 'ACTIVE' && (
-                          <Link to={`/events/${offer.event?.id || offer.eventId}/offer`}>
-                            <Button variant="primary" size="sm">
-                              Respond to Offer
-                            </Button>
-                          </Link>
-                        )}
+                        <div className="text-sm text-blue-600 font-medium group-hover:text-blue-700">
+                          View Details →
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
+                </Link>
               ))}
             </div>
 

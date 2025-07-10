@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreateOfferForm } from '../components/offers/CreateOfferForm';
 import type { Event } from '../types/event';
-import { apiClient } from '../services/api';
+import { eventService } from '../services/eventService';
 
 export const CreateOfferPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -20,8 +20,8 @@ export const CreateOfferPage: React.FC = () => {
       }
 
       try {
-        const response = await apiClient.get<Event>(`/events/${eventId}`);
-        setEvent(response.data!);
+        const event = await eventService.getEvent(eventId);
+        setEvent(event);
       } catch (err: any) {
         setError(err.message || 'Failed to load event');
       } finally {

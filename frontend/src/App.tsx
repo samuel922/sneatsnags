@@ -38,6 +38,7 @@ import { ListingManagementPage } from './pages/ListingManagementPage';
 import { CreateListingPage } from './pages/CreateListingPage';
 import { BrowseTicketsPage } from './pages/BrowseTicketsPage';
 import { BrowseOffersPage } from './pages/BrowseOffersPage';
+import { OfferDetailPage } from './pages/OfferDetailPage';
 import { UserRole } from './types/auth';
 
 const queryClient = new QueryClient({
@@ -324,6 +325,7 @@ function App() {
                     {/* Public marketplace routes */}
                     <Route path="/listings" element={<BrowseTicketsPage />} />
                     <Route path="/offers" element={<BrowseOffersPage />} />
+                    <Route path="/offers/:id" element={<OfferDetailPage />} />
                     
                     <Route
                       path="/profile"

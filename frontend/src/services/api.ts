@@ -68,8 +68,8 @@ class ApiClient {
           errors: error.response?.data?.errors,
         };
 
-        // Handle common errors automatically
-        if (error.response?.status === 500) {
+        // Handle common errors automatically (unless suppressed)
+        if (error.response?.status === 500 && !originalRequest._suppressErrorAlert) {
           SweetAlert.error('Server Error', 'We\'re experiencing technical difficulties. Please try again later.');
         }
 
@@ -84,6 +84,19 @@ class ApiClient {
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
     const response = await this.client.get(endpoint, { params, ...config });
+    return response.data;
+  }
+
+  async getSilent<T = any>(
+    endpoint: string,
+    params?: QueryParams,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
+    const silentConfig = { 
+      ...config, 
+      _suppressErrorAlert: true 
+    };
+    const response = await this.client.get(endpoint, { params, ...silentConfig });
     return response.data;
   }
 

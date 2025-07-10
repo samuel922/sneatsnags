@@ -95,17 +95,17 @@ export interface TransactionDetails {
 class BuyerService {
   async getDashboard(): Promise<BuyerDashboard> {
     const response = await api.get('/buyers/dashboard');
-    return response.data.data;
+    return response.data?.data || response.data || response;
   }
 
   async getStats(): Promise<BuyerStats> {
     const response = await api.get('/buyers/stats');
-    return response.data.data;
+    return response.data?.data || response.data || response;
   }
 
   async createOffer(offerData: CreateOfferRequest): Promise<Offer> {
     const response = await api.post('/buyers/offers', offerData);
-    return response.data.data;
+    return response.data?.data || response.data || response;
   }
 
   async getMyOffers(query?: OfferSearchQuery): Promise<{
@@ -117,21 +117,21 @@ class BuyerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/buyers/offers', { params: query });
+    const response = await api.get('/buyers/offers', query);
     return {
-      data: response.data.data,
-      pagination: response.data.pagination,
+      data: response.data?.data || response.data || [],
+      pagination: response.data?.pagination || response.pagination || {},
     };
   }
 
   async getOffer(offerId: string): Promise<Offer> {
     const response = await api.get(`/buyers/offers/${offerId}`);
-    return response.data.data;
+    return response.data?.data || response.data || response;
   }
 
   async updateOffer(offerId: string, updates: UpdateOfferRequest): Promise<Offer> {
     const response = await api.put(`/buyers/offers/${offerId}`, updates);
-    return response.data.data;
+    return response.data?.data || response.data || response;
   }
 
   async cancelOffer(offerId: string): Promise<void> {
@@ -156,10 +156,10 @@ class BuyerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/buyers/tickets/search', { params: query });
+    const response = await api.get('/buyers/tickets/search', query);
     return {
-      data: response.data.data,
-      pagination: response.data.pagination,
+      data: response.data?.data || response.data || [],
+      pagination: response.data?.pagination || response.pagination || {},
     };
   }
 
@@ -176,10 +176,10 @@ class BuyerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/buyers/transactions', { params: query });
+    const response = await api.get('/buyers/transactions', query);
     return {
-      data: response.data.data,
-      pagination: response.data.pagination,
+      data: response.data?.data || response.data || [],
+      pagination: response.data?.pagination || response.pagination || {},
     };
   }
 
@@ -200,16 +200,16 @@ class BuyerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/buyers/events', { params: query });
+    const response = await api.get('/buyers/events', query);
     return {
-      data: response.data.data,
-      pagination: response.data.pagination,
+      data: response.data?.data || response.data || [],
+      pagination: response.data?.pagination || response.pagination || {},
     };
   }
 
   async getEvent(eventId: string): Promise<any> {
     const response = await api.get(`/buyers/events/${eventId}`);
-    return response.data.data;
+    return response.data?.data || response.data || response;
   }
 
   async getEventOffers(eventId: string, query?: {
@@ -224,10 +224,10 @@ class BuyerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get(`/buyers/events/${eventId}/offers`, { params: query });
+    const response = await api.get(`/buyers/events/${eventId}/offers`, query);
     return {
-      data: response.data.data,
-      pagination: response.data.pagination,
+      data: response.data?.data || response.data || [],
+      pagination: response.data?.pagination || response.pagination || {},
     };
   }
 }

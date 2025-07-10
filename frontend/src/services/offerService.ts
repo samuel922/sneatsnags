@@ -11,14 +11,21 @@ import type {
 export const offerService = {
   // Get all offers with filtering
   async getOffers(query?: OfferSearchQuery): Promise<{ offers: Offer[]; total: number; page: number; pages: number }> {
-    const response = await apiClient.get<{ offers: Offer[]; total: number; page: number; pages: number }>('/offers', query);
-    return response.data!;
+    const response = await apiClient.get<any>('/offers', query);
+    const data = response.data;
+    return {
+      offers: data.data || [],
+      total: data.pagination?.total || 0,
+      page: data.pagination?.page || 1,
+      pages: data.pagination?.totalPages || 1
+    };
   },
 
   // Get offer by ID
   async getOfferById(id: string): Promise<Offer> {
-    const response = await apiClient.get<Offer>(`/offers/${id}`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/offers/${id}`);
+    console.log('OfferService getOfferById response:', response);
+    return response.data?.data || response.data || response;
   },
 
   // Get offers for a specific event
@@ -28,9 +35,12 @@ export const offerService = {
   },
 
   // Get buyer's own offers
-  async getMyOffers(): Promise<Offer[]> {
-    const response = await apiClient.get<Offer[]>('/offers/my-offers');
-    return response.data!;
+  async getMyOffers(): Promise<{ data: Offer[]; pagination?: any }> {
+    const response = await apiClient.get<any>('/offers/my-offers');
+    return {
+      data: response.data?.data || [],
+      pagination: response.data?.pagination
+    };
   },
 
   // Create new offer
@@ -65,9 +75,13 @@ export const offerService = {
 
   // Search offers
   async searchOffers(query: string, filters?: Partial<OfferSearchQuery>): Promise<{ offers: Offer[]; total: number }> {
-    const params = { search: query, ...filters };
-    const response = await apiClient.get<{ offers: Offer[]; total: number }>('/offers/search', params);
-    return response.data!;
+    const params = { q: query, ...filters };
+    const response = await apiClient.get<any>('/offers/search', params);
+    const data = response.data;
+    return {
+      offers: data.data || [],
+      total: data.pagination?.total || 0
+    };
   },
 
   // Get recent offers

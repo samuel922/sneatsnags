@@ -162,8 +162,24 @@ class SellerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/sellers/listings', { params: query });
-    return response.data;
+    const response = await api.get('/sellers/listings', query);
+    console.log('SellerService getListings response:', response);
+    
+    // Handle different response structures
+    if (response.data && response.pagination) {
+      return response;
+    }
+    
+    // If response has nested structure
+    return {
+      data: response.data?.data || response.data || [],
+      pagination: response.data?.pagination || response.pagination || {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 1
+      }
+    };
   }
 
   async createListing(listingData: CreateListingRequest): Promise<SellerListing> {
@@ -193,7 +209,7 @@ class SellerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/sellers/transactions', { params: query });
+    const response = await api.get('/sellers/transactions', query);
     return response.data;
   }
 
@@ -236,7 +252,7 @@ class SellerService {
       totalPages: number;
     };
   }> {
-    const response = await api.get('/sellers/offers', { params: query });
+    const response = await api.get('/sellers/offers', query);
     return response.data;
   }
 }

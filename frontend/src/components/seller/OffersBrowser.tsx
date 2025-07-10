@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { sellerService, type AvailableOffer } from '../../services/sellerService';
+import { sellerService, type AvailableOffer, type SellerListing } from '../../services/sellerService';
 
 export const OffersBrowser = () => {
   const [filters, setFilters] = useState({
@@ -17,6 +17,12 @@ export const OffersBrowser = () => {
   const [selectedListingId, setSelectedListingId] = useState<string>('');
 
   const queryClient = useQueryClient();
+
+  // Fetch seller's listings for dropdown selection
+  const { data: listingsData } = useQuery({
+    queryKey: ['seller-listings'],
+    queryFn: () => sellerService.getListings({ limit: 100 }), // Get all listings
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['available-offers', filters],
@@ -47,7 +53,7 @@ export const OffersBrowser = () => {
 
   const handleAcceptOffer = async (offerId: string) => {
     if (!selectedListingId) {
-      alert('Please select a listing ID to match with this offer');
+      alert('Please select one of your listings first to match with this offer');
       return;
     }
 
@@ -86,20 +92,57 @@ export const OffersBrowser = () => {
         <h1 className="text-3xl font-bold text-gray-900">Browse Offers</h1>
       </div>
 
-      {/* Global Listing ID Selection */}
+      {/* Global Listing Selection */}
       <Card>
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4">Select Your Listing</h3>
           <p className="text-sm text-gray-600 mb-4">
-            Enter the ID of your listing that you want to match with offers.
+            Choose which of your listings you want to match with buyer offers.
           </p>
-          <Input
-            type="text"
-            placeholder="Enter your listing ID"
-            value={selectedListingId}
-            onChange={(e) => setSelectedListingId(e.target.value)}
-            className="max-w-md"
-          />
+          
+          {listingsData?.data && listingsData.data.length > 0 ? (
+            <div className="max-w-md">
+              <select
+                value={selectedListingId}
+                onChange={(e) => setSelectedListingId(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a listing...</option>
+                {listingsData.data
+                  .filter((listing: SellerListing) => listing.status === 'ACTIVE')
+                  .map((listing: SellerListing) => (
+                    <option key={listing.id} value={listing.id}>
+                      {listing.event.name} - {listing.section?.name || 'General'} - ${listing.price} ({listing.quantity} tickets)
+                    </option>
+                  ))}
+              </select>
+              
+              {selectedListingId && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    ✓ Listing selected. You can now accept offers that match this listing.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="max-w-md">
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800 mb-2">
+                  <strong>No active listings found.</strong>
+                </p>
+                <p className="text-sm text-yellow-700 mb-3">
+                  You need to create a listing before you can accept offers.
+                </p>
+                <Button 
+                  size="sm"
+                  onClick={() => window.location.href = '/seller/listings/new'}
+                >
+                  Create Your First Listing
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -297,9 +340,9 @@ export const OffersBrowser = () => {
       )}
 
       {!selectedListingId && data?.data && data.data.length > 0 && (
-        <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 rounded-lg p-4 max-w-sm">
-          <p className="text-sm text-yellow-800">
-            <strong>Tip:</strong> Enter your listing ID above to enable offer acceptance.
+        <div className="fixed bottom-4 right-4 bg-blue-100 border border-blue-400 rounded-lg p-4 max-w-sm">
+          <p className="text-sm text-blue-800">
+            <strong>💡 Tip:</strong> Select one of your listings above to start accepting offers that match your tickets.
           </p>
         </div>
       )}
