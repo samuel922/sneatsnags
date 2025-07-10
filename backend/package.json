@@ -7,7 +7,6 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc && npx prisma generate",
     "start": "node dist/index.js",
-    "railway:deploy": "npx prisma migrate deploy && npm start",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

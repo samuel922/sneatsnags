@@ -1,30 +1,30 @@
-# Use official Node.js runtime with Debian base for better compatibility
 FROM node:22-slim
 
-# Install OpenSSL and cleaning up caches
+# Install necessary packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssl libssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
 WORKDIR /app
 
-# Copy dependency definitions
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies reproducibly and global TS tooling
+# Install dependencies
 RUN npm ci && \
     npm install -g ts-node tsx
 
-# Copy Prisma schema and generate the client
+# Copy prisma schema first for better caching
 COPY prisma ./prisma
+
+# Generate Prisma client
 RUN npx prisma generate
 
-# Copy application code
+# Copy source code
 COPY . .
 
-# Expose application port
+# Expose port
 EXPOSE 5001
 
-# Start in development mode using nodemon with TS support
+# Start the application
 CMD ["npm", "run", "dev"]

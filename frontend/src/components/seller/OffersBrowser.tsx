@@ -163,7 +163,7 @@ export const OffersBrowser = () => {
               >
                 <option value="">Select a listing...</option>
                 {listingsData.data
-                  .filter((listing: SellerListing) => listing.status === 'ACTIVE')
+                  .filter((listing: SellerListing) => listing.status === 'AVAILABLE')
                   .map((listing: SellerListing) => (
                     <option key={listing.id} value={listing.id}>
                       {listing.event.name} - {listing.section?.name || 'General'} - ${listing.price} ({listing.quantity} tickets)
