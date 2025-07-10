@@ -1,7 +1,7 @@
 version: "3"
 services:
   app:
-    build: .
+    build: ./backend
     container_name: sneatsnags
     environment:
       # Database Configuration
@@ -52,9 +52,23 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/app
+      - ./backend:/app
       - /app/node_modules
     command: sh -c "npx prisma generate && npm run dev"
+
+  frontend:
+    build: ./frontend
+    container_name: sneatsnags-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5001/api
+    depends_on:
+      - app
+    command: npm run dev -- --host 0.0.0.0
 
   db:
     image: postgres:13-alpine
