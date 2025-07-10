@@ -271,8 +271,8 @@ export class ListingService {
     ]);
 
     return {
-      totalListings: stats.reduce((sum, stat) => sum + stat._count, 0),
-      byStatus: stats.reduce((acc, stat) => {
+      totalListings: stats.reduce((sum: number, stat: any) => sum + stat._count, 0),
+      byStatus: stats.reduce((acc: Record<string, number>, stat: any) => {
         acc[stat.status] = stat._count;
         return acc;
       }, {} as Record<string, number>),
@@ -503,8 +503,8 @@ export class ListingService {
     }
 
     // Extract event IDs and section IDs from seller's listings
-    const sellerEventIds = [...new Set(sellerListings.map(l => l.eventId))];
-    const sellerSectionIds = [...new Set(sellerListings.map(l => l.sectionId))];
+    const sellerEventIds = [...new Set(sellerListings.map((l: any) => l.eventId))];
+    const sellerSectionIds = [...new Set(sellerListings.map((l: any) => l.sectionId))];
     
     const where: any = {
       status: "ACTIVE",
@@ -547,15 +547,15 @@ export class ListingService {
     });
 
     // Further filter offers to only show those where seller has matching sections
-    const filteredOffers = offers.filter(offer => {
+    const filteredOffers = offers.filter((offer: any) => {
       // If offer doesn't specify sections, seller can fulfill it with any section
       if (!offer.sections || offer.sections.length === 0) {
         return true;
       }
       
       // Check if seller has at least one matching section for this offer
-      const offerSectionIds = offer.sections.map(s => s.sectionId);
-      const hasMatchingSection = offerSectionIds.some(sectionId => 
+      const offerSectionIds = offer.sections.map((s: any) => s.sectionId);
+      const hasMatchingSection = offerSectionIds.some((sectionId: string) => 
         sellerSectionIds.includes(sectionId)
       );
       

@@ -121,7 +121,7 @@ export class SearchService {
 
     // Calculate price ranges for each event
     const eventsWithPriceRanges = await Promise.all(
-      events.map(async (event) => {
+      events.map(async (event: any) => {
         const [listingPrices, offerPrices] = await Promise.all([
           prisma.listing.aggregate({
             where: { eventId: event.id, status: "AVAILABLE" },
@@ -203,9 +203,9 @@ export class SearchService {
     });
 
     // Extract preferences
-    const eventTypes = [...new Set(userOffers.map((o) => o.event.eventType))];
-    const cities = [...new Set(userOffers.map((o) => o.event.city))];
-    const states = [...new Set(userOffers.map((o) => o.event.state))];
+    const eventTypes = [...new Set(userOffers.map((o: any) => o.event.eventType))];
+    const cities = [...new Set(userOffers.map((o: any) => o.event.city))];
+    const states = [...new Set(userOffers.map((o: any) => o.event.state))];
 
     // Find similar events
     const suggestedEvents = await prisma.event.findMany({

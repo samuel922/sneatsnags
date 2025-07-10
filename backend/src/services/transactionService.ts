@@ -1,7 +1,9 @@
 import { prisma } from "../utils/prisma";
 import { TransactionSearchQuery } from "../types/transaction";
-import { TransactionStatus } from "@prisma/client";
+import { $Enums } from "@prisma/client";
 import { PaginationResponse } from "../types/api";
+
+type TransactionStatus = $Enums.TransactionStatus;
 import { logger } from "../utils/logger";
 import { stripeService } from "./stripeService";
 
@@ -357,7 +359,7 @@ export class TransactionService {
     listingId: string;
     sellerId: string;
   }) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const offer = await tx.offer.findUnique({
         where: { id: data.offerId },
         include: { buyer: true, event: true },

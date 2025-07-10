@@ -1,5 +1,7 @@
 import { PaginationQuery } from "./api";
-import { TransactionStatus } from "@prisma/client";
+import { $Enums } from "@prisma/client";
+
+type TransactionStatus = $Enums.TransactionStatus;
 
 export interface TransactionSearchQuery extends PaginationQuery {
   buyerId?: string;

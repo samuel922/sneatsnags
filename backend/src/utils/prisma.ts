@@ -10,11 +10,11 @@ export const prisma = new PrismaClient({
   ],
 });
 
-prisma.$on("query", (e) => {
+prisma.$on("query", (e: any) => {
   logger.debug("Query: " + e.query);
   logger.debug("Duration: " + e.duration);
 });
 
-prisma.$on("error", (e) => {
+prisma.$on("error", (e: any) => {
   logger.error("Prisma error: " + e);
 });

@@ -265,7 +265,7 @@ export class OfferService {
   }
 
   async acceptOffer(offerId: string, sellerId: string, listingId: string) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       // Get offer with validation
       const offer = await tx.offer.findUnique({
         where: { id: offerId },

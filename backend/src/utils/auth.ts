@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { errorResponse } from "./response";
+
+type User = Prisma.UserGetPayload<{}>;
 
 export interface AuthRequest extends Request {
   user: User;

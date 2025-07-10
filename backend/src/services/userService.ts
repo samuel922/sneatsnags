@@ -406,7 +406,7 @@ export class UserService {
     ]);
 
     // Transform recent activity into the expected format
-    const transformedActivity = recentActivity.map(offer => ({
+    const transformedActivity = recentActivity.map((offer: any) => ({
       id: offer.id,
       type: offer.status === 'ACCEPTED' ? 'offer_accepted' as const :
             offer.status === 'CANCELLED' ? 'offer_cancelled' as const :
@@ -420,7 +420,7 @@ export class UserService {
 
     // Transform favorite categories - group by event type
     const categoryCount: Record<string, number> = {};
-    favoriteCategories.forEach(offer => {
+    favoriteCategories.forEach((offer: any) => {
       const eventType = offer.event?.eventType || 'unknown';
       categoryCount[eventType] = (categoryCount[eventType] || 0) + 1;
     });
