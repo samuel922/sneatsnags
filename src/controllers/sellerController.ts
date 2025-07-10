@@ -180,10 +180,12 @@ export const sellerController = {
     try {
       const { page, limit, skip } = getPaginationParams(req.query);
       const { eventId, minPrice, maxPrice } = req.query;
+      const sellerId = req.user!.id;
 
       const result = await listingService.getAvailableOffers({
         skip,
         take: limit,
+        sellerId,
         eventId: eventId as string,
         minPrice: minPrice ? parseFloat(minPrice as string) : undefined,
         maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,

@@ -24,6 +24,7 @@ export const OffersBrowser = () => {
     queryFn: () => sellerService.getListings({ limit: 100 }), // Get all listings
   });
 
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['available-offers', filters],
     queryFn: () => sellerService.getAvailableOffers({
@@ -51,23 +52,76 @@ export const OffersBrowser = () => {
     }));
   };
 
-  const handleAcceptOffer = async (offerId: string) => {
-    if (!selectedListingId) {
+  const handleAcceptOffer = async (offerId: string, suggestedListingId?: string) => {
+    const listingId = suggestedListingId || selectedListingId;
+    
+    if (!listingId) {
       alert('Please select one of your listings first to match with this offer');
       return;
     }
 
-    if (window.confirm('Are you sure you want to accept this offer?')) {
+    const offer = data?.data.find(o => o.id === offerId);
+    if (!offer) return;
+
+    const listing = listingsData?.data.find(l => l.id === listingId);
+    if (!listing) return;
+
+    // Show detailed confirmation dialog
+    const platformFee = offer.maxPrice * 0.1;
+    const sellerAmount = offer.maxPrice * 0.9;
+    
+    const confirmMessage = `Accept this offer?\n\n` +
+      `Event: ${offer.event.name}\n` +
+      `Buyer: ${offer.buyer.firstName} ${offer.buyer.lastName}\n` +
+      `Quantity: ${offer.quantity} tickets\n` +
+      `Offer Price: $${offer.maxPrice}\n` +
+      `Platform Fee (10%): $${platformFee.toFixed(2)}\n` +
+      `Your Earnings: $${sellerAmount.toFixed(2)}\n\n` +
+      `Your Listing: ${listing.event.name} - ${listing.section?.name || 'General'} - $${listing.price}`;
+
+    if (window.confirm(confirmMessage)) {
       try {
-        await acceptOfferMutation.mutateAsync({ offerId, listingId: selectedListingId });
+        await acceptOfferMutation.mutateAsync({ offerId, listingId });
       } catch (error) {
         console.error('Failed to accept offer:', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+        alert(`Failed to accept offer: ${errorMessage}`);
       }
     }
   };
 
   const isOfferExpired = (expiresAt: string) => {
     return new Date(expiresAt) < new Date();
+  };
+
+  // Find compatible listings for an offer
+  const getCompatibleListings = (offer: AvailableOffer) => {
+    if (!listingsData?.data) return [];
+    
+    return listingsData.data.filter((listing: SellerListing) => {
+      // Must be available and for the same event
+      if (listing.status !== 'AVAILABLE' || listing.eventId !== offer.event.id) {
+        return false;
+      }
+      
+      // If offer specifies sections, check if listing matches
+      if (offer.sections && offer.sections.length > 0) {
+        const offerSectionIds = offer.sections.map(s => s.sectionId);
+        return offerSectionIds.includes(listing.sectionId);
+      }
+      
+      // If no sections specified, any listing for this event is compatible
+      return true;
+    }).sort((a, b) => {
+      // Sort by price descending to show most profitable first
+      return b.price - a.price;
+    });
+  };
+
+  // Get the best matching listing for an offer
+  const getBestMatchingListing = (offer: AvailableOffer) => {
+    const compatible = getCompatibleListings(offer);
+    return compatible.length > 0 ? compatible[0] : null;
   };
 
   if (isLoading) {
@@ -216,6 +270,10 @@ export const OffersBrowser = () => {
 
           {data.data.map((offer: AvailableOffer) => {
             const expired = isOfferExpired(offer.expiresAt);
+                        const compatibleListings = getCompatibleListings(offer);
+                        const bestMatch = getBestMatchingListing(offer);
+                        const platformFee = offer.maxPrice * 0.1;
+                        const sellerEarnings = offer.maxPrice * 0.9;
             
             return (
               <Card key={offer.id}>
@@ -240,6 +298,7 @@ export const OffersBrowser = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                         <div>
                           <p><strong>Max Price:</strong> ${offer.maxPrice}</p>
+                                                    <p><strong>Your Earnings:</strong> ${sellerEarnings.toFixed(2)} <span className="text-gray-500">(after 10% fee)</span></p>
                           <p><strong>Quantity:</strong> {offer.quantity}</p>
                           <p><strong>Buyer:</strong> {offer.buyer.firstName} {offer.buyer.lastName}</p>
                           <p><strong>Created:</strong> {new Date(offer.createdAt).toLocaleDateString()}</p>
@@ -280,12 +339,17 @@ export const OffersBrowser = () => {
                     <div className="flex flex-col gap-2 ml-4">
                       {!expired && offer.status === 'ACTIVE' && (
                         <>
+                                                    {compatibleListings.length === 0 && !selectedListingId && (
+                                                      <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded mb-2">
+                                                        ⚠️ No compatible listings found. Select a listing above to accept this offer.
+                                                      </div>
+                                                    )}
                           <Button
-                            onClick={() => handleAcceptOffer(offer.id)}
-                            disabled={!selectedListingId || acceptOfferMutation.isPending}
+                            onClick={() => handleAcceptOffer(offer.id, bestMatch?.id)}
+                            disabled={(!selectedListingId && !bestMatch) || acceptOfferMutation.isPending}
                             size="sm"
                           >
-                            {acceptOfferMutation.isPending ? 'Accepting...' : 'Accept Offer'}
+                            {acceptOfferMutation.isPending ? 'Accepting...' : bestMatch ? `Accept with ${bestMatch.section?.name || 'Best Match'}` : 'Accept Offer'}
                           </Button>
                           
                           <Button

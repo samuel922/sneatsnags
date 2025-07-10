@@ -477,18 +477,46 @@ export class ListingService {
   async getAvailableOffers(params: {
     skip: number;
     take: number;
+    sellerId: string;
     eventId?: string;
     minPrice?: number;
     maxPrice?: number;
   }) {
-    const { skip, take, eventId, minPrice, maxPrice } = params;
+    const { skip, take, sellerId, eventId, minPrice, maxPrice } = params;
+    
+    // First, get the seller's available listings to determine which offers they can fulfill
+    const sellerListings = await prisma.listing.findMany({
+      where: {
+        sellerId,
+        status: "AVAILABLE",
+      },
+      select: {
+        eventId: true,
+        sectionId: true,
+        price: true,
+      },
+    });
+
+    // If seller has no available listings, return empty result
+    if (sellerListings.length === 0) {
+      return { offers: [], total: 0 };
+    }
+
+    // Extract event IDs and section IDs from seller's listings
+    const sellerEventIds = [...new Set(sellerListings.map(l => l.eventId))];
+    const sellerSectionIds = [...new Set(sellerListings.map(l => l.sectionId))];
     
     const where: any = {
       status: "ACTIVE",
       expiresAt: { gte: new Date() },
+      // Only show offers for events where seller has listings
+      eventId: { in: sellerEventIds },
     };
     
-    if (eventId) where.eventId = eventId;
+    // Apply additional filters if provided
+    if (eventId) {
+      where.eventId = eventId;
+    }
     
     if (minPrice || maxPrice) {
       where.maxPrice = {};
@@ -496,32 +524,48 @@ export class ListingService {
       if (maxPrice) where.maxPrice.lte = maxPrice;
     }
 
-    const [offers, total] = await Promise.all([
-      prisma.offer.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { maxPrice: "desc" },
-        include: {
-          buyer: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-          event: true,
-          sections: {
-            include: {
-              section: true,
-            },
+    const offers = await prisma.offer.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { maxPrice: "desc" },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           },
         },
-      }),
-      prisma.offer.count({ where }),
-    ]);
+        event: true,
+        sections: {
+          include: {
+            section: true,
+          },
+        },
+      },
+    });
 
-    return { offers, total };
+    // Further filter offers to only show those where seller has matching sections
+    const filteredOffers = offers.filter(offer => {
+      // If offer doesn't specify sections, seller can fulfill it with any section
+      if (!offer.sections || offer.sections.length === 0) {
+        return true;
+      }
+      
+      // Check if seller has at least one matching section for this offer
+      const offerSectionIds = offer.sections.map(s => s.sectionId);
+      const hasMatchingSection = offerSectionIds.some(sectionId => 
+        sellerSectionIds.includes(sectionId)
+      );
+      
+      return hasMatchingSection;
+    });
+
+    // Count total offers that match the criteria (for pagination)
+    const totalOffers = await prisma.offer.count({ where });
+
+    return { offers: filteredOffers, total: totalOffers };
   }
 }
 

@@ -22,11 +22,11 @@ import { CreateListingForm } from '../components/listings/CreateListingForm';
 import { sellerService } from '../services/sellerService';
 import SweetAlert from '../utils/sweetAlert';
 import type { Listing, ListingStatus } from '../types/listing';
+import type { SellerListing } from '../services/sellerService';
 
 export const ListingManagementPage: React.FC = () => {
-  console.log('ListingManagementPage: Component rendering');
   const navigate = useNavigate();
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [listings, setListings] = useState<SellerListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalListings, setTotalListings] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +40,6 @@ export const ListingManagementPage: React.FC = () => {
 
   const fetchListings = async () => {
     try {
-      console.log('ListingManagementPage: Fetching listings...');
       setLoading(true);
       const response = await sellerService.getListings({
         page: currentPage,
@@ -48,14 +47,12 @@ export const ListingManagementPage: React.FC = () => {
         status: selectedStatus || undefined,
       });
 
-      console.log('ListingManagementPage: Listings response:', response);
       if (response) {
         setListings(response.data || []);
         setTotalListings(response.pagination?.total || 0);
-        console.log('ListingManagementPage: Set listings count:', (response.data || []).length);
       }
     } catch (err) {
-      console.error('ListingManagementPage: Failed to fetch listings:', err);
+      console.error('Failed to fetch listings:', err);
       SweetAlert.error('Failed to Load Listings', 'Unable to load your listings at this time.');
     } finally {
       setLoading(false);
@@ -111,7 +108,7 @@ export const ListingManagementPage: React.FC = () => {
       CANCELLED: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
 
-    const config = statusConfig[status];
+    const config = statusConfig[status] || { color: 'bg-gray-100 text-gray-800', icon: Clock };
     const Icon = config.icon;
 
     return (
@@ -243,7 +240,7 @@ export const ListingManagementPage: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Value</p>
               <p className="text-2xl font-bold text-gray-900">
-                {formatPrice(listings.reduce((sum, l) => sum + l.totalPrice, 0))}
+                {formatPrice(listings.reduce((sum, l) => sum + (l.price * l.quantity), 0))}
               </p>
             </div>
           </div>
@@ -305,24 +302,16 @@ export const ListingManagementPage: React.FC = () => {
               {/* Event Info */}
               <div className="lg:col-span-2">
                 <div className="flex items-start space-x-4">
-                  {listing.event.imageUrl ? (
-                    <img
-                      src={listing.event.imageUrl}
-                      alt={listing.event.name}
-                      className="h-16 w-16 object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="h-16 w-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
-                      <Calendar className="h-8 w-8 text-white" />
-                    </div>
-                  )}
+                  <div className="h-16 w-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-8 w-8 text-white" />
+                  </div>
                   
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-gray-900 truncate">
                       {listing.event.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      📅 {formatDate(listing.event.date)}
+                      📅 {formatDate(listing.event.eventDate)}
                     </p>
                     <p className="text-sm text-gray-600">
                       📍 {listing.event.venue}, {listing.event.city}
@@ -345,11 +334,11 @@ export const ListingManagementPage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Price each:</span>
-                    <span className="font-medium">{formatPrice(listing.pricePerTicket)}</span>
+                    <span className="font-medium">{formatPrice(listing.price)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Total:</span>
-                    <span className="font-bold text-lg">{formatPrice(listing.totalPrice)}</span>
+                    <span className="font-bold text-lg">{formatPrice(listing.price * listing.quantity)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Status:</span>
@@ -361,10 +350,10 @@ export const ListingManagementPage: React.FC = () => {
                       <span className="font-medium">{listing.row}</span>
                     </div>
                   )}
-                  {listing.seatNumbers && (
+                  {listing.seats && listing.seats.length > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Seats:</span>
-                      <span className="font-medium">{listing.seatNumbers}</span>
+                      <span className="font-medium">{listing.seats.join(', ')}</span>
                     </div>
                   )}
                 </div>

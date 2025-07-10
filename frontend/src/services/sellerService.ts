@@ -163,17 +163,20 @@ class SellerService {
     };
   }> {
     const response = await api.get('/sellers/listings', query);
-    console.log('SellerService getListings response:', response);
     
-    // Handle different response structures
-    if (response.data && response.pagination) {
-      return response;
+    // Backend returns: { success: true, data: { data: SellerListing[], pagination: {...} } }
+    // We need to extract the nested data structure
+    if (response.data?.data && response.data?.pagination) {
+      return {
+        data: response.data.data,
+        pagination: response.data.pagination
+      };
     }
     
-    // If response has nested structure
+    // Fallback for different response structures
     return {
-      data: response.data?.data || response.data || [],
-      pagination: response.data?.pagination || response.pagination || {
+      data: response.data?.data?.data || response.data?.data || response.data || [],
+      pagination: response.data?.data?.pagination || response.data?.pagination || {
         page: 1,
         limit: 20,
         total: 0,
