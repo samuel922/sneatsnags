@@ -452,7 +452,47 @@ export class ListingService {
       prisma.listing.count({ where }),
     ]);
 
-    return { listings, total };
+    // For each listing, get matching offers from the event
+    const listingsWithOffers = await Promise.all(
+      listings.map(async (listing) => {
+        const matchingOffers = await prisma.offer.findMany({
+          where: {
+            eventId: listing.eventId,
+            status: 'ACTIVE',
+            expiresAt: { gte: new Date() },
+            // Check if the offer's sections match the listing's section
+            sections: {
+              some: {
+                sectionId: listing.sectionId,
+              },
+            },
+          },
+          include: {
+            buyer: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+            sections: {
+              include: {
+                section: true,
+              },
+            },
+          },
+          orderBy: { maxPrice: 'desc' },
+        });
+
+        return {
+          ...listing,
+          matchingOffers,
+          offerCount: matchingOffers.length,
+        };
+      })
+    );
+
+    return { listings: listingsWithOffers, total };
   }
 
   async getSellerStats(sellerId: string) {
@@ -472,6 +512,72 @@ export class ListingService {
       soldListings,
       totalRevenue: totalRevenue._sum.sellerAmount || 0,
     };
+  }
+
+  async getListingOffers(listingId: string, sellerId: string, params: {
+    skip: number;
+    take: number;
+    status?: string;
+  }) {
+    const { skip, take, status } = params;
+    
+    // Verify the listing belongs to the seller
+    const listing = await prisma.listing.findUnique({
+      where: { id: listingId, sellerId },
+      include: {
+        event: true,
+        section: true,
+      },
+    });
+
+    if (!listing) {
+      throw new Error("Listing not found or not owned by seller");
+    }
+
+    // Get offers for this event that match the listing's section
+    const where: any = {
+      eventId: listing.eventId,
+      sections: {
+        some: {
+          sectionId: listing.sectionId,
+        },
+      },
+    };
+    if (status) where.status = status;
+
+    const [offers, total] = await Promise.all([
+      prisma.offer.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { maxPrice: "desc" },
+        include: {
+          buyer: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          event: {
+            select: {
+              id: true,
+              name: true,
+              venue: true,
+              eventDate: true,
+            },
+          },
+          sections: {
+            include: {
+              section: true,
+            },
+          },
+        },
+      }),
+      prisma.offer.count({ where }),
+    ]);
+
+    return { offers, total, listing };
   }
 
   async getAvailableOffers(params: {

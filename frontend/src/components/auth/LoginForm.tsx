@@ -128,7 +128,7 @@ export const LoginForm: React.FC = () => {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} aria-label="Login form">
           {apiError && (
             <Alert 
               severity="error" 
@@ -154,6 +154,8 @@ export const LoginForm: React.FC = () => {
               variant="outlined"
               error={!!errors.email}
               helperText={errors.email?.message}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
               {...register('email')}
               slotProps={{
                 input: {
@@ -215,6 +217,8 @@ export const LoginForm: React.FC = () => {
               variant="outlined"
               error={!!errors.password}
               helperText={errors.password?.message}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? 'password-error' : undefined}
               {...register('password')}
               slotProps={{
                 input: {
@@ -229,6 +233,7 @@ export const LoginForm: React.FC = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
                         sx={{ color: 'text.secondary' }}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -296,6 +301,7 @@ export const LoginForm: React.FC = () => {
                   Remember me
                 </Typography>
               }
+              aria-label="Remember me checkbox"
             />
 
             <Typography
@@ -321,6 +327,7 @@ export const LoginForm: React.FC = () => {
             size="lg"
             sx={{ width: '100%', mb: 3 }}
             isLoading={isSubmitting}
+            aria-describedby={apiError ? 'form-error' : undefined}
           >
             {!isSubmitting ? (
               <>
@@ -347,8 +354,9 @@ export const LoginForm: React.FC = () => {
               size="md"
               sx={{ minWidth: '140px' }}
               onClick={handleGoogleLogin}
+              aria-label="Sign in with Google"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: 8 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: 8 }} aria-hidden="true">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -374,8 +382,9 @@ export const LoginForm: React.FC = () => {
               size="md"
               sx={{ minWidth: '140px' }}
               onClick={handleFacebookLogin}
+              aria-label="Sign in with Facebook"
             >
-              <svg width="20" height="20" fill="#1877F2" viewBox="0 0 24 24" style={{ marginRight: 8 }}>
+              <svg width="20" height="20" fill="#1877F2" viewBox="0 0 24 24" style={{ marginRight: 8 }} aria-hidden="true">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
               Facebook

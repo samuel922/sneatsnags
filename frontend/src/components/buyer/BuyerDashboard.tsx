@@ -1,12 +1,42 @@
 import { useState, useEffect } from 'react';
-import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
+import { 
+  Box, 
+  Typography, 
+  Grid, 
+  Card, 
+  CardContent, 
+  Avatar, 
+  IconButton,
+  Chip,
+  Divider,
+  LinearProgress,
+  Stack,
+  Paper,
+  useTheme,
+  alpha
+} from '@mui/material';
+import { 
+  TrendingUp, 
+  ShoppingCart, 
+  Assignment, 
+  Event as EventIcon,
+  Search,
+  LocalOffer,
+  ArrowForward,
+  Timeline,
+  CheckCircle,
+  AccessTime,
+  Star,
+  CardGiftcard
+} from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { buyerService } from '../../services/buyerService';
+import { Button } from '../ui/Button';
 
 export const BuyerDashboard = () => {
   const { user } = useAuth();
+  const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     activeOffers: 0,
@@ -44,107 +74,340 @@ export const BuyerDashboard = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {user?.firstName}!
-        </h1>
-        <Link to="/events">
-          <Button>Browse Events</Button>
-        </Link>
-      </div>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      {/* Header Section */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 4,
+        p: 3,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+        borderRadius: 3,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar 
+            sx={{ 
+              width: 64, 
+              height: 64, 
+              mr: 3,
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+              fontSize: '1.5rem',
+              fontWeight: 600
+            }}
+          >
+            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+          </Avatar>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+              Welcome back, {user?.firstName}!
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              Ready to find your next event tickets?
+            </Typography>
+          </Box>
+        </Box>
+        <Button 
+          component={Link} 
+          to="/events" 
+          variant="gradient" 
+          size="lg"
+          startIcon={<EventIcon />}
+          sx={{ 
+            borderRadius: 3,
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1.5
+          }}
+        >
+          Browse Events
+        </Button>
+      </Box>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-700">Active Offers</h3>
-            <p className="text-3xl font-bold text-blue-600 mt-2">
-              {loading ? '...' : stats.activeOffers}
-            </p>
-          </div>
-        </Card>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
+          <Card sx={{ 
+            height: '100%',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            borderRadius: 3,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                  <AccessTime />
+                </Avatar>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  Active Offers
+                </Typography>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
+                {loading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LinearProgress sx={{ width: 60, mr: 2 }} />
+                  </Box>
+                ) : stats.activeOffers}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Currently pending offers
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-700">Accepted Offers</h3>
-            <p className="text-3xl font-bold text-green-600 mt-2">
-              {loading ? '...' : stats.acceptedOffers}
-            </p>
-          </div>
-        </Card>
+        <Grid item xs={12} md={4}>
+          <Card sx={{ 
+            height: '100%',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+            borderRadius: 3,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: `0 12px 24px ${alpha(theme.palette.success.main, 0.15)}`
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                  <CheckCircle />
+                </Avatar>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  Accepted Offers
+                </Typography>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 700, color: 'success.main', mb: 1 }}>
+                {loading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LinearProgress sx={{ width: 60, mr: 2 }} />
+                  </Box>
+                ) : stats.acceptedOffers}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Successfully accepted offers
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-700">Total Offers</h3>
-            <p className="text-3xl font-bold text-gray-600 mt-2">
-              {loading ? '...' : stats.totalOffers}
-            </p>
-          </div>
-        </Card>
-      </div>
+        <Grid item xs={12} md={4}>
+          <Card sx={{ 
+            height: '100%',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.light, 0.05)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`,
+            borderRadius: 3,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: `0 12px 24px ${alpha(theme.palette.secondary.main, 0.15)}`
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
+                  <Timeline />
+                </Avatar>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  Total Offers
+                </Typography>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 700, color: 'secondary.main', mb: 1 }}>
+                {loading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LinearProgress sx={{ width: 60, mr: 2 }} />
+                  </Box>
+                ) : stats.totalOffers}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                All offers made
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Getting Started */}
-      <Card>
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Getting Started</h2>
-          <div className="space-y-4">
-            <div className="flex items-center p-4 bg-blue-50 rounded-lg">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">1</span>
-              </div>
-              <div className="ml-4">
-                <h3 className="font-medium">Browse Events</h3>
-                <p className="text-sm text-gray-600">Find the events you're interested in</p>
-              </div>
-              <Link to="/events" className="ml-auto">
-                <Button size="sm">Browse Events</Button>
-              </Link>
-            </div>
+      <Card sx={{ 
+        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.4)} 100%)`,
+        backdropFilter: 'blur(10px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        borderRadius: 3,
+        mb: 4
+      }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
+            Getting Started
+          </Typography>
+          <Stack spacing={3}>
+            <Paper sx={{ 
+              p: 3, 
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              borderRadius: 2,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.primary.light, 0.08)} 100%)`,
+                transform: 'translateY(-2px)'
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>1</Typography>
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Browse Events
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Find the events you're interested in
+                  </Typography>
+                </Box>
+                <Button 
+                  component={Link} 
+                  to="/events" 
+                  variant="primary" 
+                  size="sm"
+                  endIcon={<ArrowForward />}
+                >
+                  Browse Events
+                </Button>
+              </Box>
+            </Paper>
 
-            <div className="flex items-center p-4 bg-green-50 rounded-lg">
-              <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">2</span>
-              </div>
-              <div className="ml-4">
-                <h3 className="font-medium">Search Tickets</h3>
-                <p className="text-sm text-gray-600">Find tickets that match your criteria</p>
-              </div>
-              <Link to="/listings" className="ml-auto">
-                <Button size="sm">Browse Tickets</Button>
-              </Link>
-            </div>
+            <Paper sx={{ 
+              p: 3, 
+              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.light, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+              borderRadius: 2,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.12)} 0%, ${alpha(theme.palette.success.light, 0.08)} 100%)`,
+                transform: 'translateY(-2px)'
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2, width: 48, height: 48 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>2</Typography>
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Search Tickets
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Find tickets that match your criteria
+                  </Typography>
+                </Box>
+                <Button 
+                  component={Link} 
+                  to="/listings" 
+                  variant="secondary" 
+                  size="sm"
+                  endIcon={<ArrowForward />}
+                >
+                  Browse Tickets
+                </Button>
+              </Box>
+            </Paper>
 
-            <div className="flex items-center p-4 bg-purple-50 rounded-lg">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">3</span>
-              </div>
-              <div className="ml-4">
-                <h3 className="font-medium">Make Offers</h3>
-                <p className="text-sm text-gray-600">Submit offers on tickets you want to buy</p>
-              </div>
-              <Link to="/offers" className="ml-auto">
-                <Button size="sm">Browse Offers</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+            <Paper sx={{ 
+              p: 3, 
+              background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`,
+              borderRadius: 2,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.light, 0.08)} 100%)`,
+                transform: 'translateY(-2px)'
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'secondary.main', mr: 2, width: 48, height: 48 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>3</Typography>
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Make Offers
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Submit offers on tickets you want to buy
+                  </Typography>
+                </Box>
+                <Button 
+                  component={Link} 
+                  to="/offers" 
+                  variant="outline" 
+                  size="sm"
+                  endIcon={<ArrowForward />}
+                >
+                  Browse Offers
+                </Button>
+              </Box>
+            </Paper>
+          </Stack>
+        </CardContent>
       </Card>
 
       {/* Quick Actions */}
-      <Card>
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link to="/listings">
-              <Button className="w-full">Browse Tickets</Button>
-            </Link>
-            <Link to="/my-offers">
-              <Button variant="outline" className="w-full">View My Offers</Button>
-            </Link>
-          </div>
-        </div>
+      <Card sx={{ 
+        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.4)} 100%)`,
+        backdropFilter: 'blur(10px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        borderRadius: 3
+      }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
+            Quick Actions
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Button 
+                component={Link} 
+                to="/listings" 
+                variant="gradient" 
+                size="lg"
+                fullWidth
+                startIcon={<ShoppingCart />}
+                sx={{ 
+                  py: 2, 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '1.1rem'
+                }}
+              >
+                Browse Tickets
+              </Button>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Button 
+                component={Link} 
+                to="/my-offers" 
+                variant="outline" 
+                size="lg"
+                fullWidth
+                startIcon={<LocalOffer />}
+                sx={{ 
+                  py: 2, 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '1.1rem'
+                }}
+              >
+                View My Offers
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 };

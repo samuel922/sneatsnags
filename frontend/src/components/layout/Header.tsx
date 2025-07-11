@@ -181,6 +181,10 @@ export const Header: React.FC = () => {
             '&:hover': {
               backgroundColor: 'rgba(37, 99, 235, 0.1)',
             },
+            '&:focus-visible': {
+              outline: '3px solid #3b82f6',
+              outlineOffset: '2px'
+            }
           }}
         >
           {item.name}
@@ -194,6 +198,8 @@ export const Header: React.FC = () => {
       anchor="left"
       open={isMenuOpen}
       onClose={() => setIsMenuOpen(false)}
+      role="navigation"
+      aria-label="Mobile navigation menu"
       sx={{
         '& .MuiDrawer-paper': {
           width: 280,
@@ -246,6 +252,8 @@ export const Header: React.FC = () => {
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={handleProfileMenuClose}
+      role="menu"
+      aria-label="User account menu"
       PaperProps={{
         sx: {
           mt: 1,
@@ -289,6 +297,9 @@ export const Header: React.FC = () => {
     <>
       <StyledAppBar 
         position="fixed" 
+        component="nav"
+        role="navigation"
+        aria-label="Main navigation"
         sx={{ 
           background: isScrolled 
             ? 'rgba(255, 255, 255, 0.95)' 
@@ -303,7 +314,7 @@ export const Header: React.FC = () => {
                 <IconButton
                   edge="start"
                   color="inherit"
-                  aria-label="menu"
+                  aria-label="Open navigation menu"
                   onClick={() => setIsMenuOpen(true)}
                   sx={{ mr: 2 }}
                 >
@@ -329,6 +340,9 @@ export const Header: React.FC = () => {
                   <NotificationDropdown />
                   <IconButton
                     onClick={handleProfileMenuOpen}
+                    aria-label="Open user menu"
+                    aria-expanded={Boolean(anchorEl)}
+                    aria-haspopup="true"
                     sx={{ 
                       border: '2px solid',
                       borderColor: 'primary.main',

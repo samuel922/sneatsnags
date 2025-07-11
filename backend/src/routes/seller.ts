@@ -174,6 +174,38 @@ router.post("/listings/:listingId/upload-tickets", upload.array("tickets", 10), 
 
 /**
  * @swagger
+ * /api/sellers/listings/{listingId}/offers:
+ *   get:
+ *     summary: Get offers for a specific listing
+ *     tags: [Sellers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listingId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Listing offers retrieved successfully
+ */
+router.get("/listings/:listingId/offers", sellerController.getListingOffers);
+
+/**
+ * @swagger
  * /api/sellers/transactions:
  *   get:
  *     summary: Get seller's transactions

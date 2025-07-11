@@ -1,9 +1,15 @@
+import { Container, Box } from '@mui/material';
 import { SellerDashboard } from '../components/seller/SellerDashboard';
 
 export const SellerDashboardPage = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <SellerDashboard />
-    </div>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box sx={{ 
+        minHeight: '100vh',
+        background: 'transparent'
+      }}>
+        <SellerDashboard />
+      </Box>
+    </Container>
   );
 };

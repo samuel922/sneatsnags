@@ -240,6 +240,24 @@ class SellerService {
     return response.data;
   }
 
+  async getListingOffers(listingId: string, query?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }): Promise<{
+    data: AvailableOffer[];
+    listing: SellerListing;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    const response = await api.get(`/sellers/listings/${listingId}/offers`, query);
+    return response.data;
+  }
+
   async getAvailableOffers(query?: {
     page?: number;
     limit?: number;

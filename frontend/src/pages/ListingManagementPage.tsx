@@ -14,11 +14,13 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Handshake,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { CreateListingForm } from '../components/listings/CreateListingForm';
+import { ListingOffersModal } from '../components/offers/ListingOffersModal';
 import { sellerService } from '../services/sellerService';
 import SweetAlert from '../utils/sweetAlert';
 import type { Listing, ListingStatus } from '../types/listing';
@@ -33,6 +35,8 @@ export const ListingManagementPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<ListingStatus | ''>('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showOffersModal, setShowOffersModal] = useState(false);
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchListings();
@@ -91,6 +95,18 @@ export const ListingManagementPage: React.FC = () => {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const handleViewOffers = (listingId: string) => {
+    setSelectedListingId(listingId);
+    setShowOffersModal(true);
+  };
+
+  const handleCloseOffersModal = () => {
+    setShowOffersModal(false);
+    setSelectedListingId(null);
+    // Refresh listings to update offer counts
+    fetchListings();
   };
 
   const formatPrice = (price: number) => {
@@ -402,6 +418,22 @@ export const ListingManagementPage: React.FC = () => {
                   </Button>
                 )}
 
+                {listing.status === 'ACTIVE' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewOffers(listing.id)}
+                  >
+                    <Handshake className="h-4 w-4 mr-2" />
+                    View Offers
+                    {(listing as any).offerCount > 0 && (
+                      <span className="ml-2 bg-primary-500 text-white text-xs rounded-full px-2 py-1">
+                        {(listing as any).offerCount}
+                      </span>
+                    )}
+                  </Button>
+                )}
+
                 {(listing.status === 'ACTIVE' || listing.status === 'PENDING') && (
                   <Button
                     variant="outline"
@@ -496,6 +528,25 @@ export const ListingManagementPage: React.FC = () => {
             </Button>
           )}
         </Card>
+      )}
+
+      {/* Modals */}
+      {showCreateForm && (
+        <CreateListingForm
+          onSuccess={() => {
+            setShowCreateForm(false);
+            fetchListings();
+          }}
+          onCancel={() => setShowCreateForm(false)}
+        />
+      )}
+
+      {showOffersModal && selectedListingId && (
+        <ListingOffersModal
+          open={showOffersModal}
+          onClose={handleCloseOffersModal}
+          listingId={selectedListingId}
+        />
       )}
     </div>
   );

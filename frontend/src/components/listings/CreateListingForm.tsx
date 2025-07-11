@@ -101,6 +101,19 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
       console.log("Events API response:", response);
       console.log("Events data:", response.data);
       console.log("Number of events:", response.data?.length || 0);
+      
+      // Debug: Log each event's structure
+      response.data?.forEach((event, index) => {
+        console.log(`Event ${index}:`, {
+          id: event.id,
+          name: event.name,
+          date: event.date,
+          eventDate: event.eventDate,
+          venue: event.venue,
+          city: event.city,
+          state: event.state
+        });
+      });
 
       // The eventService returns { data: Event[], pagination: {...} }
       setEvents(response.data || []);
@@ -115,7 +128,21 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
 
   const fetchEventSections = async (eventId: string) => {
     try {
+      console.log(`Fetching sections for event ID: ${eventId}`);
       const eventSections = await eventService.getEventSections(eventId);
+      console.log("Event sections response:", eventSections);
+      console.log("Number of sections:", eventSections?.length || 0);
+      
+      // Debug: Log each section's structure
+      eventSections?.forEach((section, index) => {
+        console.log(`Section ${index}:`, {
+          id: section.id,
+          name: section.name,
+          eventId: section.eventId,
+          description: section.description
+        });
+      });
+      
       setSections(eventSections);
     } catch (error) {
       console.error("Failed to fetch event sections:", error);
@@ -158,6 +185,29 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({
         row: data.row || undefined,
         notes: data.notes || undefined,
       };
+
+      console.log("Form data:", data);
+      console.log("Listing data to be sent:", listingData);
+      console.log("Selected event ID:", data.eventId);
+      console.log("Selected section ID:", data.sectionId);
+      
+      // Verify the selected event and section exist
+      const selectedEvent = events.find(e => e.id === data.eventId);
+      const selectedSection = sections.find(s => s.id === data.sectionId);
+      console.log("Selected event:", selectedEvent);
+      console.log("Selected section:", selectedSection);
+      
+      if (!selectedEvent) {
+        throw new Error("Selected event not found");
+      }
+      
+      if (!selectedSection) {
+        throw new Error("Selected section not found");
+      }
+      
+      if (selectedSection.eventId !== data.eventId) {
+        throw new Error(`Section ${selectedSection.id} does not belong to event ${data.eventId}`);
+      }
 
       SweetAlert.loading('Creating Listing', 'Please wait while we create your listing...');
       

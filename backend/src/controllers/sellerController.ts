@@ -175,11 +175,42 @@ export const sellerController = {
     }
   },
 
+  // Get offers for a specific listing
+  getListingOffers: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { listingId } = req.params!;
+      const { page, limit, skip } = getPaginationParams(req.query!);
+      const { status } = req.query!;
+      const sellerId = req.user!.id;
+
+      const result = await listingService.getListingOffers(listingId, sellerId, {
+        skip,
+        take: limit,
+        status: status as string,
+      });
+
+      const paginatedResult = createPaginationResult(
+        result.offers,
+        result.total,
+        page,
+        limit
+      );
+
+      res.json(successResponse({
+        ...paginatedResult,
+        listing: result.listing,
+      }, "Listing offers retrieved"));
+    } catch (error) {
+      logger.error("Get listing offers error:", error);
+      res.status(500).json(errorResponse("Failed to retrieve listing offers"));
+    }
+  },
+
   // Get available offers for seller
   getAvailableOffers: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { page, limit, skip } = getPaginationParams(req.query);
-      const { eventId, minPrice, maxPrice } = req.query;
+      const { page, limit, skip } = getPaginationParams(req.query!);
+      const { eventId, minPrice, maxPrice } = req.query!;
       const sellerId = req.user!.id;
 
       const result = await listingService.getAvailableOffers({

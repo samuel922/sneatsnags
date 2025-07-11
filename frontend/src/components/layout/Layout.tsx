@@ -30,8 +30,11 @@ const MainContent = styled('main')(({ theme }) => ({
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <StyledBox>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Header />
-      <MainContent>
+      <MainContent id="main-content" role="main" aria-label="Main content">
         <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
           {children}
         </Container>

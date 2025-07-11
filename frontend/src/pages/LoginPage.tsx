@@ -46,7 +46,7 @@ export const LoginPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <StyledContainer>
+    <StyledContainer role="main" aria-label="Login page">
       {/* Background Orbs */}
       <BackgroundOrb
         sx={{

@@ -23,6 +23,9 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
+# Create uploads directory
+RUN mkdir -p /app/uploads
+
 # Expose port
 EXPOSE 5001
 

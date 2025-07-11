@@ -1,32 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Users,
-  Calendar,
-  DollarSign,
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Chip,
+  LinearProgress,
+  Stack,
+  Paper,
+  useTheme,
+  alpha,
+  IconButton,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Skeleton
+} from '@mui/material';
+import {
+  People as Users,
+  Event as Calendar,
+  AttachMoney as DollarSign,
   TrendingUp,
   Settings,
-  AlertCircle,
-  Activity,
-  BarChart3,
-  UserCheck,
-  FileText,
-  Globe,
+  Error as AlertCircle,
+  Timeline as Activity,
+  Analytics as BarChart3,
+  VerifiedUser as UserCheck,
+  Description as FileText,
+  Public as Globe,
   Shield,
-  ArrowUp,
-  Target,
-  Zap,
-  Database,
-  MessageSquare,
-  Download,
-  RefreshCw,
-} from 'lucide-react';
-import { Card } from '../components/ui/Card';
+  ArrowUpward as ArrowUp,
+  GpsFixed as Target,
+  FlashOn as Zap,
+  Storage as Database,
+  Forum as MessageSquare,
+  GetApp as Download,
+  Refresh as RefreshCw,
+  Dashboard,
+  Assessment,
+  SupervisorAccount,
+  MonetizationOn,
+  Speed,
+  Security,
+  Notifications,
+  Business
+} from '@mui/icons-material';
 import { Button } from '../components/ui/Button';
 import { adminService, type AdminDashboardStats } from '../services/adminService';
 import { SweetAlert } from '../utils/sweetAlert';
 
 export const AdminDashboardPage: React.FC = () => {
+  const theme = useTheme();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,68 +115,106 @@ export const AdminDashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ p: 3 }}>
+          <Skeleton variant="text" width="25%" height={40} sx={{ mb: 4 }} />
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+              <Grid item xs={12} sm={6} lg={3} key={i}>
+                <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
+              </Grid>
             ))}
-          </div>
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="h-64 bg-gray-200 rounded-lg"></div>
-            <div className="h-64 bg-gray-200 rounded-lg"></div>
-          </div>
-        </div>
-      </div>
+          </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={12} lg={6}>
+              <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
+            </Grid>
+            <Grid item xs={12} lg={6}>
+              <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
+            </Grid>
+          </Grid>
+        </Box>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Button onClick={fetchDashboardStats}>Retry</Button>
-        </div>
-      </div>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ textAlign: 'center', p: 8 }}>
+          <AlertCircle sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+            Dashboard Error
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+            {error}
+          </Typography>
+          <Button onClick={fetchDashboardStats} variant="primary" size="lg">
+            Retry
+          </Button>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Platform overview and management</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-500">
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        {/* Header */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 4,
+          p: 3,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+          borderRadius: 3,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar 
+              sx={{ 
+                width: 64, 
+                height: 64, 
+                mr: 3,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                fontSize: '1.5rem',
+                fontWeight: 600
+              }}
+            >
+              <Dashboard sx={{ fontSize: '2rem' }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+                Admin Dashboard
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                Platform overview and management
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="caption" color="text.secondary">
               Last updated: {lastRefresh.toLocaleTimeString()}
-            </div>
+            </Typography>
             <Button 
               onClick={() => refreshData()} 
               variant="outline" 
-              className="flex items-center space-x-2"
+              startIcon={<RefreshCw />}
+              sx={{ borderRadius: 2 }}
             >
-              <RefreshCw className="h-4 w-4" />
-              <span>Refresh</span>
+              Refresh
             </Button>
             <Button 
               onClick={() => exportData('dashboard')} 
               variant="outline" 
-              className="flex items-center space-x-2"
+              startIcon={<Download />}
+              sx={{ borderRadius: 2 }}
             >
-              <Download className="h-4 w-4" />
-              <span>Export</span>
+              Export
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -539,6 +607,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </Link>
       </div>
-    </div>
+      </Box>
+    </Container>
   );
 };

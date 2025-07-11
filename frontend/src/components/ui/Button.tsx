@@ -127,6 +127,15 @@ const StyledButton = styled(MuiButton)<{ customvariant: string; customsize: stri
     textTransform: 'none' as const,
     transition: 'all 0.2s ease-in-out',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    '&:focus-visible': {
+      outline: '3px solid #3b82f6',
+      outlineOffset: '2px',
+      position: 'relative',
+      zIndex: 1,
+    },
+    '&:focus:not(:focus-visible)': {
+      outline: 'none',
+    },
     '&:disabled': {
       opacity: 0.6,
       cursor: 'not-allowed',
