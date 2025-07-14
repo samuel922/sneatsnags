@@ -11,6 +11,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.backup
 
 # Build outputs
 dist/
@@ -97,4 +98,5 @@ Thumbs.db
 uploads/
 
 # Prisma
-prisma/migrations/
+prisma/migrations/.env.backup
+.env.backup
