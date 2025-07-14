@@ -18,7 +18,8 @@
     "railway:seed": "cd backend && npm run db:seed"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "prisma": "^6.11.1"
   },
   "workspaces": [
     "backend",
@@ -26,5 +27,8 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.11.1"
   }
 }
