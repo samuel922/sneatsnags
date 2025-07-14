@@ -268,7 +268,20 @@ export class TransactionService {
             },
           },
           event: true,
-          offer: true,
+          offer: {
+            include: {
+              event: {
+                select: {
+                  id: true,
+                  name: true,
+                  eventDate: true,
+                  venue: true,
+                  city: true,
+                  state: true,
+                },
+              },
+            },
+          },
           listing: true,
         },
       }),
@@ -300,7 +313,20 @@ export class TransactionService {
           },
         },
         event: true,
-        offer: true,
+        offer: {
+          include: {
+            event: {
+              select: {
+                id: true,
+                name: true,
+                eventDate: true,
+                venue: true,
+                city: true,
+                state: true,
+              },
+            },
+          },
+        },
         listing: true,
       },
     });
@@ -344,7 +370,20 @@ export class TransactionService {
             },
           },
           event: true,
-          offer: true,
+          offer: {
+            include: {
+              event: {
+                select: {
+                  id: true,
+                  name: true,
+                  eventDate: true,
+                  venue: true,
+                  city: true,
+                  state: true,
+                },
+              },
+            },
+          },
           listing: true,
         },
       }),
@@ -755,7 +794,20 @@ export class TransactionService {
             },
           },
           event: true,
-          offer: true,
+          offer: {
+            include: {
+              event: {
+                select: {
+                  id: true,
+                  name: true,
+                  eventDate: true,
+                  venue: true,
+                  city: true,
+                  state: true,
+                },
+              },
+            },
+          },
           listing: true,
         },
       }),
@@ -809,7 +861,20 @@ export class TransactionService {
             },
           },
           event: true,
-          offer: true,
+          offer: {
+            include: {
+              event: {
+                select: {
+                  id: true,
+                  name: true,
+                  eventDate: true,
+                  venue: true,
+                  city: true,
+                  state: true,
+                },
+              },
+            },
+          },
           listing: true,
         },
       }),
