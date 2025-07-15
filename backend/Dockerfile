@@ -9,8 +9,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy prisma schema
 COPY prisma ./prisma
@@ -32,11 +32,18 @@ RUN apk add --no-cache openssl
 
 WORKDIR /app
 
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
+
+# Generate Prisma client for production
+RUN npx prisma generate
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
