@@ -10,15 +10,12 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
-  Grid,
   Avatar,
   RadioGroup,
   FormControl,
   FormLabel,
   Radio,
   Paper,
-  useTheme,
-  useMediaQuery,
   TextField,
   InputAdornment
 } from '@mui/material';
@@ -49,8 +46,6 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export const RegisterForm: React.FC = () => {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [apiError, setApiError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -59,6 +54,7 @@ export const RegisterForm: React.FC = () => {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -67,9 +63,17 @@ export const RegisterForm: React.FC = () => {
     },
   });
 
+  const selectedRole = watch('role');
+  console.log('Current form role value:', selectedRole);
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setApiError('');
+      
+      // Debug: Log the actual form data being submitted
+      console.log('Form submission data:', data);
+      console.log('Role being submitted:', data.role);
+      console.log('Role type:', typeof data.role);
       
       const user = await registerUser({
         email: data.email,
@@ -344,12 +348,18 @@ export const RegisterForm: React.FC = () => {
             <Controller
               name="role"
               control={control}
-              render={({ field }) => (
-                <RadioGroup
-                  {...field}
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                >
+              defaultValue={UserRole.BUYER}
+              render={({ field }) => {
+                console.log('Controller render - field.value:', field.value);
+                return (
+                  <RadioGroup
+                    name={field.name}
+                    value={field.value}
+                    onChange={(e) => {
+                      console.log('Role change event:', e.target.value);
+                      field.onChange(e.target.value);
+                    }}
+                  >
                   {roleOptions.map((option) => (
                     <Paper
                       key={option.value}
@@ -393,7 +403,8 @@ export const RegisterForm: React.FC = () => {
                     </Paper>
                   ))}
                 </RadioGroup>
-              )}
+                );
+              }}
             />
             {errors.role && (
               <Typography variant="body2" color="error" sx={{ mt: 1 }}>
