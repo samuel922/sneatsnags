@@ -12,6 +12,6 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
-        value: https://your-backend-url.render.com
+        value: https://sneatsnags-backend.onrender.com/api
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         value: pk_test_your_stripe_key
