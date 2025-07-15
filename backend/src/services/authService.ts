@@ -26,7 +26,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new Error("User already excist with this email");
+      throw new Error("User already exists with this email");
     }
 
     //Hash Password

@@ -2,14 +2,15 @@ import jwt from "jsonwebtoken";
 import { config } from "../config/config";
 
 export const generateToken = (payload: object): string => {
-  const expires = {
+  return jwt.sign(payload, config.JWT_SECRET, {
     expiresIn: config.JWT_EXPIRES_IN,
-  };
-  return jwt.sign(payload, config.JWT_SECRET);
+  } as jwt.SignOptions);
 };
 
 export const generateRefreshToken = (payload: object): string => {
-  return jwt.sign(payload, config.JWT_REFRESH_SECRET);
+  return jwt.sign(payload, config.JWT_REFRESH_SECRET, {
+    expiresIn: config.JWT_REFRESH_EXPIRES_IN,
+  } as jwt.SignOptions);
 };
 
 export const verifyToken = (token: string): any => {

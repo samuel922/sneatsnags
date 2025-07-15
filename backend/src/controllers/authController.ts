@@ -19,6 +19,7 @@ export const register = async (
   try {
     const validatedData = registerSchema.parse(req.body);
     const result = await authService.register(validatedData);
+    
     res.status(201).json({
       success: true,
       message: "Registration successful",
