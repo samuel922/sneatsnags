@@ -75,7 +75,9 @@ export const eventController = {
   // Create event (admin only)
   createEvent: async (req: AuthenticatedRequest, res: Response) => {
     try {
+      logger.info("Creating event with data:", JSON.stringify(req.body, null, 2));
       const event = await eventService.createEvent(req.body);
+      logger.info("Event created successfully:", event.id);
       res.status(201).json(successResponse(event, "Event created successfully"));
     } catch (error) {
       logger.error("Create event error:", error);

@@ -9,22 +9,38 @@ import { logger } from "../utils/logger";
 
 export class EventService {
   async createEvent(data: CreateEventRequest) {
-    const { sections, ...eventData } = data;
+    try {
+      logger.info("EventService: Creating event with data:", JSON.stringify(data, null, 2));
+      const { sections, ...eventData } = data;
 
-    const event = await prisma.event.create({
-      data: {
-        ...eventData,
-        sections: {
-          create: sections,
+      const event = await prisma.event.create({
+        data: {
+          ...eventData,
+          sections: {
+            create: sections,
+          },
         },
-      },
-      include: {
-        sections: true,
-      },
-    });
+        include: {
+          sections: true,
+        },
+      });
 
-    logger.info(`Event created: ${event.id}`);
-    return event;
+      logger.info(`Event created: ${event.id}`);
+      
+      // Map database fields to frontend expected fields
+      return {
+        ...event,
+        date: event.eventDate.toISOString(),
+        time: event.eventDate.toISOString(),
+        totalCapacity: event.totalSeats || 0,
+        ticketsAvailable: event.availableSeats || 0,
+        minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+        maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+      };
+    } catch (error) {
+      logger.error("EventService: Failed to create event:", error);
+      throw error;
+    }
   }
 
   async getEvents(query: EventSearchQuery): Promise<PaginationResponse<any>> {

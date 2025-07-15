@@ -614,55 +614,52 @@ export const AdminEventsPage: React.FC = () => {
 
   const handleCreateEvent = async (eventData: CreateEventRequest) => {
     try {
+      // Transform sections to match backend structure
+      const backendSections = eventData.sections.map(section => ({
+        name: section.name,
+        description: section.description || '',
+        rowCount: Math.ceil(section.capacity / 20), // Estimate rows
+        seatCount: section.capacity,
+        priceLevel: section.minPrice,
+      }));
+
+      const requestData = {
+        name: eventData.name,
+        description: eventData.description || '',
+        venue: eventData.venue,
+        address: eventData.address,
+        city: eventData.city,
+        state: eventData.state,
+        zipCode: eventData.zipCode || '00000',
+        country: eventData.country || 'US',
+        eventDate: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
+        eventType: eventData.category,
+        imageUrl: eventData.imageUrl || '',
+        minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map(s => s.minPrice)) : 0,
+        maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map(s => s.maxPrice)) : 0,
+        totalSeats: eventData.sections.reduce((sum, section) => sum + section.capacity, 0),
+        sections: backendSections,
+      };
+
+      console.log('Sending request data:', JSON.stringify(requestData, null, 2));
+
       const response = await fetch('/api/events', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: eventData.name,
-          description: eventData.description,
-          venue: eventData.venue,
-          address: eventData.address,
-          city: eventData.city,
-          state: eventData.state,
-          zipCode: eventData.zipCode || '00000',
-          country: eventData.country,
-          eventDate: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
-          eventType: eventData.category,
-          imageUrl: eventData.imageUrl,
-          minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map(s => s.minPrice)) : 0,
-          maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map(s => s.maxPrice)) : 0,
-          totalSeats: eventData.sections.reduce((sum, section) => sum + section.capacity, 0),
-          availableSeats: eventData.sections.reduce((sum, section) => sum + section.capacity, 0),
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create event');
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error(`Failed to create event: ${response.status} ${response.statusText}`);
       }
 
       const result = await response.json();
-      const newEvent = result.data;
-
-      // Create sections for the event
-      for (const section of eventData.sections) {
-        await fetch(`/api/events/${newEvent.id}/sections`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: section.name,
-            description: section.description,
-            rowCount: Math.ceil(section.capacity / 20), // Estimate rows
-            seatCount: section.capacity,
-            priceLevel: section.minPrice,
-          }),
-        });
-      }
+      console.log('Event created successfully:', result);
 
       // Refresh the events list
       await fetchEvents();
@@ -679,7 +676,7 @@ export const AdminEventsPage: React.FC = () => {
       console.error('Error creating event:', error);
       SweetAlert.error(
         'Failed to create event',
-        'There was an error creating the event. Please try again.'
+        error instanceof Error ? error.message : 'There was an error creating the event. Please try again.'
       );
     }
   };
