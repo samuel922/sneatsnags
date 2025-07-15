@@ -37,7 +37,7 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
-  role: z.string(),
+  role: z.enum(['BUYER', 'SELLER', 'BROKER']),
   agreeToTerms: z.boolean().refine(val => val, 'You must agree to the terms'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -70,12 +70,13 @@ export const RegisterForm: React.FC = () => {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setApiError('');
+      
       const user = await registerUser({
         email: data.email,
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: data.role as any,
+        role: data.role,
       });
       SweetAlert.success('Welcome to SneatSnags!', 'Your account has been created successfully');
       
