@@ -16,12 +16,15 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  Save,
+  X,
+  ImageIcon,
 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { adminService } from '../../services/adminService';
 import { SweetAlert } from '../../utils/sweetAlert';
-import type { Event } from '../../types/event';
+import type { Event, CreateEventRequest, EventCategory } from '../../types/event';
 
 interface EventStats {
   totalEvents: number;
@@ -43,6 +46,494 @@ interface EventFilters {
   dateTo: string;
   category: string;
 }
+
+interface CreateEventFormProps {
+  event?: Event | null;
+  onSubmit: (eventData: CreateEventRequest) => Promise<void>;
+  onCancel: () => void;
+}
+
+const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState<CreateEventRequest>({
+    name: event?.name || '',
+    description: event?.description || '',
+    date: event?.date ? new Date(event.date).toISOString().split('T')[0] : '',
+    time: event?.time || (event?.date ? new Date(event.date).toISOString().split('T')[1].slice(0, 5) : ''),
+    venue: event?.venue || '',
+    address: event?.address || '',
+    city: event?.city || '',
+    state: event?.state || '',
+    zipCode: event?.zipCode || '',
+    country: event?.country || 'US',
+    category: (event?.category as EventCategory) || 'OTHER',
+    imageUrl: event?.imageUrl || '',
+    totalCapacity: event?.totalCapacity || 0,
+    sections: event?.sections || [],
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) newErrors.name = 'Event name is required';
+    if (!formData.description.trim()) newErrors.description = 'Event description is required';
+    if (!formData.date) newErrors.date = 'Event date is required';
+    if (!formData.time) newErrors.time = 'Event time is required';
+    if (!formData.venue.trim()) newErrors.venue = 'Venue name is required';
+    if (!formData.address.trim()) newErrors.address = 'Address is required';
+    if (!formData.city.trim()) newErrors.city = 'City is required';
+    if (!formData.state.trim()) newErrors.state = 'State is required';
+    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.totalCapacity || formData.totalCapacity <= 0) {
+      newErrors.totalCapacity = 'Total capacity must be greater than 0';
+    }
+    if (formData.sections.length === 0) {
+      newErrors.sections = 'At least one section is required';
+    }
+
+    // Validate date is in the future
+    const eventDateTime = new Date(`${formData.date}T${formData.time}`);
+    if (eventDateTime <= new Date()) {
+      newErrors.date = 'Event date must be in the future';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Error creating event:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof CreateEventRequest, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const addSection = () => {
+    const newSection = {
+      name: '',
+      description: '',
+      capacity: 0,
+      minPrice: 0,
+      maxPrice: 0,
+      isActive: true,
+    };
+    setFormData(prev => ({
+      ...prev,
+      sections: [...prev.sections, newSection],
+    }));
+  };
+
+  const removeSection = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      sections: prev.sections.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateSection = (index: number, field: string, value: string | number | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      sections: prev.sections.map((section, i) =>
+        i === index ? { ...section, [field]: value } : section
+      ),
+    }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setPreviewImage(result);
+        // In a real app, you'd upload to a cloud storage service
+        // For now, we'll just use the data URL
+        setFormData(prev => ({ ...prev, imageUrl: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Event Name *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter event name"
+              />
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category *
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.category ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select category</option>
+                <option value="SPORTS">Sports</option>
+                <option value="CONCERT">Concert</option>
+                <option value="THEATER">Theater</option>
+                <option value="COMEDY">Comedy</option>
+                <option value="OTHER">Other</option>
+              </select>
+              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description *
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              rows={4}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.description ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter event description"
+            />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+          </div>
+        </div>
+
+        {/* Date & Time */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-900 mb-4">Date & Time</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date *
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.date ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Time *
+              </label>
+              <input
+                type="time"
+                value={formData.time}
+                onChange={(e) => handleInputChange('time', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.time ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
+            </div>
+          </div>
+        </div>
+
+        {/* Venue Information */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-900 mb-4">Venue Information</h4>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Venue Name *
+              </label>
+              <input
+                type="text"
+                value={formData.venue}
+                onChange={(e) => handleInputChange('venue', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.venue ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter venue name"
+              />
+              {errors.venue && <p className="text-red-500 text-sm mt-1">{errors.venue}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address *
+              </label>
+              <input
+                type="text"
+                value={formData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.address ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter full address"
+              />
+              {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.city ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter city"
+                />
+                {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State *
+                </label>
+                <input
+                  type="text"
+                  value={formData.state}
+                  onChange={(e) => handleInputChange('state', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.state ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter state"
+                />
+                {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  ZIP Code
+                </label>
+                <input
+                  type="text"
+                  value={formData.zipCode}
+                  onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter ZIP code"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Total Capacity *
+                </label>
+                <input
+                  type="number"
+                  value={formData.totalCapacity}
+                  onChange={(e) => handleInputChange('totalCapacity', parseInt(e.target.value) || 0)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.totalCapacity ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter total capacity"
+                  min="1"
+                />
+                {errors.totalCapacity && <p className="text-red-500 text-sm mt-1">{errors.totalCapacity}</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Event Image */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-900 mb-4">Event Image</h4>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Upload Image
+              </label>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Choose Image
+                </label>
+                {previewImage && (
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="h-16 w-16 object-cover rounded-lg"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sections */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-lg font-semibold text-gray-900">Sections & Pricing</h4>
+            <Button type="button" onClick={addSection} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Section
+            </Button>
+          </div>
+          
+          {errors.sections && <p className="text-red-500 text-sm mb-4">{errors.sections}</p>}
+          
+          <div className="space-y-4">
+            {formData.sections.map((section, index) => (
+              <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h5 className="font-medium text-gray-900">Section {index + 1}</h5>
+                  <Button
+                    type="button"
+                    onClick={() => removeSection(index)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Section Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={section.name}
+                      onChange={(e) => updateSection(index, 'name', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., General Admission, VIP, etc."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Capacity *
+                    </label>
+                    <input
+                      type="number"
+                      value={section.capacity}
+                      onChange={(e) => updateSection(index, 'capacity', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter capacity"
+                      min="1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Min Price ($) *
+                    </label>
+                    <input
+                      type="number"
+                      value={section.minPrice}
+                      onChange={(e) => updateSection(index, 'minPrice', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Max Price ($) *
+                    </label>
+                    <input
+                      type="number"
+                      value={section.maxPrice}
+                      onChange={(e) => updateSection(index, 'maxPrice', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={section.description}
+                    onChange={(e) => updateSection(index, 'description', e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Section description (optional)"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Form Actions */}
+        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+          <Button type="button" onClick={onCancel} variant="outline" disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                {event ? 'Updating...' : 'Creating...'}
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                {event ? 'Update Event' : 'Create Event'}
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+};
 
 export const AdminEventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -118,6 +609,78 @@ export const AdminEventsPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+    }
+  };
+
+  const handleCreateEvent = async (eventData: CreateEventRequest) => {
+    try {
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: eventData.name,
+          description: eventData.description,
+          venue: eventData.venue,
+          address: eventData.address,
+          city: eventData.city,
+          state: eventData.state,
+          zipCode: eventData.zipCode || '00000',
+          country: eventData.country,
+          eventDate: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
+          eventType: eventData.category,
+          imageUrl: eventData.imageUrl,
+          minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map(s => s.minPrice)) : 0,
+          maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map(s => s.maxPrice)) : 0,
+          totalSeats: eventData.sections.reduce((sum, section) => sum + section.capacity, 0),
+          availableSeats: eventData.sections.reduce((sum, section) => sum + section.capacity, 0),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create event');
+      }
+
+      const result = await response.json();
+      const newEvent = result.data;
+
+      // Create sections for the event
+      for (const section of eventData.sections) {
+        await fetch(`/api/events/${newEvent.id}/sections`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: section.name,
+            description: section.description,
+            rowCount: Math.ceil(section.capacity / 20), // Estimate rows
+            seatCount: section.capacity,
+            priceLevel: section.minPrice,
+          }),
+        });
+      }
+
+      // Refresh the events list
+      await fetchEvents();
+      await fetchStats();
+      
+      setShowCreateModal(false);
+      setSelectedEvent(null);
+      
+      SweetAlert.success(
+        selectedEvent ? 'Event Updated!' : 'Event Created!',
+        selectedEvent ? 'The event has been successfully updated.' : 'The event has been successfully created.'
+      );
+    } catch (error) {
+      console.error('Error creating event:', error);
+      SweetAlert.error(
+        'Failed to create event',
+        'There was an error creating the event. Please try again.'
+      );
     }
   };
 
@@ -425,15 +988,15 @@ export const AdminEventsPage: React.FC = () => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="h-4 w-4 mr-2" />
-                  {formatDate(event.eventDate)}
+                  {formatDate(event.date)}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <MapPin className="h-4 w-4 mr-2" />
-                  {event.venue?.name || 'TBA'}, {event.venue?.city || 'TBA'}
+                  {event.venue}, {event.city}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="h-4 w-4 mr-2" />
-                  {event.venue?.capacity || 0} capacity
+                  {event.totalCapacity || 0} capacity
                 </div>
               </div>
 
@@ -539,7 +1102,7 @@ export const AdminEventsPage: React.FC = () => {
                       <h4 className="font-medium text-gray-900 mb-2">Event Details</h4>
                       <div className="space-y-2 text-sm">
                         <div>Category: {selectedEvent.category}</div>
-                        <div>Date: {formatDate(selectedEvent.eventDate)}</div>
+                        <div>Date: {formatDate(selectedEvent.date)}</div>
                       </div>
                     </div>
                   </div>
@@ -549,13 +1112,13 @@ export const AdminEventsPage: React.FC = () => {
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Venue Information</h4>
                       <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="font-medium">{selectedEvent.venue?.name || 'TBA'}</div>
+                        <div className="font-medium">{selectedEvent.venue || 'TBA'}</div>
                         <div className="text-sm text-gray-600">
-                          {selectedEvent.venue?.address || 'TBA'}<br />
-                          {selectedEvent.venue?.city || 'TBA'}, {selectedEvent.venue?.state || ''} {selectedEvent.venue?.zipCode || ''}
+                          {selectedEvent.address || 'TBA'}<br />
+                          {selectedEvent.city || 'TBA'}, {selectedEvent.state || ''} {selectedEvent.zipCode || ''}
                         </div>
                         <div className="text-sm text-gray-600 mt-2">
-                          Capacity: {selectedEvent.venue?.capacity || 0}
+                          Capacity: {selectedEvent.totalCapacity || 0}
                         </div>
                       </div>
                     </div>
@@ -604,13 +1167,14 @@ export const AdminEventsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="p-6">
-              <div className="text-center py-12 text-gray-500">
-                <Plus className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p>Event creation form would go here</p>
-                <p className="text-sm mt-2">This would include fields for event details, venue, sections, pricing, etc.</p>
-              </div>
-            </div>
+            <CreateEventForm
+              event={selectedEvent}
+              onSubmit={handleCreateEvent}
+              onCancel={() => {
+                setShowCreateModal(false);
+                setSelectedEvent(null);
+              }}
+            />
           </div>
         </div>
       )}

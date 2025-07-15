@@ -8,6 +8,7 @@ export interface Event {
   address: string;
   city: string;
   state: string;
+  zipCode?: string;
   country: string;
   category: EventCategory;
   imageUrl?: string;
@@ -53,6 +54,7 @@ export interface CreateEventRequest {
   address: string;
   city: string;
   state: string;
+  zipCode?: string;
   country?: string;
   category: EventCategory;
   imageUrl?: string;
