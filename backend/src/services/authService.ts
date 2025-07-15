@@ -6,6 +6,14 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
 import { RegisterRequest, LoginRequest, AuthResponse } from "../types/auth";
 import { logger } from "../utils/logger";
 import { loginSchema } from "../utils/validations";
+import {
+  DuplicateEmailError,
+  InvalidCredentialsError,
+  AccountInactiveError,
+  InvalidTokenError,
+  UserNotFoundError,
+  DatabaseError
+} from "../utils/errors";
 
 export class AuthService {
   async register(data: RegisterRequest): Promise<AuthResponse> {
@@ -26,7 +34,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new Error("User already exists with this email");
+      throw new DuplicateEmailError(email);
     }
 
     //Hash Password
@@ -36,41 +44,46 @@ export class AuthService {
     const emailVerifyToken = crypto.randomBytes(32).toString("hex");
 
     //Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        phone: phone || null,
-        role,
-        emailVerifyToken,
-      },
-    });
+    try {
+      const user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          phone: phone || null,
+          role,
+          emailVerifyToken,
+        },
+      });
 
-    //Send verification email
-    //await sendVerificationEmail(email, emailVerifyToken);
+      //Send verification email
+      //await sendVerificationEmail(email, emailVerifyToken);
 
-    //Generate tokens for immediate login after registration
-    const token = generateToken({ userId: user.id });
-    const refreshToken = generateRefreshToken({ userId: user.id });
+      //Generate tokens for immediate login after registration
+      const token = generateToken({ userId: user.id });
+      const refreshToken = generateRefreshToken({ userId: user.id });
 
-    logger.info(`User registered: ${email}`);
+      logger.info(`User registered: ${email}`);
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified,
-      },
-      tokens: {
-        accessToken: token,
-        refreshToken: refreshToken,
-      },
-    };
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isEmailVerified: user.isEmailVerified,
+        },
+        tokens: {
+          accessToken: token,
+          refreshToken: refreshToken,
+        },
+      };
+    } catch (error: any) {
+      logger.error("Database error during user registration:", error);
+      throw new DatabaseError("Failed to create user account");
+    }
   }
 
   async login(data: LoginRequest): Promise<AuthResponse> {
@@ -83,14 +96,18 @@ export class AuthService {
       },
     });
 
-    if (!user || !user.isActive) {
-      throw new Error("Invalid credentials");
+    if (!user) {
+      throw new InvalidCredentialsError();
+    }
+
+    if (!user.isActive) {
+      throw new AccountInactiveError();
     }
 
     //Check Password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      throw new Error("Invlaid Credentials.");
+      throw new InvalidCredentialsError();
     }
 
     //Update last login
@@ -131,7 +148,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("Invalid or expired verification token");
+      throw new InvalidTokenError("Invalid or expired verification token");
     }
 
     await prisma.user.update({
@@ -153,7 +170,7 @@ export class AuthService {
     });
 
     if (!user) {
-      // Don't reveal if email exists
+      // Don't reveal if email exists for security
       return {
         message:
           "If an account with that email exists, we sent a password reset link.",
@@ -196,7 +213,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("Invalid or expired reset token");
+      throw new InvalidTokenError("Invalid or expired reset token");
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);

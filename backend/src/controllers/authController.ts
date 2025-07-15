@@ -8,6 +8,7 @@ import {
   verifyEmailSchema,
 } from "../utils/validations";
 import { logger } from "../utils/logger";
+import { ZodError } from "zod";
 
 const authService = new AuthService();
 
@@ -26,7 +27,7 @@ export const register = async (
       data: result
     });
   } catch (error: any) {
-    logger.error("Registration error:", error);
+    // Let the error handler middleware handle all errors
     next(error);
   }
 };
@@ -45,7 +46,6 @@ export const login = async (
       data: result
     });
   } catch (error: any) {
-    logger.error("Login error:", error);
     next(error);
   }
 };
@@ -58,9 +58,11 @@ export const verifyEmail = async (
   try {
     const validatedData = verifyEmailSchema.parse(req.query);
     const result = await authService.verifyEmail(validatedData.token);
-    res.json(result);
+    res.json({
+      success: true,
+      message: result.message
+    });
   } catch (error: any) {
-    logger.error("Email verification error:", error);
     next(error);
   }
 };
@@ -73,9 +75,11 @@ export const forgotPassword = async (
   try {
     const validatedData = forgotPasswordSchema.parse(req.body);
     const result = await authService.forgotPassword(validatedData.email);
-    res.json(result);
+    res.json({
+      success: true,
+      message: result.message
+    });
   } catch (error: any) {
-    logger.error("Forgot password error:", error);
     next(error);
   }
 };
@@ -91,9 +95,11 @@ export const resetPassword = async (
       validatedData.token,
       validatedData.password
     );
-    res.json(result);
+    res.json({
+      success: true,
+      message: result.message
+    });
   } catch (error: any) {
-    logger.error("Reset password error:", error);
     next(error);
   }
 };
@@ -102,5 +108,8 @@ export const logout = async (req: Request, res: Response) => {
   // In a stateless JWT system, logout is handled client-side
   // But we can log the event for analytics
   logger.info("User logged out");
-  res.json({ message: "Logged out successfully" });
+  res.json({ 
+    success: true, 
+    message: "Logged out successfully" 
+  });
 };
