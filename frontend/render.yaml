@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: sneatsnags-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://your-backend-url.render.com
+      - key: VITE_STRIPE_PUBLISHABLE_KEY
+        value: pk_test_your_stripe_key
