@@ -4,6 +4,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { sellerService, type AvailableOffer, type SellerListing } from '../../services/sellerService';
+import SweetAlert from '../../utils/sweetAlert';
 
 export const OffersBrowser = () => {
   const [filters, setFilters] = useState({
@@ -56,7 +57,7 @@ export const OffersBrowser = () => {
     const listingId = suggestedListingId || selectedListingId;
     
     if (!listingId) {
-      alert('Please select one of your listings first to match with this offer');
+      SweetAlert.warning('Select a Listing', 'Please select one of your listings first to match with this offer');
       return;
     }
 
@@ -70,8 +71,7 @@ export const OffersBrowser = () => {
     const platformFee = offer.maxPrice * 0.1;
     const sellerAmount = offer.maxPrice * 0.9;
     
-    const confirmMessage = `Accept this offer?\n\n` +
-      `Event: ${offer.event.name}\n` +
+    const confirmMessage = `Event: ${offer.event.name}\n` +
       `Buyer: ${offer.buyer.firstName} ${offer.buyer.lastName}\n` +
       `Quantity: ${offer.quantity} tickets\n` +
       `Offer Price: $${offer.maxPrice}\n` +
@@ -79,13 +79,24 @@ export const OffersBrowser = () => {
       `Your Earnings: $${sellerAmount.toFixed(2)}\n\n` +
       `Your Listing: ${listing.event.name} - ${listing.section?.name || 'General'} - $${listing.price}`;
 
-    if (window.confirm(confirmMessage)) {
+    const result = await SweetAlert.confirm(
+      'Accept this offer?',
+      confirmMessage,
+      'Accept',
+      'Cancel'
+    );
+
+    if (result.isConfirmed) {
       try {
+        SweetAlert.loading('Accepting Offer', 'Please wait while we process your acceptance...');
         await acceptOfferMutation.mutateAsync({ offerId, listingId });
+        SweetAlert.close();
+        SweetAlert.success('Offer Accepted!', 'The offer has been accepted successfully. The transaction will now be processed.');
       } catch (error) {
         console.error('Failed to accept offer:', error);
+        SweetAlert.close();
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-        alert(`Failed to accept offer: ${errorMessage}`);
+        SweetAlert.error('Failed to Accept Offer', errorMessage);
       }
     }
   };
@@ -272,7 +283,6 @@ export const OffersBrowser = () => {
             const expired = isOfferExpired(offer.expiresAt);
                         const compatibleListings = getCompatibleListings(offer);
                         const bestMatch = getBestMatchingListing(offer);
-                        const platformFee = offer.maxPrice * 0.1;
                         const sellerEarnings = offer.maxPrice * 0.9;
             
             return (

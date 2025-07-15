@@ -7,6 +7,7 @@ import { offerService } from '../../services/offerService';
 import { useAuth } from '../../hooks/useAuth';
 import type { PriceSuggestion } from '../../types/offer';
 import type { Event } from '../../types/event';
+import SweetAlert from '../../utils/sweetAlert';
 
 const createOfferSchema = z.object({
   eventId: z.string().min(1, 'Event is required'),
@@ -92,12 +93,14 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({
 
   const onSubmit = async (data: CreateOfferSchemaType) => {
     if (!user) {
-      alert('You must be logged in to create an offer');
+      SweetAlert.error('Authentication Required', 'You must be logged in to create an offer');
       return;
     }
 
     setIsLoading(true);
     try {
+      SweetAlert.loading('Creating Offer', 'Please wait while we submit your offer...');
+      
       // Calculate expiration date
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + data.expirationDays);
@@ -113,14 +116,16 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({
 
       const newOffer = await buyerService.createOffer(offerData);
       
+      SweetAlert.close();
+      SweetAlert.success('Offer Created!', 'Your offer has been submitted successfully and sellers will be notified');
+      
       if (onSuccess) {
         onSuccess(newOffer);
       }
-      
-      alert('Offer created successfully!');
     } catch (error: any) {
       console.error('Failed to create offer:', error);
-      alert(error.message || 'Failed to create offer. Please try again.');
+      SweetAlert.close();
+      SweetAlert.error('Failed to Create Offer', error.message || 'Please try again');
     } finally {
       setIsLoading(false);
     }

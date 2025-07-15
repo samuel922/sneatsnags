@@ -8,10 +8,10 @@ async function main() {
 
   // Clear existing data
   console.log("🧹 Cleaning existing data...");
+  await prisma.transaction.deleteMany();
   await prisma.offerSection.deleteMany();
   await prisma.offer.deleteMany();
   await prisma.listing.deleteMany();
-  await prisma.transaction.deleteMany();
   await prisma.section.deleteMany();
   await prisma.event.deleteMany();
   await prisma.user.deleteMany();

@@ -320,6 +320,16 @@ export const SellerDashboard = () => {
                 >
                   Browse Offers
                 </Button>
+                <Button 
+                  component={Link} 
+                  to="/seller/transactions" 
+                  variant="outline" 
+                  fullWidth
+                  startIcon={<Assignment />}
+                  sx={{ py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                >
+                  View Transactions
+                </Button>
               </Stack>
             </CardContent>
           </Card>
@@ -410,20 +420,20 @@ export const SellerDashboard = () => {
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        Review Offers
+                        Manage Transactions
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Accept or negotiate offers from buyers
+                        Track sales and deliver tickets to buyers
                       </Typography>
                     </Box>
                     <Button 
                       component={Link} 
-                      to="/seller/offers" 
+                      to="/seller/transactions" 
                       variant="outline" 
                       size="xs"
                       endIcon={<ArrowForward />}
                     >
-                      Browse
+                      View
                     </Button>
                   </Box>
                 </Paper>

@@ -23,7 +23,7 @@ import { SellerDashboardPage } from './pages/SellerDashboardPage';
 import { SellerOffersPage } from './pages/SellerOffersPage';
 import { BuyerTransactionsPage } from './pages/BuyerTransactionsPage';
 import { SellerTransactionsPage } from './pages/SellerTransactionsPage';
-import { BuyerProfile } from './components/profile/BuyerProfile';
+import { Profile } from './components/profile/Profile';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
@@ -36,6 +36,7 @@ import { AdminEventsPage } from './pages/admin/AdminEventsPage';
 import { TransactionsPage } from './pages/admin/TransactionsPage';
 import { ListingManagementPage } from './pages/ListingManagementPage';
 import { CreateListingPage } from './pages/CreateListingPage';
+import { ListingDetailPage } from './pages/ListingDetailPage';
 import { BrowseTicketsPage } from './pages/BrowseTicketsPage';
 import { BrowseOffersPage } from './pages/BrowseOffersPage';
 import { OfferDetailPage } from './pages/OfferDetailPage';
@@ -305,6 +306,15 @@ function App() {
                     />
                     
                     <Route
+                      path="/listings/:id"
+                      element={
+                        <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
+                          <ListingDetailPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
                       path="/seller/offers"
                       element={
                         <ProtectedRoute requiredRoles={[UserRole.SELLER]}>
@@ -330,8 +340,8 @@ function App() {
                     <Route
                       path="/profile"
                       element={
-                        <ProtectedRoute requiredRoles={[UserRole.BUYER]}>
-                          <BuyerProfile />
+                        <ProtectedRoute requiredRoles={[UserRole.BUYER, UserRole.SELLER, UserRole.BROKER, UserRole.ADMIN]}>
+                          <Profile />
                         </ProtectedRoute>
                       }
                     />
