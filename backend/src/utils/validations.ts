@@ -3,9 +3,9 @@ import { z } from "zod";
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().optional(),
+  firstName: z.string().min(1, "First name is required").transform((val: string) => val.trim()),
+  lastName: z.string().min(1, "Last name is required").transform((val: string) => val.trim()),
+  phone: z.string().optional().nullable().transform((val: string | null | undefined) => val?.trim() || undefined),
   role: z.enum(["BUYER", "SELLER", "BROKER", "ADMIN"]).optional(),
 });
 

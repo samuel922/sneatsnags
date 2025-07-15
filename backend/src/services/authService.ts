@@ -42,7 +42,7 @@ export class AuthService {
         password: hashedPassword,
         firstName,
         lastName,
-        phone,
+        phone: phone || null,
         role,
         emailVerifyToken,
       },
