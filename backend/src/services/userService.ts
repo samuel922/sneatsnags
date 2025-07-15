@@ -226,6 +226,13 @@ export class UserService {
     return { message: "All notifications marked as read" };
   }
 
+  async getUnreadNotificationCount(userId: string) {
+    const count = await prisma.notification.count({
+      where: { userId, isRead: false },
+    });
+    return count;
+  }
+
   async getAllUsers(params: {
     skip: number;
     take: number;

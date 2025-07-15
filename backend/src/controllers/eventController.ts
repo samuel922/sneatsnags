@@ -81,7 +81,8 @@ export const eventController = {
       res.status(201).json(successResponse(event, "Event created successfully"));
     } catch (error) {
       logger.error("Create event error:", error);
-      res.status(500).json(errorResponse("Failed to create event"));
+      const errorMessage = error instanceof Error ? error.message : "Failed to create event";
+      res.status(500).json(errorResponse(errorMessage));
     }
   },
 

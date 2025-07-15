@@ -653,12 +653,31 @@ export const AdminEventsPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response error:', errorText);
-        throw new Error(`Failed to create event: ${response.status} ${response.statusText}`);
+        let errorMessage = `Failed to create event: ${response.status} ${response.statusText}`;
+        try {
+          const errorText = await response.text();
+          console.error('Response error:', errorText);
+          if (errorText) {
+            try {
+              const errorJson = JSON.parse(errorText);
+              errorMessage = errorJson.message || errorMessage;
+            } catch {
+              errorMessage = errorText;
+            }
+          }
+        } catch (textError) {
+          console.error('Failed to read error response:', textError);
+        }
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        throw new Error('Server returned invalid response format');
+      }
       console.log('Event created successfully:', result);
 
       // Refresh the events list
