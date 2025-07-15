@@ -26,12 +26,7 @@ export const register = async (
     });
   } catch (error: any) {
     logger.error("Registration error:", error);
-    if (error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Validation failed", details: error.errors });
-    }
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -50,12 +45,7 @@ export const login = async (
     });
   } catch (error: any) {
     logger.error("Login error:", error);
-    if (error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Validation failed", details: error.errors });
-    }
-    res.status(401).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -70,12 +60,7 @@ export const verifyEmail = async (
     res.json(result);
   } catch (error: any) {
     logger.error("Email verification error:", error);
-    if (error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Validation failed", details: error.errors });
-    }
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -90,12 +75,7 @@ export const forgotPassword = async (
     res.json(result);
   } catch (error: any) {
     logger.error("Forgot password error:", error);
-    if (error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Validation failed", details: error.errors });
-    }
-    res.status(500).json({ error: "Something went wrong" });
+    next(error);
   }
 };
 
@@ -113,12 +93,7 @@ export const resetPassword = async (
     res.json(result);
   } catch (error: any) {
     logger.error("Reset password error:", error);
-    if (error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Validation failed", details: error.errors });
-    }
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 

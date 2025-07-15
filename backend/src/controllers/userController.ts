@@ -30,7 +30,7 @@ export const getProfile = async (
     res.json({ success: true, data: profile });
   } catch (error: any) {
     logger.error("Get profile error:", error);
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
@@ -50,14 +50,7 @@ export const updateProfile = async (
     });
   } catch (error: any) {
     logger.error("Update profile error:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        error: "Validation failed",
-        details: error.errors,
-      });
-    }
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
@@ -73,14 +66,7 @@ export const changePassword = async (
     res.json({ success: true, message: result.message });
   } catch (error: any) {
     logger.error("Change password error:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        error: "Validation failed",
-        details: error.errors,
-      });
-    }
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
@@ -95,7 +81,7 @@ export const deleteAccount = async (
     res.json({ success: true, message: result.message });
   } catch (error: any) {
     logger.error("Delete account error:", error);
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
 

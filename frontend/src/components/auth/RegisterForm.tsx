@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
@@ -58,6 +58,7 @@ export const RegisterForm: React.FC = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -339,53 +340,60 @@ export const RegisterForm: React.FC = () => {
               <Business sx={{ mr: 1, fontSize: 18 }} />
               Account Type
             </FormLabel>
-            <RadioGroup
-              {...register('role')}
-              defaultValue={UserRole.BUYER}
-            >
-              {roleOptions.map((option) => (
-                <Paper
-                  key={option.value}
-                  elevation={1}
-                  sx={{
-                    p: 2,
-                    mb: 1,
-                    borderRadius: 2,
-                    border: '2px solid transparent',
-                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    },
-                    '&:has(input:checked)': {
-                      borderColor: 'primary.main',
-                      backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    },
-                  }}
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <RadioGroup
+                  {...field}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
                 >
-                  <FormControlLabel
-                    value={option.value}
-                    control={<Radio />}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="h6" component="span">
-                          {option.icon}
-                        </Typography>
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            {option.label}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {option.desc}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    }
-                    sx={{ width: '100%', m: 0 }}
-                  />
-                </Paper>
-              ))}
-            </RadioGroup>
+                  {roleOptions.map((option) => (
+                    <Paper
+                      key={option.value}
+                      elevation={1}
+                      sx={{
+                        p: 2,
+                        mb: 1,
+                        borderRadius: 2,
+                        border: '2px solid transparent',
+                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        },
+                        '&:has(input:checked)': {
+                          borderColor: 'primary.main',
+                          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        },
+                      }}
+                    >
+                      <FormControlLabel
+                        value={option.value}
+                        control={<Radio />}
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Typography variant="h6" component="span">
+                              {option.icon}
+                            </Typography>
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight={600}>
+                                {option.label}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {option.desc}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        }
+                        sx={{ width: '100%', m: 0 }}
+                      />
+                    </Paper>
+                  ))}
+                </RadioGroup>
+              )}
+            />
             {errors.role && (
               <Typography variant="body2" color="error" sx={{ mt: 1 }}>
                 {errors.role.message}

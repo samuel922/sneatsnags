@@ -5,6 +5,7 @@ import { CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import { StripeProvider } from './contexts/StripeContext';
 import { theme } from './theme/theme';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
@@ -53,12 +54,13 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <AuthProvider>
-          <StripeProvider>
-            <Router>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <AuthProvider>
+            <StripeProvider>
+              <Router>
           <Routes>
             {/* Public routes without layout */}
             <Route path="/login" element={<LoginPage />} />
@@ -371,11 +373,12 @@ function App() {
               }
             />
           </Routes>
-            </Router>
-          </StripeProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+              </Router>
+            </StripeProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

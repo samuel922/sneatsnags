@@ -48,7 +48,7 @@ export const authenticate = async (
     next();
   } catch (error) {
     logger.error("Authentication error:", error);
-    return res.json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
@@ -59,7 +59,7 @@ export const authorize = (...roles: string[]) => {
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(401).json({ error: "Insufficient permissions" });
+      return res.status(403).json({ error: "Insufficient permissions" });
     }
 
     next();
