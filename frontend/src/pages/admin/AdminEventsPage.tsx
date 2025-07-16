@@ -623,6 +623,24 @@ export const AdminEventsPage: React.FC = () => {
         priceLevel: section.minPrice,
       }));
 
+      // Map category to proper EventType
+      const getEventTypeFromCategory = (category: string): string => {
+        const categoryLower = category.toLowerCase();
+        if (categoryLower.includes('musical') || categoryLower.includes('theater') || categoryLower.includes('theatre') || categoryLower.includes('broadway')) {
+          return 'THEATER';
+        }
+        if (categoryLower.includes('concert') || categoryLower.includes('music') || categoryLower.includes('band')) {
+          return 'CONCERT';
+        }
+        if (categoryLower.includes('sport') || categoryLower.includes('game') || categoryLower.includes('football') || categoryLower.includes('basketball')) {
+          return 'SPORTS';
+        }
+        if (categoryLower.includes('comedy') || categoryLower.includes('standup') || categoryLower.includes('humor')) {
+          return 'COMEDY';
+        }
+        return 'OTHER';
+      };
+
       const requestData = {
         name: eventData.name,
         description: eventData.description || '',
@@ -633,7 +651,8 @@ export const AdminEventsPage: React.FC = () => {
         zipCode: eventData.zipCode || '00000',
         country: eventData.country || 'US',
         eventDate: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
-        eventType: eventData.category,
+        eventType: getEventTypeFromCategory(eventData.category),
+        category: eventData.category,
         imageUrl: eventData.imageUrl || '',
         minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map(s => s.minPrice)) : 0,
         maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map(s => s.maxPrice)) : 0,
