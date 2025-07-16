@@ -23,9 +23,9 @@ import {
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { adminService } from '../../services/adminService';
-import { eventService } from '../../services/eventService';
+import { eventServiceV2 } from '../../services/eventService.v2';
 import { SweetAlert } from '../../utils/sweetAlert';
-import type { Event, CreateEventRequest, EventCategory } from '../../types/event';
+import type { Event, CreateEventRequest, EventType } from '../../types/events';
 
 interface EventStats {
   totalEvents: number;
@@ -48,28 +48,61 @@ interface EventFilters {
   category: string;
 }
 
+interface EventFormData {
+  name: string;
+  description: string;
+  date: string;
+  time: string;
+  venue: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  category: string;
+  imageUrl: string;
+  totalCapacity: number;
+  sections: SectionFormData[];
+}
+
+interface SectionFormData {
+  name: string;
+  description: string;
+  capacity: number;
+  minPrice: number;
+  maxPrice: number;
+  isActive: boolean;
+}
+
 interface CreateEventFormProps {
   event?: Event | null;
-  onSubmit: (eventData: CreateEventRequest) => Promise<void>;
+  onSubmit: (eventData: EventFormData) => Promise<void>;
   onCancel: () => void;
 }
 
 const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState<CreateEventRequest>({
+  const [formData, setFormData] = useState<EventFormData>({
     name: event?.name || '',
     description: event?.description || '',
-    date: event?.date ? new Date(event.date).toISOString().split('T')[0] : '',
-    time: event?.time || (event?.date ? new Date(event.date).toISOString().split('T')[1].slice(0, 5) : ''),
+    date: event?.eventDate ? new Date(event.eventDate).toISOString().split('T')[0] : '',
+    time: event?.eventDate ? new Date(event.eventDate).toISOString().split('T')[1].slice(0, 5) : '',
     venue: event?.venue || '',
     address: event?.address || '',
     city: event?.city || '',
     state: event?.state || '',
     zipCode: event?.zipCode || '',
     country: event?.country || 'US',
-    category: (event?.category as EventCategory) || 'OTHER',
+    category: event?.category || 'OTHER',
     imageUrl: event?.imageUrl || '',
-    totalCapacity: event?.totalCapacity || 0,
-    sections: event?.sections || [],
+    totalCapacity: event?.totalSeats || 0,
+    sections: event?.sections?.map(section => ({
+      name: section.name,
+      description: section.description || '',
+      capacity: section.seatCount || 0,
+      minPrice: section.priceLevel || 0,
+      maxPrice: section.priceLevel || 0,
+      isActive: true
+    })) || []
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,8 +152,8 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCa
     }
   };
 
-  const handleInputChange = (field: keyof CreateEventRequest, value: string | number) => {
-    setFormData((prev: CreateEventRequest) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof EventFormData, value: string | number) => {
+    setFormData((prev: EventFormData) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev: Record<string, string>) => ({ ...prev, [field]: '' }));
@@ -136,21 +169,21 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCa
       maxPrice: 0,
       isActive: true,
     };
-    setFormData((prev: CreateEventRequest) => ({
+    setFormData((prev: EventFormData) => ({
       ...prev,
       sections: [...prev.sections, newSection],
     }));
   };
 
   const removeSection = (index: number) => {
-    setFormData((prev: CreateEventRequest) => ({
+    setFormData((prev: EventFormData) => ({
       ...prev,
       sections: prev.sections.filter((_: any, i: number) => i !== index),
     }));
   };
 
   const updateSection = (index: number, field: string, value: string | number | boolean) => {
-    setFormData((prev: CreateEventRequest) => ({
+    setFormData((prev: EventFormData) => ({
       ...prev,
       sections: prev.sections.map((section: any, i: number) =>
         i === index ? { ...section, [field]: value } : section
@@ -158,18 +191,47 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCa
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataUrl);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setPreviewImage(result);
-        // In a real app, you'd upload to a cloud storage service
-        // For now, we'll just use the data URL
-        setFormData(prev => ({ ...prev, imageUrl: result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Compress the image
+        const compressedImage = await compressImage(file, 800, 0.7);
+        setPreviewImage(compressedImage);
+        setFormData(prev => ({ ...prev, imageUrl: compressedImage }));
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        // Fallback to original file if compression fails
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setPreviewImage(result);
+          setFormData(prev => ({ ...prev, imageUrl: result }));
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -586,8 +648,8 @@ export const AdminEventsPage: React.FC = () => {
     try {
       // Get real event statistics from backend
       const dashboardData = await adminService.getDashboard();
-      const eventData = dashboardData.data.events;
-      const transactionData = dashboardData.data.transactions;
+      const eventData = dashboardData.events;
+      const transactionData = dashboardData.transactions;
       
       const statsData: EventStats = {
         totalEvents: eventData.total || 0,
@@ -595,7 +657,7 @@ export const AdminEventsPage: React.FC = () => {
         activeEvents: eventData.active || 0,
         completedEvents: Math.max(0, eventData.total - eventData.upcoming - eventData.active) || 0,
         totalRevenue: transactionData.revenue || 0,
-        averageTicketPrice: transactionData.total > 0 ? transactionData.volume / transactionData.total : 0,
+        averageTicketPrice: transactionData.total > 0 ? transactionData.revenue / transactionData.total : 0,
         totalAttendees: transactionData.completed || 0, // Assuming completed transactions = attendees
       };
       setStats(statsData);
@@ -604,7 +666,7 @@ export const AdminEventsPage: React.FC = () => {
     }
   };
 
-  const handleCreateEvent = async (eventData: CreateEventRequest) => {
+  const handleCreateEvent = async (eventData: EventFormData) => {
     try {
       // Transform sections to match backend structure
       const backendSections = eventData.sections.map(section => ({
@@ -633,30 +695,118 @@ export const AdminEventsPage: React.FC = () => {
         return 'OTHER';
       };
 
-      const requestData = {
-        name: eventData.name,
-        description: eventData.description || '',
-        venue: eventData.venue,
-        address: eventData.address,
-        city: eventData.city,
-        state: eventData.state,
-        zipCode: eventData.zipCode || '00000',
+      // Validate required fields
+      if (!eventData.name || eventData.name.length < 3) {
+        throw new Error('Event name must be at least 3 characters long');
+      }
+      if (!eventData.venue || eventData.venue.length < 2) {
+        throw new Error('Venue name must be at least 2 characters long');
+      }
+      if (!eventData.address || eventData.address.length < 5) {
+        throw new Error('Address must be at least 5 characters long');
+      }
+      if (!eventData.city || eventData.city.length < 2) {
+        throw new Error('City name must be at least 2 characters long');
+      }
+      if (!eventData.state || eventData.state.length < 2) {
+        throw new Error('State name must be at least 2 characters long');
+      }
+      if (!eventData.date || !eventData.time) {
+        throw new Error('Event date and time are required');
+      }
+      if (eventData.sections.length === 0) {
+        throw new Error('At least one section is required');
+      }
+
+      // Validate event date is in future
+      const eventDateTime = new Date(`${eventData.date}T${eventData.time}`);
+      if (eventDateTime <= new Date()) {
+        throw new Error('Event date must be in the future');
+      }
+
+      // Create base request data without sections
+      const baseRequestData = {
+        name: eventData.name.trim(),
+        description: eventData.description?.trim() || '',
+        venue: eventData.venue.trim(),
+        address: eventData.address.trim(),
+        city: eventData.city.trim(),
+        state: eventData.state.trim(),
+        zipCode: eventData.zipCode?.trim() || '00000',
         country: eventData.country || 'US',
-        eventDate: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
-        eventType: getEventTypeFromCategory(eventData.category),
+        eventDate: eventDateTime.toISOString(),
+        eventType: getEventTypeFromCategory(eventData.category || '') as EventType,
         category: eventData.category,
         imageUrl: eventData.imageUrl || '',
-        minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map(s => s.minPrice)) : 0,
-        maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map(s => s.maxPrice)) : 0,
-        totalSeats: eventData.sections.reduce((sum, section) => sum + section.capacity, 0),
-        sections: backendSections,
+        minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map((s: any) => s.minPrice)) : 0,
+        maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map((s: any) => s.maxPrice)) : 0,
+        totalSeats: eventData.sections.reduce((sum: number, section: any) => sum + section.capacity, 0),
       };
 
-      console.log('Sending request data:', JSON.stringify(requestData, null, 2));
+      console.log('Sending request data:', JSON.stringify(baseRequestData, null, 2));
+      console.log('Event date:', eventData.date, 'Event time:', eventData.time);
+      
+      // Check authentication
+      const token = localStorage.getItem('accessToken');
+      console.log('Access token exists:', !!token);
+      if (!token) {
+        throw new Error('No access token found. Please log in again.');
+      }
 
+      console.log('Selected event for update:', selectedEvent);
+      console.log('Event ID being used:', selectedEvent?.id);
+
+      // Transform the data to match the eventServiceV2 expected format
+      const serviceData = {
+        ...baseRequestData,
+        eventDate: eventData.date,
+        eventTime: eventData.time,
+        sections: backendSections
+      };
+      
       const result = selectedEvent 
-        ? await eventService.updateEvent(selectedEvent.id, requestData)
-        : await eventService.createEvent(requestData);
+        ? await eventServiceV2.updateEvent(selectedEvent.id, serviceData)
+        : await eventServiceV2.createEvent(serviceData);
+      
+      // For event updates, we need to handle sections separately
+      if (selectedEvent && eventData.sections.length > 0) {
+        try {
+          // Get existing sections to determine what needs to be updated/created/deleted
+          const existingSections = selectedEvent.sections || [];
+          
+          // Update or create sections
+          for (const section of eventData.sections) {
+            const existingSection = existingSections.find(es => es.name === section.name);
+            
+            if (existingSection) {
+              // Update existing section
+              await eventServiceV2.updateEventSection(existingSection.id, {
+                name: section.name,
+                description: section.description,
+                seatCount: section.capacity,
+                priceLevel: section.minPrice,
+                capacity: section.capacity,
+                isActive: section.isActive,
+              });
+            } else {
+              // Create new section
+              await eventServiceV2.createEventSection(selectedEvent.id, {
+                name: section.name,
+                description: section.description,
+                seatCount: section.capacity,
+                priceLevel: section.minPrice,
+                capacity: section.capacity,
+                isActive: section.isActive,
+              });
+            }
+          }
+          
+          console.log('Sections updated successfully');
+        } catch (sectionError) {
+          console.error('Error updating sections:', sectionError);
+          // Don't throw here - the event was updated successfully
+        }
+      }
       console.log(selectedEvent ? 'Event updated successfully:' : 'Event created successfully:', result);
 
       // Refresh the events list
@@ -672,10 +822,31 @@ export const AdminEventsPage: React.FC = () => {
       );
     } catch (error) {
       console.error('Error creating event:', error);
-      SweetAlert.error(
-        'Failed to create event',
-        error instanceof Error ? error.message : 'There was an error creating the event. Please try again.'
-      );
+      
+      // Log detailed error information
+      console.error('Full error object:', error);
+      if (error && typeof error === 'object' && 'details' in error) {
+        console.error('Validation details:', error.details);
+      }
+      
+      let errorMessage = 'There was an error creating the event. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Check for validation errors
+        if (error.message.includes('Validation failed') && 'details' in error) {
+          const details = (error as any).details;
+          if (details && typeof details === 'object') {
+            const validationErrors = Object.entries(details)
+              .map(([field, message]) => `${field}: ${message}`)
+              .join(', ');
+            errorMessage = `Validation failed: ${validationErrors}`;
+          }
+        }
+      }
+      
+      SweetAlert.error('Failed to create event', errorMessage);
     }
   };
 
@@ -983,7 +1154,7 @@ export const AdminEventsPage: React.FC = () => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="h-4 w-4 mr-2" />
-                  {formatDate(event.date)}
+                  {formatDate(event.eventDate)}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <MapPin className="h-4 w-4 mr-2" />
@@ -991,7 +1162,7 @@ export const AdminEventsPage: React.FC = () => {
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="h-4 w-4 mr-2" />
-                  {event.totalCapacity || 0} capacity
+                  {event.totalSeats || 0} capacity
                 </div>
               </div>
 
@@ -1097,7 +1268,7 @@ export const AdminEventsPage: React.FC = () => {
                       <h4 className="font-medium text-gray-900 mb-2">Event Details</h4>
                       <div className="space-y-2 text-sm">
                         <div>Category: {selectedEvent.category}</div>
-                        <div>Date: {formatDate(selectedEvent.date)}</div>
+                        <div>Date: {formatDate(selectedEvent.eventDate)}</div>
                       </div>
                     </div>
                   </div>
@@ -1113,14 +1284,14 @@ export const AdminEventsPage: React.FC = () => {
                           {selectedEvent.city || 'TBA'}, {selectedEvent.state || ''} {selectedEvent.zipCode || ''}
                         </div>
                         <div className="text-sm text-gray-600 mt-2">
-                          Capacity: {selectedEvent.totalCapacity || 0}
+                          Capacity: {selectedEvent.totalSeats || 0}
                         </div>
                       </div>
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Sections & Pricing</h4>
                       <div className="space-y-2">
-                        {selectedEvent.sections.map((section: any) => (
+                        {selectedEvent.sections?.map((section: any) => (
                           <div key={section.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                             <div>
                               <div className="font-medium">{section.name}</div>

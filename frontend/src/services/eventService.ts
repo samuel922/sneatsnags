@@ -304,10 +304,23 @@ export class EventService {
    */
   private handleError(error: unknown, operation: string): Error {
     console.error(`EventService.${operation} failed:`, error);
+    
+    // Log the full error response for debugging
+    const fullError = error as any;
+    if (fullError?.response) {
+      console.error('Full error response:', {
+        status: fullError.response.status,
+        data: fullError.response.data,
+        headers: fullError.response.headers
+      });
+    }
 
     // Extract error information from the response
     const errorData = (error as { response?: { data?: { success?: boolean; error?: string; code?: string; details?: unknown }; status?: number } })?.response?.data;
     const status = (error as { response?: { data?: unknown; status?: number } })?.response?.status;
+    
+    console.error('Extracted error data:', errorData);
+    console.error('Extracted status:', status);
 
     // Handle specific error types
     if (errorData?.success === false) {
@@ -323,8 +336,9 @@ export class EventService {
     // Handle HTTP status codes
     switch (status) {
       case 400:
+        const validationMessage = errorData?.error || "Invalid request data";
         return new EventServiceError(
-          "Invalid request data",
+          validationMessage,
           "VALIDATION_ERROR",
           errorData,
           status,
