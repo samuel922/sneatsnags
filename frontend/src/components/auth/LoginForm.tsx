@@ -52,6 +52,14 @@ export const LoginForm: React.FC = () => {
       const user = await login(data.email, data.password);
       SweetAlert.success('Welcome back!', 'You have successfully logged in');
       
+      // Check if there's a redirect URL stored (for "Get Tickets Now" flow)
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectUrl);
+        return;
+      }
+      
       // Navigate to role-specific dashboard
       if (user.role === UserRole.BUYER) {
         navigate('/buyer/dashboard');

@@ -29,13 +29,15 @@ import {
   Star,
   CardGiftcard
 } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { buyerService } from '../../services/buyerService';
 import { Button } from '../ui/Button';
 
 export const BuyerDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -47,6 +49,17 @@ export const BuyerDashboard = () => {
   useEffect(() => {
     fetchBuyerStats();
   }, []);
+
+  useEffect(() => {
+    // Check if there's an eventId parameter in the URL
+    const urlParams = new URLSearchParams(location.search);
+    const eventId = urlParams.get('eventId');
+    
+    if (eventId) {
+      // Redirect to the offer creation page for this event
+      navigate(`/events/${eventId}/offer`);
+    }
+  }, [location.search, navigate]);
 
   const fetchBuyerStats = async () => {
     try {

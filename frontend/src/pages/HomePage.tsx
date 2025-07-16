@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { eventService } from "../services/eventService";
+import type { Event } from "../types/events";
 import {
   Search,
   Shield,
@@ -46,25 +48,34 @@ interface HeroSlide {
 }
 
 export const HomePage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeCategory, setActiveCategory] = useState("all");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [liveEvents, setLiveEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch events for hero slider
-  const fetchHeroEvents = async () => {
+  // Fetch events for hero slider and live events
+  const fetchEvents = async () => {
     try {
       setLoading(true);
-      console.log('Fetching hero events...');
-      const response = await eventService.getEvents({ limit: 5, sortBy: 'eventDate', sortOrder: 'asc' });
-      console.log('Events response:', response);
+      console.log("Fetching events...");
       
-      const events = response.data || [];
-      console.log('Events data:', events);
-      
-      if (events.length === 0) {
-        console.log('No events found, using fallback');
+      // Fetch hero events (upcoming events)
+      const heroResponse = await eventService.getEvents({
+        limit: 5,
+        sortBy: "eventDate",
+        sortOrder: "asc",
+      });
+      console.log("Hero events response:", heroResponse);
+
+      const heroEvents = heroResponse.data || [];
+      console.log("Hero events data:", heroEvents);
+
+      if (heroEvents.length === 0) {
+        console.log("No hero events found, using fallback");
         setHeroSlides([
           {
             id: "1",
@@ -77,35 +88,53 @@ export const HomePage: React.FC = () => {
             category: "Events",
             attendees: "Thousands",
             isLive: false,
-          }
+          },
         ]);
-        return;
+      } else {
+        // Transform events for slider
+        const transformedEvents = heroEvents.map((event, index) => ({
+          id: event.id,
+          title: event.name,
+          subtitle: event.description || `Experience ${event.name}`,
+          location: `${event.venue}, ${event.city}`,
+          date: new Date(event.eventDate).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          price: event.minPrice ? `From $${event.minPrice}` : "Price TBA",
+          image:
+            event.imageUrl ||
+            `https://picsum.photos/1200/800?random=${index + 1}`,
+          category: event.eventType || "Event",
+          attendees: event.totalSeats
+            ? `${event.totalSeats.toLocaleString()}+`
+            : "TBA",
+          isLive:
+            new Date(event.eventDate) <=
+            new Date(Date.now() + 24 * 60 * 60 * 1000), // Live if within 24 hours
+        }));
+
+        console.log("Transformed hero events:", transformedEvents);
+        setHeroSlides(transformedEvents);
       }
-      
-      // Transform events for slider
-      const transformedEvents = events.map((event, index) => ({
-        id: event.id,
-        title: event.name,
-        subtitle: event.description || `Experience ${event.name}`,
-        location: `${event.venue}, ${event.city}`,
-        date: new Date(event.eventDate).toLocaleDateString('en-US', { 
-          weekday: 'short', 
-          month: 'short', 
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        price: event.minPrice ? `From $${event.minPrice}` : "Price TBA",
-        image: event.imageUrl || `https://picsum.photos/1200/800?random=${index + 1}`,
-        category: event.eventType || "Event",
-        attendees: event.totalSeats ? `${event.totalSeats.toLocaleString()}+` : "TBA",
-        isLive: new Date(event.eventDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000), // Live if within 24 hours
-      }));
-      
-      console.log('Transformed events:', transformedEvents);
-      setHeroSlides(transformedEvents);
+
+      // Fetch live events (events happening soon or now)
+      const liveResponse = await eventService.getEvents({
+        limit: 3,
+        sortBy: "eventDate",
+        sortOrder: "asc",
+      });
+      console.log("Live events response:", liveResponse);
+
+      const liveEventsData = liveResponse.data || [];
+      console.log("Live events data:", liveEventsData);
+      setLiveEvents(liveEventsData);
+
     } catch (error) {
-      console.error('Error fetching hero events:', error);
+      console.error("Error fetching events:", error);
       // Fallback to static slides if API fails
       setHeroSlides([
         {
@@ -119,8 +148,9 @@ export const HomePage: React.FC = () => {
           category: "Events",
           attendees: "Thousands",
           isLive: false,
-        }
+        },
       ]);
+      setLiveEvents([]);
     } finally {
       setLoading(false);
     }
@@ -161,38 +191,6 @@ export const HomePage: React.FC = () => {
     },
   ];
 
-  const liveEvents = [
-    {
-      title: "Taylor Swift | Eras Tour",
-      venue: "MetLife Stadium",
-      date: "Tonight 8:00 PM",
-      location: "East Rutherford, NJ",
-      image: "🎤",
-      price: "From $180",
-      category: "Concert",
-      isLive: true,
-    },
-    {
-      title: "Lakers vs Warriors",
-      venue: "Crypto.com Arena",
-      date: "Tomorrow 7:30 PM",
-      location: "Los Angeles, CA",
-      image: "🏀",
-      price: "From $95",
-      category: "Sports",
-      isLive: false,
-    },
-    {
-      title: "The Lion King",
-      venue: "Minskoff Theatre",
-      date: "Dec 15, 2:00 PM",
-      location: "New York, NY",
-      image: "🎭",
-      price: "From $89",
-      category: "Theater",
-      isLive: false,
-    },
-  ];
 
   const stats = [
     { number: "2.8M+", label: "Events Listed", icon: Calendar },
@@ -256,7 +254,7 @@ export const HomePage: React.FC = () => {
 
   // Fetch events on component mount
   useEffect(() => {
-    fetchHeroEvents();
+    fetchEvents();
   }, []);
 
   // Auto-advance slider
@@ -290,6 +288,19 @@ export const HomePage: React.FC = () => {
 
   const currentHeroSlide = heroSlides[currentSlide];
 
+  // Handle "Get Tickets Now" click
+  const handleGetTicketsClick = (eventId: string) => {
+    if (!isAuthenticated) {
+      // Store the intended destination in localStorage so we can redirect after login
+      localStorage.setItem('redirectAfterLogin', `/buyer/dashboard?eventId=${eventId}`);
+      // Redirect to login page
+      navigate('/login');
+    } else {
+      // If user is authenticated, redirect to buyer dashboard with event ID
+      navigate(`/buyer/dashboard?eventId=${eventId}`);
+    }
+  };
+
   return (
     <div className="relative overflow-hidden">
       {/* Clean background */}
@@ -309,7 +320,7 @@ export const HomePage: React.FC = () => {
       <section className="relative h-[60vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
         {/* Dynamic Background Image */}
         {!loading && currentHeroSlide && (
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
             style={{
               backgroundImage: `url(${currentHeroSlide.image})`,
@@ -319,7 +330,7 @@ export const HomePage: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"></div>
           </div>
         )}
-        
+
         {/* Fallback background for loading state */}
         {loading && (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900">
@@ -380,7 +391,7 @@ export const HomePage: React.FC = () => {
               </div>
 
               {/* Event Title */}
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+              <h1 className="text-5xl md:text-7xl font-bold text-white/80 mb-6 leading-tight drop-shadow-lg">
                 {currentHeroSlide.title}
               </h1>
 
@@ -410,13 +421,16 @@ export const HomePage: React.FC = () => {
                 <div className="text-3xl font-bold text-white">
                   {currentHeroSlide.price}
                 </div>
-                <Link to={`/events/${currentHeroSlide.id}`}>
-                  <Button variant="secondary" size="xl" className="group">
-                    <Ticket className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
-                    Get Tickets Now
-                    <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
+                <Button 
+                  variant="secondary" 
+                  size="xl" 
+                  className="group"
+                  onClick={() => handleGetTicketsClick(currentHeroSlide.id)}
+                >
+                  <Ticket className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+                  Get Tickets Now
+                  <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                </Button>
               </div>
             </>
           ) : (
@@ -483,10 +497,23 @@ export const HomePage: React.FC = () => {
 
               <div className="max-w-3xl mx-auto text-center mb-12">
                 <p className="text-xl text-gray-600">
-                  Connect with millions of events worldwide. Buy, sell, and trade tickets with
-                  <span className="font-semibold text-blue-600"> AI-powered matching</span>,
-                  <span className="font-semibold text-blue-600"> verified authenticity</span>, and
-                  <span className="font-semibold text-blue-600"> instant delivery</span>.
+                  Connect with millions of events worldwide. Buy, sell, and
+                  trade tickets with
+                  <span className="font-semibold text-blue-600">
+                    {" "}
+                    AI-powered matching
+                  </span>
+                  ,
+                  <span className="font-semibold text-blue-600">
+                    {" "}
+                    verified authenticity
+                  </span>
+                  , and
+                  <span className="font-semibold text-blue-600">
+                    {" "}
+                    instant delivery
+                  </span>
+                  .
                 </p>
               </div>
             </div>
@@ -549,50 +576,65 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {liveEvents.map((event, index) => (
-                <Card
-                  key={index}
-                  className="bg-white border-gray-200 hover:shadow-lg transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="text-4xl">{event.image}</div>
-                      <div className="flex items-center gap-2">
-                        {event.isLive && (
-                          <div className="flex items-center px-2 py-1 bg-red-500 rounded-full">
-                            <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
-                            <span className="text-white text-xs font-medium">
-                              LIVE
-                            </span>
-                          </div>
-                        )}
-                        <span className="text-gray-500 text-sm">
-                          {event.category}
-                        </span>
+              {liveEvents.map((event) => {
+                const isLive = new Date(event.eventDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000);
+                return (
+                  <Card
+                    key={event.id}
+                    className="bg-white border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/events/${event.id}`)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="text-4xl">
+                          {event.eventType === 'CONCERT' ? '🎤' : 
+                           event.eventType === 'SPORTS' ? '🏀' : 
+                           event.eventType === 'THEATER' ? '🎭' : 
+                           event.eventType === 'COMEDY' ? '🎭' : '🎟️'}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isLive && (
+                            <div className="flex items-center px-2 py-1 bg-red-500 rounded-full">
+                              <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
+                              <span className="text-white text-xs font-medium">
+                                LIVE
+                              </span>
+                            </div>
+                          )}
+                          <span className="text-gray-500 text-sm">
+                            {event.eventType || 'Event'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-2">
-                      {event.title}
-                    </h3>
-                    <div className="space-y-1 text-gray-600 text-sm mb-4">
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        <span>{event.venue}</span>
+                      <h3 className="font-bold text-gray-900 mb-2">
+                        {event.name}
+                      </h3>
+                      <div className="space-y-1 text-gray-600 text-sm mb-4">
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          <span>{event.venue}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2" />
+                          <span>{new Date(event.eventDate).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Ticket className="h-4 w-4 mr-2" />
+                          <span className="font-semibold text-gray-900">
+                            {event.minPrice ? `From $${event.minPrice}` : 'Price TBA'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2" />
-                        <span>{event.date}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Ticket className="h-4 w-4 mr-2" />
-                        <span className="font-semibold text-gray-900">
-                          {event.price}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </section>
