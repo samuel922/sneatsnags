@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient } from "./api";
 import type {
   Event,
   CreateEventRequest,
@@ -9,38 +9,55 @@ import type {
   PaginatedResponse,
   EventSection,
   EventFilters,
-} from '../types/events';
+} from "../types/events";
 
 // Event API Service Class
 export class EventService {
-  private readonly baseUrl = '/events';
+  private readonly baseUrl = "/events";
 
   /**
    * Get events with filtering and pagination
    */
-  async getEvents(query: EventSearchQuery = {}): Promise<PaginatedResponse<Event>> {
+  async getEvents(
+    query: EventSearchQuery = {}
+  ): Promise<PaginatedResponse<Event>> {
     try {
-      const response = await apiClient.get<PaginatedResponse<Event>>(this.baseUrl, query);
+      const response = await apiClient.get<PaginatedResponse<Event>>(
+        this.baseUrl,
+        query
+      );
       return response.data!;
     } catch (error) {
-      throw this.handleError(error, 'getEvents');
+      throw this.handleError(error, "getEvents");
     }
   }
 
   /**
    * Get events silently (without showing loading states)
    */
-  async getEventsSilent(params?: EventSearchQuery & EventFilters): Promise<PaginatedResponse<Event>> {
+  async getEventsSilent(
+    params?: EventSearchQuery & EventFilters
+  ): Promise<PaginatedResponse<Event>> {
     try {
-      const response = await apiClient.getSilent<any>('/events', params);
+      const response = await apiClient.getSilent<PaginatedResponse<Event>>(
+        "/events",
+        params
+      );
       return {
         data: response.data?.data || [],
-        pagination: response.data?.pagination,
+        pagination: response.data?.pagination || {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+          hasNext: false,
+          hasPrev: false,
+        },
         success: true,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      throw this.handleError(error, 'getEventsSilent');
+      throw this.handleError(error, "getEventsSilent");
     }
   }
 
@@ -49,16 +66,22 @@ export class EventService {
    */
   async getEventById(id: string, includeStats = false): Promise<Event> {
     try {
-      const params = includeStats ? { includeStats: 'true' } : {};
-      const response = await apiClient.get<ApiResponse<Event>>(`${this.baseUrl}/${id}`, params);
-      
-      if (!response.data?.data) {
-        throw new Error('Event not found');
+      const params = includeStats ? { includeStats: "true" } : {};
+      const response = await apiClient.get<ApiResponse<Event>>(
+        `${this.baseUrl}/${id}`,
+        params
+      );
+
+      // Backend returns { success: true, data: event, message: "Event retrieved" }
+      // apiClient.get() returns the backend response directly, not the axios response
+      // So response = { success: true, data: event, message: "Event retrieved" }
+      if (!response.data) {
+        throw new Error("Event not found");
       }
-      
-      return response.data.data;
+
+      return response.data as unknown as Event;
     } catch (error) {
-      throw this.handleError(error, 'getEventById');
+      throw this.handleError(error, "getEventById");
     }
   }
 
@@ -74,15 +97,18 @@ export class EventService {
    */
   async createEvent(data: CreateEventRequest): Promise<Event> {
     try {
-      const response = await apiClient.post<ApiResponse<Event>>(this.baseUrl, data);
-      
+      const response = await apiClient.post<ApiResponse<Event>>(
+        this.baseUrl,
+        data
+      );
+
       if (!response.data?.data) {
-        throw new Error('Failed to create event');
+        throw new Error("Failed to create event");
       }
-      
+
       return response.data.data;
     } catch (error) {
-      throw this.handleError(error, 'createEvent');
+      throw this.handleError(error, "createEvent");
     }
   }
 
@@ -91,15 +117,18 @@ export class EventService {
    */
   async updateEvent(id: string, data: UpdateEventRequest): Promise<Event> {
     try {
-      const response = await apiClient.put<ApiResponse<Event>>(`${this.baseUrl}/${id}`, data);
-      
+      const response = await apiClient.put<ApiResponse<Event>>(
+        `${this.baseUrl}/${id}`,
+        data
+      );
+
       if (!response.data?.data) {
-        throw new Error('Failed to update event');
+        throw new Error("Failed to update event");
       }
-      
+
       return response.data.data;
     } catch (error) {
-      throw this.handleError(error, 'updateEvent');
+      throw this.handleError(error, "updateEvent");
     }
   }
 
@@ -110,20 +139,26 @@ export class EventService {
     try {
       await apiClient.delete(`${this.baseUrl}/${id}`);
     } catch (error) {
-      throw this.handleError(error, 'deleteEvent');
+      throw this.handleError(error, "deleteEvent");
     }
   }
 
   /**
    * Search events
    */
-  async searchEvents(query: string, filters: Partial<EventSearchQuery> = {}): Promise<Event[]> {
+  async searchEvents(
+    query: string,
+    filters: Partial<EventSearchQuery> = {}
+  ): Promise<Event[]> {
     try {
       const params = { q: query, ...filters };
-      const response = await apiClient.get<PaginatedResponse<Event>>(`${this.baseUrl}/search`, params);
+      const response = await apiClient.get<PaginatedResponse<Event>>(
+        `${this.baseUrl}/search`,
+        params
+      );
       return response.data?.data || [];
     } catch (error) {
-      throw this.handleError(error, 'searchEvents');
+      throw this.handleError(error, "searchEvents");
     }
   }
 
@@ -132,23 +167,33 @@ export class EventService {
    */
   async getPopularEvents(limit = 10): Promise<Event[]> {
     try {
-      const response = await apiClient.get<ApiResponse<Event[]>>(`${this.baseUrl}/popular`, { limit });
+      const response = await apiClient.get<ApiResponse<Event[]>>(
+        `${this.baseUrl}/popular`,
+        { limit }
+      );
       return response.data?.data || [];
     } catch (error) {
-      throw this.handleError(error, 'getPopularEvents');
+      throw this.handleError(error, "getPopularEvents");
     }
   }
 
   /**
    * Get upcoming events
    */
-  async getUpcomingEvents(limit = 10, city?: string, state?: string): Promise<Event[]> {
+  async getUpcomingEvents(
+    limit = 10,
+    city?: string,
+    state?: string
+  ): Promise<Event[]> {
     try {
       const params = { limit, ...(city && { city }), ...(state && { state }) };
-      const response = await apiClient.get<ApiResponse<Event[]>>(`${this.baseUrl}/upcoming`, params);
+      const response = await apiClient.get<ApiResponse<Event[]>>(
+        `${this.baseUrl}/upcoming`,
+        params
+      );
       return response.data?.data || [];
     } catch (error) {
-      throw this.handleError(error, 'getUpcomingEvents');
+      throw this.handleError(error, "getUpcomingEvents");
     }
   }
 
@@ -157,10 +202,12 @@ export class EventService {
    */
   async getEventSections(eventId: string): Promise<EventSection[]> {
     try {
-      const response = await apiClient.get<any>(`/events/${eventId}/sections`);
-      return response.data?.data || response.data || [];
+      const response = await apiClient.get<ApiResponse<EventSection[]>>(
+        `/events/${eventId}/sections`
+      );
+      return (response.data?.data || response.data || []) as EventSection[];
     } catch (error) {
-      throw this.handleError(error, 'getEventSections');
+      throw this.handleError(error, "getEventSections");
     }
   }
 
@@ -169,39 +216,56 @@ export class EventService {
    */
   async getEventStats(eventId: string): Promise<EventStats> {
     try {
-      const response = await apiClient.get<ApiResponse<EventStats>>(`${this.baseUrl}/${eventId}/stats`);
-      
+      const response = await apiClient.get<ApiResponse<EventStats>>(
+        `${this.baseUrl}/${eventId}/stats`
+      );
+
       if (!response.data?.data) {
-        throw new Error('Failed to get event statistics');
+        throw new Error("Failed to get event statistics");
       }
-      
+
       return response.data.data;
     } catch (error) {
-      throw this.handleError(error, 'getEventStats');
+      throw this.handleError(error, "getEventStats");
     }
   }
 
   /**
    * Create event section
    */
-  async createEventSection(eventId: string, sectionData: Omit<EventSection, 'id' | 'eventId' | 'createdAt' | 'updatedAt'>): Promise<EventSection> {
+  async createEventSection(
+    eventId: string,
+    sectionData: Omit<
+      EventSection,
+      "id" | "eventId" | "createdAt" | "updatedAt"
+    >
+  ): Promise<EventSection> {
     try {
-      const response = await apiClient.post<any>(`/events/${eventId}/sections`, sectionData);
-      return response.data?.data || response.data;
+      const response = await apiClient.post<ApiResponse<EventSection>>(
+        `/events/${eventId}/sections`,
+        sectionData
+      );
+      return (response.data?.data || response.data) as EventSection;
     } catch (error) {
-      throw this.handleError(error, 'createEventSection');
+      throw this.handleError(error, "createEventSection");
     }
   }
 
   /**
    * Update event section
    */
-  async updateEventSection(sectionId: string, sectionData: Partial<EventSection>): Promise<EventSection> {
+  async updateEventSection(
+    sectionId: string,
+    sectionData: Partial<EventSection>
+  ): Promise<EventSection> {
     try {
-      const response = await apiClient.put<any>(`/events/sections/${sectionId}`, sectionData);
-      return response.data?.data || response.data;
+      const response = await apiClient.put<ApiResponse<EventSection>>(
+        `/events/sections/${sectionId}`,
+        sectionData
+      );
+      return (response.data?.data || response.data) as EventSection;
     } catch (error) {
-      throw this.handleError(error, 'updateEventSection');
+      throw this.handleError(error, "updateEventSection");
     }
   }
 
@@ -212,7 +276,7 @@ export class EventService {
     try {
       await apiClient.delete(`/events/sections/${sectionId}`);
     } catch (error) {
-      throw this.handleError(error, 'deleteEventSection');
+      throw this.handleError(error, "deleteEventSection");
     }
   }
 
@@ -221,30 +285,35 @@ export class EventService {
    */
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     try {
-      const response = await apiClient.get<ApiResponse<{ status: string; timestamp: string }>>(
-        `${this.baseUrl}/health/check`
+      const response = await apiClient.get<
+        ApiResponse<{ status: string; timestamp: string }>
+      >(`${this.baseUrl}/health/check`);
+      return (
+        response.data?.data || {
+          status: "unknown",
+          timestamp: new Date().toISOString(),
+        }
       );
-      return response.data?.data || { status: 'unknown', timestamp: new Date().toISOString() };
     } catch (error) {
-      throw this.handleError(error, 'healthCheck');
+      throw this.handleError(error, "healthCheck");
     }
   }
 
   /**
    * Handle API errors and transform them into user-friendly messages
    */
-  private handleError(error: any, operation: string): Error {
+  private handleError(error: unknown, operation: string): Error {
     console.error(`EventService.${operation} failed:`, error);
 
     // Extract error information from the response
-    const errorData = error.response?.data;
-    const status = error.response?.status;
+    const errorData = (error as { response?: { data?: { success?: boolean; error?: string; code?: string; details?: unknown }; status?: number } })?.response?.data;
+    const status = (error as { response?: { data?: unknown; status?: number } })?.response?.status;
 
     // Handle specific error types
     if (errorData?.success === false) {
       return new EventServiceError(
-        errorData.error || 'An error occurred',
-        errorData.code || 'UNKNOWN_ERROR',
+        errorData.error || "An error occurred",
+        errorData.code || "UNKNOWN_ERROR",
         errorData.details,
         status,
         operation
@@ -255,74 +324,77 @@ export class EventService {
     switch (status) {
       case 400:
         return new EventServiceError(
-          'Invalid request data',
-          'VALIDATION_ERROR',
+          "Invalid request data",
+          "VALIDATION_ERROR",
           errorData,
           status,
           operation
         );
       case 401:
         return new EventServiceError(
-          'Authentication required',
-          'UNAUTHORIZED',
+          "Authentication required",
+          "UNAUTHORIZED",
           null,
           status,
           operation
         );
       case 403:
         return new EventServiceError(
-          'Insufficient permissions',
-          'FORBIDDEN',
+          "Insufficient permissions",
+          "FORBIDDEN",
           null,
           status,
           operation
         );
       case 404:
         return new EventServiceError(
-          'Resource not found',
-          'NOT_FOUND',
+          "Resource not found",
+          "NOT_FOUND",
           null,
           status,
           operation
         );
       case 409:
         return new EventServiceError(
-          'Resource already exists or conflicts with existing data',
-          'CONFLICT',
+          "Resource already exists or conflicts with existing data",
+          "CONFLICT",
           errorData,
           status,
           operation
         );
       case 422:
         return new EventServiceError(
-          'Validation failed',
-          'VALIDATION_ERROR',
+          "Validation failed",
+          "VALIDATION_ERROR",
           errorData,
           status,
           operation
         );
       case 429:
         return new EventServiceError(
-          'Rate limit exceeded. Please try again later.',
-          'RATE_LIMIT_EXCEEDED',
+          "Rate limit exceeded. Please try again later.",
+          "RATE_LIMIT_EXCEEDED",
           errorData,
           status,
           operation
         );
       case 500:
         return new EventServiceError(
-          'Internal server error',
-          'INTERNAL_SERVER_ERROR',
+          "Internal server error",
+          "INTERNAL_SERVER_ERROR",
           null,
           status,
           operation
         );
       default:
         // Network or other errors
-        if (error.code === 'NETWORK_ERROR' || !error.response) {
+        if (
+          (error as { code?: string; response?: unknown })?.code === "NETWORK_ERROR" ||
+          !(error as { code?: string; response?: unknown })?.response
+        ) {
           return new EventServiceError(
-            'Network error. Please check your connection.',
-            'NETWORK_ERROR',
+            "Network error. Please check your connection.",
+            "NETWORK_ERROR",
             undefined,
             undefined,
             operation
@@ -330,8 +402,8 @@ export class EventService {
         }
 
         return new EventServiceError(
-          error.message || 'An unexpected error occurred',
-          'UNKNOWN_ERROR',
+          (error as { message?: string })?.message || "An unexpected error occurred",
+          "UNKNOWN_ERROR",
           undefined,
           status,
           operation
@@ -345,40 +417,49 @@ export class EventServiceError extends Error {
   constructor(
     message: string,
     public code: string,
-    public details?: any,
+    public details?: unknown,
     public status?: number,
     public operation?: string
   ) {
     super(message);
-    this.name = 'EventServiceError';
+    this.name = "EventServiceError";
   }
 
   /**
    * Check if this is a validation error
    */
   isValidationError(): boolean {
-    return this.code === 'VALIDATION_ERROR' || this.code === 'EVENT_VALIDATION_ERROR';
+    return (
+      this.code === "VALIDATION_ERROR" || this.code === "EVENT_VALIDATION_ERROR"
+    );
   }
 
   /**
    * Check if this is a permission error
    */
   isPermissionError(): boolean {
-    return this.code === 'FORBIDDEN' || this.code === 'UNAUTHORIZED' || this.code === 'EVENT_PERMISSION_ERROR';
+    return (
+      this.code === "FORBIDDEN" ||
+      this.code === "UNAUTHORIZED" ||
+      this.code === "EVENT_PERMISSION_ERROR"
+    );
   }
 
   /**
    * Check if this is a rate limit error
    */
   isRateLimitError(): boolean {
-    return this.code === 'RATE_LIMIT_EXCEEDED' || this.code === 'EVENT_RATE_LIMIT_ERROR';
+    return (
+      this.code === "RATE_LIMIT_EXCEEDED" ||
+      this.code === "EVENT_RATE_LIMIT_ERROR"
+    );
   }
 
   /**
    * Check if this is a network error
    */
   isNetworkError(): boolean {
-    return this.code === 'NETWORK_ERROR' || !this.status;
+    return this.code === "NETWORK_ERROR" || !this.status;
   }
 
   /**
@@ -386,28 +467,28 @@ export class EventServiceError extends Error {
    */
   getUserMessage(): string {
     switch (this.code) {
-      case 'EVENT_VALIDATION_ERROR':
-      case 'VALIDATION_ERROR':
-        return 'Please check your input and try again.';
-      case 'EVENT_NOT_FOUND':
-      case 'NOT_FOUND':
-        return 'The requested event was not found.';
-      case 'EVENT_ALREADY_EXISTS':
-      case 'CONFLICT':
-        return 'An event with similar details already exists.';
-      case 'EVENT_PERMISSION_ERROR':
-      case 'FORBIDDEN':
-        return 'You do not have permission to perform this action.';
-      case 'UNAUTHORIZED':
-        return 'Please log in to continue.';
-      case 'RATE_LIMIT_EXCEEDED':
-        return 'Too many requests. Please wait a moment and try again.';
-      case 'NETWORK_ERROR':
-        return 'Network error. Please check your connection and try again.';
-      case 'SERVICE_UNAVAILABLE':
-        return 'Service is temporarily unavailable. Please try again later.';
+      case "EVENT_VALIDATION_ERROR":
+      case "VALIDATION_ERROR":
+        return "Please check your input and try again.";
+      case "EVENT_NOT_FOUND":
+      case "NOT_FOUND":
+        return "The requested event was not found.";
+      case "EVENT_ALREADY_EXISTS":
+      case "CONFLICT":
+        return "An event with similar details already exists.";
+      case "EVENT_PERMISSION_ERROR":
+      case "FORBIDDEN":
+        return "You do not have permission to perform this action.";
+      case "UNAUTHORIZED":
+        return "Please log in to continue.";
+      case "RATE_LIMIT_EXCEEDED":
+        return "Too many requests. Please wait a moment and try again.";
+      case "NETWORK_ERROR":
+        return "Network error. Please check your connection and try again.";
+      case "SERVICE_UNAVAILABLE":
+        return "Service is temporarily unavailable. Please try again later.";
       default:
-        return this.message || 'An unexpected error occurred.';
+        return this.message || "An unexpected error occurred.";
     }
   }
 
@@ -420,9 +501,9 @@ export class EventServiceError extends Error {
     }
 
     if (Array.isArray(this.details)) {
-      return this.details.map(error => ({
-        field: error.field || 'unknown',
-        message: error.message || 'Invalid value',
+      return this.details.map((error) => ({
+        field: error.field || "unknown",
+        message: error.message || "Invalid value",
       }));
     }
 
@@ -431,26 +512,31 @@ export class EventServiceError extends Error {
 }
 
 // Utility functions for error handling
-export const isEventServiceError = (error: any): error is EventServiceError => {
+export const isEventServiceError = (
+  error: unknown
+): error is EventServiceError => {
   return error instanceof EventServiceError;
 };
 
-export const handleEventServiceError = (error: any, fallbackMessage = 'An error occurred'): string => {
+export const handleEventServiceError = (
+  error: unknown,
+  fallbackMessage = "An error occurred"
+): string => {
   if (isEventServiceError(error)) {
     return error.getUserMessage();
   }
-  
-  if (error.message) {
-    return error.message;
+
+  if ((error as Error)?.message) {
+    return (error as Error).message;
   }
-  
+
   return fallbackMessage;
 };
 
 // Create singleton instance
 const eventServiceInstance = new EventService();
 
-// Export singleton instance  
+// Export singleton instance
 export const eventServiceV2 = eventServiceInstance;
 
 // Legacy object export for backward compatibility
