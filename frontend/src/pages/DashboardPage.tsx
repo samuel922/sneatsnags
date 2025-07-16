@@ -17,7 +17,6 @@ export const DashboardPage: React.FC = () => {
       icon: DollarSign,
       change: '+12.3%',
       changeType: 'increase',
-      color: 'from-green-400 to-emerald-500',
     },
     {
       name: 'Active Users',
@@ -25,7 +24,6 @@ export const DashboardPage: React.FC = () => {
       icon: Users,
       change: '+8.1%',
       changeType: 'increase',
-      color: 'from-blue-400 to-indigo-500',
     },
     {
       name: 'Total Events',
@@ -33,7 +31,6 @@ export const DashboardPage: React.FC = () => {
       icon: Calendar,
       change: '+5.2%',
       changeType: 'increase',
-      color: 'from-purple-400 to-pink-500',
     },
     {
       name: 'Conversion Rate',
@@ -41,7 +38,6 @@ export const DashboardPage: React.FC = () => {
       icon: TrendingUp,
       change: '+2.1%',
       changeType: 'increase',
-      color: 'from-orange-400 to-red-500',
     },
   ];
 
@@ -51,57 +47,57 @@ export const DashboardPage: React.FC = () => {
         return (
           <div className="space-y-8">
             <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              <Card variant="glass" hover className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Active Offers</p>
-                      <p className="text-2xl md:text-3xl font-bold text-blue-700">3</p>
-                      <p className="text-xs text-gray-600">2 expiring soon</p>
+                      <p className="text-sm font-medium text-slate-600">Active Offers</p>
+                      <p className="text-2xl md:text-3xl font-bold text-blue-600">3</p>
+                      <p className="text-xs text-slate-500">2 expiring soon</p>
                     </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                      <Target className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <Target className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card variant="glass" hover className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Purchases</p>
-                      <p className="text-2xl md:text-3xl font-bold text-green-700">8</p>
-                      <p className="text-xs text-gray-600">This month</p>
+                      <p className="text-sm font-medium text-slate-600">Purchases</p>
+                      <p className="text-2xl md:text-3xl font-bold text-slate-900">8</p>
+                      <p className="text-xs text-slate-500">This month</p>
                     </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl flex items-center justify-center">
-                      <Award className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-100 rounded-xl flex items-center justify-center">
+                      <Award className="h-5 w-5 md:h-6 md:w-6 text-slate-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card variant="glass" hover className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Total Spent</p>
-                      <p className="text-2xl md:text-3xl font-bold text-purple-700">$2,450</p>
-                      <p className="text-xs text-gray-600">Last 30 days</p>
+                      <p className="text-sm font-medium text-slate-600">Total Spent</p>
+                      <p className="text-2xl md:text-3xl font-bold text-blue-600">$2,450</p>
+                      <p className="text-xs text-slate-500">Last 30 days</p>
                     </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Card variant="gradient" className="p-4 md:p-8">
+            <Card className="bg-white border-slate-200 shadow-sm">
               <CardHeader>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900">Quick Actions</h3>
+                <h3 className="text-lg md:text-xl font-bold text-slate-900">Quick Actions</h3>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 md:p-6">
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   <Button 
                     variant="primary" 
@@ -122,7 +118,7 @@ export const DashboardPage: React.FC = () => {
                     <Activity className="h-4 w-4 md:h-5 md:w-5 mr-2 md:mr-3" />
                     <div className="text-left">
                       <div className="font-semibold text-sm md:text-base">Browse Events</div>
-                      <div className="text-xs md:text-sm text-gray-700">Discover upcoming shows</div>
+                      <div className="text-xs md:text-sm text-slate-600">Discover upcoming shows</div>
                     </div>
                   </Button>
                 </div>
@@ -135,57 +131,57 @@ export const DashboardPage: React.FC = () => {
         return (
           <div className="space-y-8">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card variant="glass" hover className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Active Listings</p>
+                      <p className="text-sm font-medium text-slate-600">Active Listings</p>
                       <p className="text-3xl font-bold text-blue-600">12</p>
-                      <p className="text-xs text-gray-500">3 with offers</p>
+                      <p className="text-xs text-slate-500">3 with offers</p>
                     </div>
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                      <Calendar className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="glass" hover className="border-white/30">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Sales</p>
-                      <p className="text-3xl font-bold text-green-600">24</p>
-                      <p className="text-xs text-gray-500">This month</p>
-                    </div>
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                      <TrendingUp className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <Calendar className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card variant="glass" hover className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Revenue</p>
-                      <p className="text-3xl font-bold text-purple-600">$5,230</p>
-                      <p className="text-xs text-gray-500">Last 30 days</p>
+                      <p className="text-sm font-medium text-slate-600">Total Sales</p>
+                      <p className="text-3xl font-bold text-slate-900">24</p>
+                      <p className="text-xs text-slate-500">This month</p>
                     </div>
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                      <DollarSign className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-slate-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Revenue</p>
+                      <p className="text-3xl font-bold text-blue-600">$5,230</p>
+                      <p className="text-xs text-slate-500">Last 30 days</p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <DollarSign className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Card variant="gradient" className="p-8">
+            <Card className="bg-white border-slate-200 shadow-sm">
               <CardHeader>
-                <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
+                <h3 className="text-xl font-bold text-slate-900">Quick Actions</h3>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <Button variant="primary" className="justify-start h-auto p-4">
                     <Zap className="h-5 w-5 mr-3" />
@@ -198,7 +194,7 @@ export const DashboardPage: React.FC = () => {
                     <Activity className="h-5 w-5 mr-3" />
                     <div className="text-left">
                       <div className="font-semibold">View Analytics</div>
-                      <div className="text-sm text-gray-600">Track your performance</div>
+                      <div className="text-sm text-slate-600">Track your performance</div>
                     </div>
                   </Button>
                 </div>
@@ -214,19 +210,19 @@ export const DashboardPage: React.FC = () => {
               {adminStats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
-                  <Card key={index} variant="glass" hover className="border-white/30 group">
+                  <Card key={index} className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                          <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                          <p className="text-sm font-medium text-slate-600">{stat.name}</p>
+                          <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
                           <div className="flex items-center mt-1">
-                            <span className="text-green-600 font-medium text-sm">{stat.change}</span>
-                            <span className="text-gray-500 ml-1 text-sm">from last month</span>
+                            <span className="text-blue-600 font-medium text-sm">{stat.change}</span>
+                            <span className="text-slate-500 ml-1 text-sm">from last month</span>
                           </div>
                         </div>
-                        <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                          <Icon className="h-6 w-6 text-white" />
+                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Icon className="h-6 w-6 text-blue-600" />
                         </div>
                       </div>
                     </CardContent>
@@ -236,9 +232,9 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-2">
-              <Card variant="glass" className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm">
                 <CardHeader>
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -248,13 +244,13 @@ export const DashboardPage: React.FC = () => {
                       { action: 'Event created', time: '10 minutes ago', type: 'event' },
                       { action: 'Payment processed', time: '15 minutes ago', type: 'payment' },
                     ].map((activity, index) => (
-                      <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/50 transition-colors">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                          <Activity className="h-4 w-4 text-white" />
+                      <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Activity className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                          <p className="text-xs text-gray-500">{activity.time}</p>
+                          <p className="text-sm font-medium text-slate-900">{activity.action}</p>
+                          <p className="text-xs text-slate-500">{activity.time}</p>
                         </div>
                       </div>
                     ))}
@@ -262,9 +258,9 @@ export const DashboardPage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card variant="glass" className="border-white/30">
+              <Card className="bg-white border-slate-200 shadow-sm">
                 <CardHeader>
-                  <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
@@ -293,13 +289,13 @@ export const DashboardPage: React.FC = () => {
       
       default:
         return (
-          <Card variant="glass" className="border-white/30">
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-white" />
+              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to AutoMatch!</h3>
-              <p className="text-gray-600">Your dashboard will appear here once you set up your account.</p>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Welcome to AutoMatch!</h3>
+              <p className="text-slate-600">Your dashboard will appear here once you set up your account.</p>
             </CardContent>
           </Card>
         );
@@ -307,14 +303,14 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+      <div className="max-w-7xl mx-auto p-4 lg:p-8">
         {/* Header */}
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 md:mb-8 p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
             Welcome back, {user?.firstName}! 👋
           </h1>
-          <p className="text-gray-700 text-sm md:text-base">
+          <p className="text-slate-600 text-sm md:text-base">
             Here's what's happening with your account today.
           </p>
         </div>
