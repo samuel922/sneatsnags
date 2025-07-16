@@ -6,25 +6,31 @@ import {
 } from "../types/event";
 import { PaginationResponse } from "../types/api";
 import { logger } from "../utils/logger";
+import { EventNotFoundError, DatabaseError } from "../utils/errors";
 
 export class EventService {
   async createEvent(data: CreateEventRequest) {
     const { sections, ...eventData } = data;
 
-    const event = await prisma.event.create({
-      data: {
-        ...eventData,
-        sections: {
-          create: sections,
+    try {
+      const event = await prisma.event.create({
+        data: {
+          ...eventData,
+          sections: {
+            create: sections || [],
+          },
         },
-      },
-      include: {
-        sections: true,
-      },
-    });
+        include: {
+          sections: true,
+        },
+      });
 
-    logger.info(`Event created: ${event.id}`);
-    return event;
+      logger.info(`Event created: ${event.id}`);
+      return event;
+    } catch (error: any) {
+      logger.error("Database error creating event:", error);
+      throw new DatabaseError("Failed to create event");
+    }
   }
 
   async getEvents(query: EventSearchQuery): Promise<PaginationResponse<any>> {
@@ -142,55 +148,79 @@ export class EventService {
   }
 
   async getEventById(id: string) {
-    const event = await prisma.event.findUnique({
-      where: { id },
-      include: {
-        sections: true,
-        _count: {
-          select: {
-            offers: true,
-            listings: true,
-            transactions: true,
+    try {
+      const event = await prisma.event.findUnique({
+        where: { id },
+        include: {
+          sections: true,
+          _count: {
+            select: {
+              offers: true,
+              listings: true,
+              transactions: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!event) {
-      return null;
+      if (!event) {
+        throw new EventNotFoundError(id);
+      }
+
+      // Map database fields to frontend expected fields
+      return {
+        ...event,
+        date: event.eventDate.toISOString(),
+        time: event.eventDate.toISOString(),
+        totalCapacity: event.totalSeats || 0,
+        ticketsAvailable: event.availableSeats || 0,
+        minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+        maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+      };
+    } catch (error: any) {
+      if (error instanceof EventNotFoundError) {
+        throw error;
+      }
+      logger.error("Database error getting event:", error);
+      throw new DatabaseError("Failed to retrieve event");
     }
-
-    // Map database fields to frontend expected fields
-    return {
-      ...event,
-      date: event.eventDate.toISOString(),
-      time: event.eventDate.toISOString(),
-      totalCapacity: event.totalSeats || 0,
-      ticketsAvailable: event.availableSeats || 0,
-      minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
-      maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
-    };
   }
 
   async updateEvent(id: string, data: UpdateEventRequest) {
-    const event = await prisma.event.update({
-      where: { id },
-      data,
-      include: {
-        sections: true,
-      },
-    });
+    try {
+      const event = await prisma.event.update({
+        where: { id },
+        data,
+        include: {
+          sections: true,
+        },
+      });
 
-    logger.info(`Event updated: ${id}`);
-    return event;
+      logger.info(`Event updated: ${id}`);
+      return event;
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        throw new EventNotFoundError(id);
+      }
+      logger.error("Database error updating event:", error);
+      throw new DatabaseError("Failed to update event");
+    }
   }
 
   async deleteEvent(id: string) {
-    await prisma.event.delete({
-      where: { id },
-    });
+    try {
+      await prisma.event.delete({
+        where: { id },
+      });
 
-    logger.info(`Event deleted: ${id}`);
+      logger.info(`Event deleted: ${id}`);
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        throw new EventNotFoundError(id);
+      }
+      logger.error("Database error deleting event:", error);
+      throw new DatabaseError("Failed to delete event");
+    }
   }
 
   async getEventStats(eventId: string) {

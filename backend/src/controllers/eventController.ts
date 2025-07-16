@@ -1,9 +1,16 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { successResponse, errorResponse } from "../utils/response";
 import { logger } from "../utils/logger";
 import { eventService } from "../services/eventService";
 import { getPaginationParams, createPaginationResult } from "../utils/pagination";
 import { AuthenticatedRequest } from "../types/auth";
+import { 
+  createEventSchema, 
+  updateEventSchema, 
+  createEventSectionSchema, 
+  updateEventSectionSchema,
+  eventSearchSchema 
+} from "../utils/validations";
 
 export const eventController = {
   // Get all events (public)
@@ -73,74 +80,72 @@ export const eventController = {
   },
 
   // Create event (admin only)
-  createEvent: async (req: AuthenticatedRequest, res: Response) => {
+  createEvent: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const event = await eventService.createEvent(req.body);
+      const validatedData = createEventSchema.parse(req.body);
+      const event = await eventService.createEvent(validatedData);
       res.status(201).json(successResponse(event, "Event created successfully"));
     } catch (error) {
-      logger.error("Create event error:", error);
-      res.status(500).json(errorResponse("Failed to create event"));
+      next(error);
     }
   },
 
   // Update event (admin only)
-  updateEvent: async (req: AuthenticatedRequest, res: Response) => {
+  updateEvent: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const event = await eventService.updateEvent(id, req.body);
+      const validatedData = updateEventSchema.parse(req.body);
+      const event = await eventService.updateEvent(id, validatedData);
       res.json(successResponse(event, "Event updated successfully"));
     } catch (error) {
-      logger.error("Update event error:", error);
-      res.status(500).json(errorResponse("Failed to update event"));
+      next(error);
     }
   },
 
   // Delete event (admin only)
-  deleteEvent: async (req: AuthenticatedRequest, res: Response) => {
+  deleteEvent: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
       await eventService.deleteEvent(id);
       res.json(successResponse(null, "Event deleted successfully"));
     } catch (error) {
-      logger.error("Delete event error:", error);
-      res.status(500).json(errorResponse("Failed to delete event"));
+      next(error);
     }
   },
 
   // Create event section (admin only)
-  createSection: async (req: AuthenticatedRequest, res: Response) => {
+  createSection: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const { id: eventId } = req.params;
       const sectionData = { ...req.body, eventId };
-      const section = await eventService.createSection(sectionData);
+      const validatedData = createEventSectionSchema.parse(sectionData);
+      const section = await eventService.createSection(validatedData);
       res.status(201).json(successResponse(section, "Section created successfully"));
     } catch (error) {
-      logger.error("Create section error:", error);
-      res.status(500).json(errorResponse("Failed to create section"));
+      next(error);
     }
   },
 
   // Update event section (admin only)
-  updateSection: async (req: AuthenticatedRequest, res: Response) => {
+  updateSection: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const { sectionId } = req.params;
-      const section = await eventService.updateSection(sectionId, req.body);
+      const validatedData = updateEventSectionSchema.parse(req.body);
+      const section = await eventService.updateSection(sectionId, validatedData);
       res.json(successResponse(section, "Section updated successfully"));
     } catch (error) {
-      logger.error("Update section error:", error);
-      res.status(500).json(errorResponse("Failed to update section"));
+      next(error);
     }
   },
 
   // Delete event section (admin only)
-  deleteSection: async (req: AuthenticatedRequest, res: Response) => {
+  deleteSection: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const { sectionId } = req.params;
       await eventService.deleteSection(sectionId);
       res.json(successResponse(null, "Section deleted successfully"));
     } catch (error) {
-      logger.error("Delete section error:", error);
-      res.status(500).json(errorResponse("Failed to delete section"));
+      next(error);
     }
   },
 
