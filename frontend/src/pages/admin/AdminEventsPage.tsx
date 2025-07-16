@@ -23,6 +23,7 @@ import {
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { adminService } from '../../services/adminService';
+import { eventService } from '../../services/eventService';
 import { SweetAlert } from '../../utils/sweetAlert';
 import type { Event, CreateEventRequest, EventCategory } from '../../types/event';
 
@@ -119,10 +120,10 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCa
   };
 
   const handleInputChange = (field: keyof CreateEventRequest, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: CreateEventRequest) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev: Record<string, string>) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -135,23 +136,23 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({ event, onSubmit, onCa
       maxPrice: 0,
       isActive: true,
     };
-    setFormData(prev => ({
+    setFormData((prev: CreateEventRequest) => ({
       ...prev,
       sections: [...prev.sections, newSection],
     }));
   };
 
   const removeSection = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev: CreateEventRequest) => ({
       ...prev,
-      sections: prev.sections.filter((_, i) => i !== index),
+      sections: prev.sections.filter((_: any, i: number) => i !== index),
     }));
   };
 
   const updateSection = (index: number, field: string, value: string | number | boolean) => {
-    setFormData(prev => ({
+    setFormData((prev: CreateEventRequest) => ({
       ...prev,
-      sections: prev.sections.map((section, i) =>
+      sections: prev.sections.map((section: any, i: number) =>
         i === index ? { ...section, [field]: value } : section
       ),
     }));
@@ -584,29 +585,20 @@ export const AdminEventsPage: React.FC = () => {
   const fetchStats = async () => {
     try {
       // Get real event statistics from backend
-      const response = await fetch('/api/admin/dashboard', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const dashboardData = await response.json();
-        const eventData = dashboardData.data.events;
-        const transactionData = dashboardData.data.transactions;
-        
-        const statsData: EventStats = {
-          totalEvents: eventData.total || 0,
-          upcomingEvents: eventData.upcoming || 0,
-          activeEvents: eventData.active || 0,
-          completedEvents: Math.max(0, eventData.total - eventData.upcoming - eventData.active) || 0,
-          totalRevenue: transactionData.revenue || 0,
-          averageTicketPrice: transactionData.total > 0 ? transactionData.volume / transactionData.total : 0,
-          totalAttendees: transactionData.completed || 0, // Assuming completed transactions = attendees
-        };
-        setStats(statsData);
-      }
+      const dashboardData = await adminService.getDashboard();
+      const eventData = dashboardData.data.events;
+      const transactionData = dashboardData.data.transactions;
+      
+      const statsData: EventStats = {
+        totalEvents: eventData.total || 0,
+        upcomingEvents: eventData.upcoming || 0,
+        activeEvents: eventData.active || 0,
+        completedEvents: Math.max(0, eventData.total - eventData.upcoming - eventData.active) || 0,
+        totalRevenue: transactionData.revenue || 0,
+        averageTicketPrice: transactionData.total > 0 ? transactionData.volume / transactionData.total : 0,
+        totalAttendees: transactionData.completed || 0, // Assuming completed transactions = attendees
+      };
+      setStats(statsData);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }
@@ -662,42 +654,10 @@ export const AdminEventsPage: React.FC = () => {
 
       console.log('Sending request data:', JSON.stringify(requestData, null, 2));
 
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        let errorMessage = `Failed to create event: ${response.status} ${response.statusText}`;
-        try {
-          const errorText = await response.text();
-          console.error('Response error:', errorText);
-          if (errorText) {
-            try {
-              const errorJson = JSON.parse(errorText);
-              errorMessage = errorJson.message || errorMessage;
-            } catch {
-              errorMessage = errorText;
-            }
-          }
-        } catch (textError) {
-          console.error('Failed to read error response:', textError);
-        }
-        throw new Error(errorMessage);
-      }
-
-      let result;
-      try {
-        result = await response.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
-        throw new Error('Server returned invalid response format');
-      }
-      console.log('Event created successfully:', result);
+      const result = selectedEvent 
+        ? await eventService.updateEvent(selectedEvent.id, requestData)
+        : await eventService.createEvent(requestData);
+      console.log(selectedEvent ? 'Event updated successfully:' : 'Event created successfully:', result);
 
       // Refresh the events list
       await fetchEvents();
