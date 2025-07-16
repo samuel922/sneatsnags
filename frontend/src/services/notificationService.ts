@@ -43,8 +43,17 @@ export const notificationService = {
 
   // Get unread notification count
   async getUnreadCount(): Promise<{ count: number }> {
-    const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
-    return response.data!;
+    try {
+      const response = await apiClient.get<{ success: boolean; data: { count: number } }>('/users/notifications/unread-count');
+      if (response.data && response.data.data && typeof response.data.data.count === 'number') {
+        return response.data.data;
+      }
+      // Return default if response structure is unexpected
+      return { count: 0 };
+    } catch (error) {
+      console.error('Failed to get unread notification count:', error);
+      return { count: 0 };
+    }
   },
 
   // Mark notification as read

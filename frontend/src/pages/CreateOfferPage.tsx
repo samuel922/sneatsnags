@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreateOfferForm } from '../components/offers/CreateOfferForm';
-import type { Event } from '../types/event';
+import type { Event } from '../types/events';
 import { eventService } from '../services/eventService';
 
 export const CreateOfferPage: React.FC = () => {

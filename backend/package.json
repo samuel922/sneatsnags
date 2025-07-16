@@ -17,7 +17,9 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "node dist/prisma/seed.js",
+    "db:seed:prod": "NODE_ENV=production node dist/prisma/seed.js",
+    "db:seed:dev": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "create-admin": "node create-admin.js",
@@ -67,6 +69,6 @@
     "typescript": "^5.8.3"
   },
   "prisma": {
-    "seed": "tsx src/prisma/seed.ts"
+    "seed": "node dist/prisma/seed.js"
   }
 }

@@ -10,14 +10,18 @@ import { EventNotFoundError, DatabaseError } from "../utils/errors";
 
 export class EventService {
   async createEvent(data: CreateEventRequest) {
-    const { sections, ...eventData } = data;
-
     try {
+      logger.info(
+        "EventService: Creating event with data:",
+        JSON.stringify(data, null, 2)
+      );
+      const { sections, ...eventData } = data;
+
       const event = await prisma.event.create({
         data: {
           ...eventData,
           sections: {
-            create: sections || [],
+            create: sections,
           },
         },
         include: {
@@ -26,10 +30,20 @@ export class EventService {
       });
 
       logger.info(`Event created: ${event.id}`);
-      return event;
-    } catch (error: any) {
-      logger.error("Database error creating event:", error);
-      throw new DatabaseError("Failed to create event");
+
+      // Map database fields to frontend expected fields
+      return {
+        ...event,
+        date: event.eventDate.toISOString(),
+        time: event.eventDate.toISOString(),
+        totalCapacity: event.totalSeats || 0,
+        ticketsAvailable: event.availableSeats || 0,
+        minPrice: event.minPrice ? parseFloat(event.minPrice.toString()) : 0,
+        maxPrice: event.maxPrice ? parseFloat(event.maxPrice.toString()) : 0,
+      };
+    } catch (error) {
+      logger.error("EventService: Failed to create event:", error);
+      throw error;
     }
   }
 
@@ -124,7 +138,7 @@ export class EventService {
     ]);
 
     // Map database fields to frontend expected fields
-    const data = events.map(event => ({
+    const data = events.map((event) => ({
       ...event,
       date: event.eventDate.toISOString(),
       time: event.eventDate.toISOString(),
@@ -263,7 +277,7 @@ export class EventService {
     });
 
     // Map database fields to frontend expected fields
-    return sections.map(section => ({
+    return sections.map((section) => ({
       ...section,
       capacity: section.seatCount || 0,
       minPrice: 0, // Sections don't have price in the current schema
@@ -277,7 +291,7 @@ export class EventService {
       data,
       include: { event: true },
     });
-    
+
     logger.info(`Section created: ${section.id} for event: ${data.eventId}`);
     return section;
   }
@@ -288,7 +302,7 @@ export class EventService {
       data,
       include: { event: true },
     });
-    
+
     logger.info(`Section updated: ${sectionId}`);
     return section;
   }
@@ -297,7 +311,7 @@ export class EventService {
     await prisma.section.delete({
       where: { id: sectionId },
     });
-    
+
     logger.info(`Section deleted: ${sectionId}`);
   }
 
@@ -309,7 +323,7 @@ export class EventService {
     limit: number;
   }) {
     const { query, city, state, eventType, limit } = params;
-    
+
     const where: any = {
       isActive: true,
       eventDate: { gte: new Date() },
@@ -340,7 +354,7 @@ export class EventService {
     });
 
     // Map database fields to frontend expected fields
-    return events.map(event => ({
+    return events.map((event) => ({
       ...event,
       date: event.eventDate.toISOString(),
       time: event.eventDate.toISOString(),
@@ -374,7 +388,7 @@ export class EventService {
     });
 
     // Map database fields to frontend expected fields
-    return events.map(event => ({
+    return events.map((event) => ({
       ...event,
       date: event.eventDate.toISOString(),
       time: event.eventDate.toISOString(),
@@ -391,7 +405,7 @@ export class EventService {
     state?: string;
   }) {
     const { limit, city, state } = params;
-    
+
     const where: any = {
       isActive: true,
       eventDate: { gte: new Date() },
@@ -416,7 +430,7 @@ export class EventService {
     });
 
     // Map database fields to frontend expected fields
-    return events.map(event => ({
+    return events.map((event) => ({
       ...event,
       date: event.eventDate.toISOString(),
       time: event.eventDate.toISOString(),
@@ -436,9 +450,9 @@ export class EventService {
     state?: string;
   }) {
     const { skip, take, status, eventType, city, state } = params;
-    
+
     const where: any = {};
-    
+
     if (status) where.status = status;
     if (eventType) where.eventType = eventType;
     if (city) where.city = { contains: city, mode: "insensitive" };

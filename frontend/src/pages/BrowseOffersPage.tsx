@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import type { Offer } from '../types/offer';
-import type { Event } from '../types/event';
+import type { Event } from '../types/events';
 
 export const BrowseOffersPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();

@@ -10,6 +10,7 @@ import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  getUnreadNotificationCount,
   uploadProfileImage,
 } from "../controllers/userController";
 
@@ -198,6 +199,7 @@ router.get("/dashboard", authenticate, getDashboard);
  *         description: Unauthorized
  */
 router.get("/notifications", authenticate, getNotifications);
+router.get("/notifications/unread-count", authenticate, getUnreadNotificationCount);
 
 /**
  * @swagger

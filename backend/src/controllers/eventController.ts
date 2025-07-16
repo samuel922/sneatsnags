@@ -2,14 +2,17 @@ import { Request, Response, NextFunction } from "express";
 import { successResponse, errorResponse } from "../utils/response";
 import { logger } from "../utils/logger";
 import { eventService } from "../services/eventService";
-import { getPaginationParams, createPaginationResult } from "../utils/pagination";
+import {
+  getPaginationParams,
+  createPaginationResult,
+} from "../utils/pagination";
 import { AuthenticatedRequest } from "../types/auth";
-import { 
-  createEventSchema, 
-  updateEventSchema, 
-  createEventSectionSchema, 
+import {
+  createEventSchema,
+  updateEventSchema,
+  createEventSectionSchema,
   updateEventSectionSchema,
-  eventSearchSchema 
+  eventSearchSchema,
 } from "../utils/validations";
 
 export const eventController = {
@@ -17,7 +20,8 @@ export const eventController = {
   getEvents: async (req: Request, res: Response) => {
     try {
       const { page, limit, skip } = getPaginationParams(req.query);
-      const { city, state, eventType, category, search, startDate, endDate } = req.query;
+      const { city, state, eventType, category, search, startDate, endDate } =
+        req.query;
 
       const result = await eventService.getEvents({
         page,
@@ -43,7 +47,7 @@ export const eventController = {
     try {
       const { id } = req.params;
       const event = await eventService.getEventById(id);
-      
+
       if (!event) {
         return res.status(404).json(errorResponse("Event not found"));
       }
@@ -75,23 +79,42 @@ export const eventController = {
       res.json(successResponse(stats, "Event statistics retrieved"));
     } catch (error) {
       logger.error("Get event stats error:", error);
-      res.status(500).json(errorResponse("Failed to retrieve event statistics"));
+      res
+        .status(500)
+        .json(errorResponse("Failed to retrieve event statistics"));
     }
   },
 
   // Create event (admin only)
-  createEvent: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  createEvent: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      const validatedData = createEventSchema.parse(req.body);
-      const event = await eventService.createEvent(validatedData);
-      res.status(201).json(successResponse(event, "Event created successfully"));
+      logger.info(
+        "Creating event with data:",
+        JSON.stringify(req.body, null, 2)
+      );
+      const event = await eventService.createEvent(req.body);
+      logger.info("Event created successfully:", event.id);
+      res
+        .status(201)
+        .json(successResponse(event, "Event created successfully"));
     } catch (error) {
-      next(error);
+      logger.error("Create event error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create event";
+      res.status(500).json(errorResponse(errorMessage));
     }
   },
 
   // Update event (admin only)
-  updateEvent: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  updateEvent: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const validatedData = updateEventSchema.parse(req.body);
@@ -103,7 +126,11 @@ export const eventController = {
   },
 
   // Delete event (admin only)
-  deleteEvent: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  deleteEvent: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       await eventService.deleteEvent(id);
@@ -114,24 +141,37 @@ export const eventController = {
   },
 
   // Create event section (admin only)
-  createSection: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  createSection: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { id: eventId } = req.params;
       const sectionData = { ...req.body, eventId };
       const validatedData = createEventSectionSchema.parse(sectionData);
       const section = await eventService.createSection(validatedData);
-      res.status(201).json(successResponse(section, "Section created successfully"));
+      res
+        .status(201)
+        .json(successResponse(section, "Section created successfully"));
     } catch (error) {
       next(error);
     }
   },
 
   // Update event section (admin only)
-  updateSection: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  updateSection: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { sectionId } = req.params;
       const validatedData = updateEventSectionSchema.parse(req.body);
-      const section = await eventService.updateSection(sectionId, validatedData);
+      const section = await eventService.updateSection(
+        sectionId,
+        validatedData
+      );
       res.json(successResponse(section, "Section updated successfully"));
     } catch (error) {
       next(error);
@@ -139,7 +179,11 @@ export const eventController = {
   },
 
   // Delete event section (admin only)
-  deleteSection: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  deleteSection: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { sectionId } = req.params;
       await eventService.deleteSection(sectionId);
@@ -153,7 +197,7 @@ export const eventController = {
   searchEvents: async (req: Request, res: Response) => {
     try {
       const { q, city, state, eventType, limit = 10 } = req.query;
-      
+
       if (!q) {
         return res.status(400).json(errorResponse("Search query is required"));
       }
@@ -177,7 +221,9 @@ export const eventController = {
   getPopularEvents: async (req: Request, res: Response) => {
     try {
       const { limit = 10 } = req.query;
-      const events = await eventService.getPopularEvents(parseInt(limit as string));
+      const events = await eventService.getPopularEvents(
+        parseInt(limit as string)
+      );
       res.json(successResponse(events, "Popular events retrieved"));
     } catch (error) {
       logger.error("Get popular events error:", error);

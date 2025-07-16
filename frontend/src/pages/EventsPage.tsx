@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Calendar, MapPin, Plus } from 'lucide-react';
 import { eventService } from '../services/eventService';
-import type { Event } from '../types/event';
-import { EventCategory } from '../types/event';
+import type { Event } from '../types/events';
+import type { EventType } from '../types/events';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../hooks/useAuth';
@@ -14,7 +14,7 @@ export const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<EventCategory | ''>('');
+  const [selectedCategory, setSelectedCategory] = useState<EventType | ''>('');
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -142,15 +142,15 @@ export const EventsPage: React.FC = () => {
             
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value as EventCategory | '')}
+              onChange={(e) => setSelectedCategory(e.target.value as EventType | '')}
               className="px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Categories</option>
-              <option value={EventCategory.CONCERT}>Concerts</option>
-              <option value={EventCategory.SPORTS}>Sports</option>
-              <option value={EventCategory.THEATER}>Theater</option>
-              <option value={EventCategory.COMEDY}>Comedy</option>
-              <option value={EventCategory.OTHER}>Other</option>
+              <option value="CONCERT">Concerts</option>
+              <option value="SPORTS">Sports</option>
+              <option value="THEATER">Theater</option>
+              <option value="COMEDY">Comedy</option>
+              <option value="OTHER">Other</option>
             </select>
             
             <Button type="submit" className="px-6">

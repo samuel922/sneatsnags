@@ -8,6 +8,7 @@ export interface CreateEventRequest {
   city: string;
   state: string;
   zipCode: string;
+  country?: string;
   eventDate: Date;
   doors?: Date;
   eventType: "SPORTS" | "CONCERT" | "THEATER" | "COMEDY" | "OTHER";

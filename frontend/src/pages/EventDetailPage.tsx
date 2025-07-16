@@ -12,7 +12,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { eventService } from '../services/eventService';
-import type { Event, EventSection } from '../types/event';
+import type { Event, EventSection } from '../types/events';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../hooks/useAuth';

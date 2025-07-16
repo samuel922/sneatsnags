@@ -160,6 +160,24 @@ export const markAllNotificationsAsRead = async (
   }
 };
 
+export const getUnreadNotificationCount = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user!.id;
+    const count = await userService.getUnreadNotificationCount(userId);
+    res.json({
+      success: true,
+      data: { count },
+    });
+  } catch (error: any) {
+    logger.error("Get unread notification count error:", error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
 export const uploadProfileImage = async (
   req: AuthenticatedRequest,
   res: Response,
