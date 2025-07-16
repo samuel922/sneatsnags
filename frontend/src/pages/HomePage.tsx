@@ -5,10 +5,12 @@ import {
   Shield,
   Clock,
   ArrowRight,
+  Play,
   Star,
   Users,
   Zap,
   CheckCircle,
+  Sparkles,
   Calendar,
   MapPin,
   Ticket,
@@ -18,16 +20,11 @@ import {
   Mic,
   Bell,
   DollarSign,
+  Target,
+  BarChart3,
   Headphones,
   Globe,
-  TrendingUp,
-  Flame,
-  ChevronLeft,
-  ChevronRight,
-  Gauge,
-  Fingerprint,
-  Cpu,
-  Infinity as InfinityIcon,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
@@ -35,311 +32,7 @@ import { Card, CardContent } from "../components/ui/Card";
 export const HomePage: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeCategory, setActiveCategory] = useState("all");
-  const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Dynamic hero slides with live events
-  const heroSlides = [
-    {
-      id: 1,
-      title: "Taylor Swift | Eras Tour",
-      subtitle: "Experience the magic live",
-      location: "MetLife Stadium, East Rutherford",
-      date: "Tonight • 8:00 PM",
-      price: "From $180",
-      image: "🎤",
-      gradient: "from-purple-600 via-pink-600 to-rose-600",
-      category: "Concert",
-      soldOut: false,
-      trending: true,
-      attendees: "65,000+",
-    },
-    {
-      id: 2,
-      title: "Lakers vs Warriors",
-      subtitle: "NBA Finals Game 7",
-      location: "Crypto.com Arena, Los Angeles",
-      date: "Tomorrow • 7:30 PM",
-      price: "From $95",
-      image: "🏀",
-      gradient: "from-blue-600 via-indigo-600 to-purple-600",
-      category: "Sports",
-      soldOut: false,
-      trending: true,
-      attendees: "20,000+",
-    },
-    {
-      id: 3,
-      title: "Beyoncé Renaissance",
-      subtitle: "World Tour 2024",
-      location: "Madison Square Garden, NYC",
-      date: "This Weekend • 9:00 PM",
-      price: "From $250",
-      image: "👑",
-      gradient: "from-yellow-500 via-orange-500 to-red-500",
-      category: "Concert",
-      soldOut: true,
-      trending: true,
-      attendees: "50,000+",
-    },
-  ];
-
-  // Dynamic stats with real-time updates
-  const realTimeStats = [
-    {
-      number: "2.8M+",
-      label: "Live Events",
-      icon: Calendar,
-      color: "from-blue-500 to-cyan-500",
-      prefix: "",
-      suffix: "+",
-    },
-    {
-      number: "950K+",
-      label: "Active Users",
-      icon: Users,
-      color: "from-purple-500 to-pink-500",
-      prefix: "",
-      suffix: "+",
-    },
-    {
-      number: "$47M+",
-      label: "Transactions",
-      icon: DollarSign,
-      color: "from-green-500 to-emerald-500",
-      prefix: "$",
-      suffix: "M+",
-    },
-    {
-      number: "99.9%",
-      label: "Success Rate",
-      icon: CheckCircle,
-      color: "from-orange-500 to-red-500",
-      prefix: "",
-      suffix: "%",
-    },
-  ];
-
-  // Advanced features showcase
-  const advancedFeatures = [
-    {
-      icon: Cpu,
-      title: "AI-Powered Matching",
-      description:
-        "Advanced machine learning algorithms match you with perfect events instantly.",
-      color: "from-blue-500 to-cyan-500",
-      highlight: "AI-Powered",
-      stats: "340% faster matching",
-    },
-    {
-      icon: Fingerprint,
-      title: "Biometric Security",
-      description:
-        "Next-gen security with biometric verification and blockchain protection.",
-      color: "from-green-500 to-emerald-500",
-      highlight: "Ultra-Secure",
-      stats: "99.99% fraud prevention",
-    },
-    {
-      icon: Gauge,
-      title: "Lightning Speed",
-      description:
-        "Sub-second ticket delivery with real-time inventory synchronization.",
-      color: "from-purple-500 to-pink-500",
-      highlight: "Ultra-Fast",
-      stats: "<0.3s processing",
-    },
-    {
-      icon: InfinityIcon,
-      title: "Infinite Scale",
-      description:
-        "Handle millions of concurrent users with cloud-native architecture.",
-      color: "from-orange-500 to-red-500",
-      highlight: "Scalable",
-      stats: "10M+ concurrent users",
-    },
-  ];
-
-  // Trending events with dynamic data
-  const trendingEvents = [
-    {
-      id: 1,
-      title: "Ed Sheeran Mathematics Tour",
-      venue: "Wembley Stadium",
-      date: "Dec 20, 2024",
-      location: "London, UK",
-      image: "🎸",
-      price: "From £89",
-      category: "Concert",
-      trending: true,
-      boost: "+340%",
-      attendees: "90,000",
-      rating: 4.9,
-    },
-    {
-      id: 2,
-      title: "Manchester United vs Arsenal",
-      venue: "Old Trafford",
-      date: "Dec 22, 2024",
-      location: "Manchester, UK",
-      image: "⚽",
-      price: "From £120",
-      category: "Sports",
-      trending: true,
-      boost: "+280%",
-      attendees: "75,000",
-      rating: 4.8,
-    },
-    {
-      id: 3,
-      title: "Hamilton Musical",
-      venue: "West End Theatre",
-      date: "Dec 25, 2024",
-      location: "London, UK",
-      image: "🎭",
-      price: "From £75",
-      category: "Theater",
-      trending: false,
-      boost: "+120%",
-      attendees: "2,500",
-      rating: 4.9,
-    },
-    {
-      id: 4,
-      title: "Dave Chappelle Live",
-      venue: "Apollo Theater",
-      date: "Dec 28, 2024",
-      location: "New York, NY",
-      image: "😂",
-      price: "From $85",
-      category: "Comedy",
-      trending: true,
-      boost: "+200%",
-      attendees: "1,800",
-      rating: 4.7,
-    },
-    {
-      id: 5,
-      title: "NBA All-Star Game",
-      venue: "Crypto.com Arena",
-      date: "Feb 18, 2025",
-      location: "Los Angeles, CA",
-      image: "🏀",
-      price: "From $200",
-      category: "Sports",
-      trending: true,
-      boost: "+450%",
-      attendees: "20,000",
-      rating: 4.8,
-    },
-    {
-      id: 6,
-      title: "Coldplay World Tour",
-      venue: "Rose Bowl",
-      date: "Mar 15, 2025",
-      location: "Pasadena, CA",
-      image: "🌟",
-      price: "From $95",
-      category: "Concert",
-      trending: true,
-      boost: "+380%",
-      attendees: "85,000",
-      rating: 4.9,
-    },
-  ];
-
-  // Event categories with dynamic counts
-  const eventCategories = [
-    {
-      id: "all",
-      name: "All Events",
-      icon: Globe,
-      count: "2.8M",
-      color: "from-blue-500 to-indigo-500",
-      growth: "+12%",
-    },
-    {
-      id: "concerts",
-      name: "Concerts",
-      icon: Music,
-      count: "847K",
-      color: "from-purple-500 to-pink-500",
-      growth: "+18%",
-    },
-    {
-      id: "sports",
-      name: "Sports",
-      icon: Trophy,
-      count: "623K",
-      color: "from-green-500 to-emerald-500",
-      growth: "+15%",
-    },
-    {
-      id: "theater",
-      name: "Theater",
-      icon: Theater,
-      count: "234K",
-      color: "from-orange-500 to-red-500",
-      growth: "+8%",
-    },
-    {
-      id: "comedy",
-      name: "Comedy",
-      icon: Mic,
-      count: "156K",
-      color: "from-yellow-500 to-orange-500",
-      growth: "+22%",
-    },
-  ];
-
-  // Enhanced testimonials with more details
-  const testimonials = [
-    {
-      name: "Alex Chen",
-      role: "Event Organizer",
-      company: "LiveNation",
-      content:
-        "AutoMatch revolutionized how I sell tickets. The AI matching increased my sales by 340% in just 3 months. The analytics are incredible.",
-      avatar: "👨‍💼",
-      rating: 5,
-      verified: true,
-      location: "San Francisco, CA",
-      events: "127 events organized",
-    },
-    {
-      name: "Sarah Rodriguez",
-      role: "Concert Enthusiast",
-      company: "Music Lover",
-      content:
-        "Found front-row seats to a sold-out show at face value! The platform's verification system is incredible. Never buying tickets elsewhere again.",
-      avatar: "👩‍🎤",
-      rating: 5,
-      verified: true,
-      location: "Nashville, TN",
-      events: "89 events attended",
-    },
-    {
-      name: "Mike Johnson",
-      role: "Sports Fan",
-      company: "Season Ticket Holder",
-      content:
-        "Last-minute playoff tickets? No problem! Got seats 2 hours before the game. Game-changer for spontaneous fans like me.",
-      avatar: "⚽",
-      rating: 5,
-      verified: true,
-      location: "Chicago, IL",
-      events: "156 events attended",
-    },
-  ];
-
-  // Auto-advance slider
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [heroSlides.length]);
-
-  // Mouse tracking for interactive effects
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -348,199 +41,284 @@ export const HomePage: React.FC = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-  };
+  const eventCategories = [
+    { id: "all", name: "All Events", icon: Globe, count: "10K+" },
+    { id: "concerts", name: "Concerts", icon: Music, count: "3.2K" },
+    { id: "sports", name: "Sports", icon: Trophy, count: "2.8K" },
+    { id: "theater", name: "Theater", icon: Theater, count: "1.5K" },
+    { id: "comedy", name: "Comedy", icon: Mic, count: "890" },
+  ];
 
-  const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + heroSlides.length) % heroSlides.length
-    );
-  };
+  const features = [
+    {
+      icon: Search,
+      title: "Smart Event Discovery",
+      description:
+        "AI-powered search finds exactly what you're looking for with personalized recommendations.",
+      color: "from-blue-500 to-cyan-500",
+      highlight: "New",
+    },
+    {
+      icon: Zap,
+      title: "Instant Ticket Matching",
+      description:
+        "Get matched with sellers in real-time. No more waiting or missing out on sold-out events.",
+      color: "from-yellow-500 to-orange-500",
+      highlight: "Popular",
+    },
+    {
+      icon: Shield,
+      title: "Verified Tickets Only",
+      description:
+        "Every ticket is verified for authenticity. 100% secure transactions with buyer protection.",
+      color: "from-green-500 to-emerald-500",
+      highlight: "Trusted",
+    },
+    {
+      icon: DollarSign,
+      title: "Dynamic Pricing",
+      description:
+        "Fair market pricing with real-time adjustments. Get the best deals on premium events.",
+      color: "from-purple-500 to-pink-500",
+      highlight: "Smart",
+    },
+  ];
 
-  const currentHeroSlide = heroSlides[currentSlide];
+  const liveEvents = [
+    {
+      title: "Taylor Swift | Eras Tour",
+      venue: "MetLife Stadium",
+      date: "Tonight 8:00 PM",
+      location: "East Rutherford, NJ",
+      image: "🎤",
+      price: "From $180",
+      category: "Concert",
+      isLive: true,
+    },
+    {
+      title: "Lakers vs Warriors",
+      venue: "Crypto.com Arena",
+      date: "Tomorrow 7:30 PM",
+      location: "Los Angeles, CA",
+      image: "🏀",
+      price: "From $95",
+      category: "Sports",
+      isLive: false,
+    },
+    {
+      title: "The Lion King",
+      venue: "Minskoff Theatre",
+      date: "Dec 15, 2:00 PM",
+      location: "New York, NY",
+      image: "🎭",
+      price: "From $89",
+      category: "Theater",
+      isLive: false,
+    },
+  ];
+
+  const stats = [
+    { number: "2.5M+", label: "Events Listed", icon: Calendar },
+    { number: "850K+", label: "Happy Customers", icon: Users },
+    { number: "99.8%", label: "Success Rate", icon: CheckCircle },
+    { number: "24/7", label: "Live Support", icon: Headphones },
+  ];
+
+  const testimonials = [
+    {
+      name: "Alex Chen",
+      role: "Event Organizer",
+      content:
+        "AutoMatch revolutionized how I sell tickets. The AI matching increased my sales by 340% in just 3 months.",
+      avatar: "👨‍💼",
+      rating: 5,
+      verified: true,
+    },
+    {
+      name: "Sarah Rodriguez",
+      role: "Concert Enthusiast",
+      content:
+        "Found front-row seats to a sold-out show at face value! The platform's verification system is incredible.",
+      avatar: "👩‍🎤",
+      rating: 5,
+      verified: true,
+    },
+    {
+      name: "Mike Johnson",
+      role: "Sports Fan",
+      content:
+        "Last-minute playoff tickets? No problem! Got seats 2 hours before the game. Game-changer for spontaneous fans.",
+      avatar: "⚽",
+      rating: 5,
+      verified: true,
+    },
+  ];
+
+  const organizer_features = [
+    {
+      icon: Target,
+      title: "Smart Audience Targeting",
+      description: "Reach the right buyers with AI-powered audience matching.",
+    },
+    {
+      icon: BarChart3,
+      title: "Real-Time Analytics",
+      description: "Track sales performance and optimize pricing strategies.",
+    },
+    {
+      icon: Bell,
+      title: "Automated Notifications",
+      description: "Keep attendees informed with smart communication tools.",
+    },
+    {
+      icon: Smartphone,
+      title: "Mobile-First Management",
+      description: "Manage your events anywhere with our mobile app.",
+    },
+  ];
 
   return (
-    <div className="relative overflow-hidden min-h-screen">
-      {/* Advanced animated background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
-      <div className="fixed inset-0 opacity-20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
-      </div>
+    <div className="relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"></div>
 
-      {/* Particle effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {[...Array(50)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full opacity-10 animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Interactive cursor effect */}
+      {/* Interactive Cursor Effect */}
       <div
-        className="fixed pointer-events-none z-30 w-8 h-8 rounded-full blur-sm transition-all duration-300"
+        className="fixed pointer-events-none z-10 w-6 h-6 bg-blue-500/20 rounded-full blur-xl transition-all duration-300"
         style={{
-          left: mousePosition.x - 16,
-          top: mousePosition.y - 16,
-          background: `radial-gradient(circle, rgba(139,92,246,0.4) 0%, rgba(219,39,119,0.4) 100%)`,
-          transform: "scale(1.2)",
+          left: mousePosition.x - 12,
+          top: mousePosition.y - 12,
+          transform: "scale(1.5)",
         }}
       />
 
-      {/* Dynamic Hero Slider */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-20 animate-blob floating"></div>
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${currentHeroSlide.gradient} transition-all duration-1000`}
-        >
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
+          className="absolute top-40 right-20 w-32 h-32 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full opacity-20 animate-blob floating"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute bottom-20 left-1/4 w-24 h-24 bg-gradient-to-r from-green-500 to-blue-600 rounded-full opacity-20 animate-blob floating"
+          style={{ animationDelay: "4s" }}
+        ></div>
 
-        {/* Slider navigation */}
-        <div className="absolute top-1/2 left-4 transform -translate-y-1/2 z-20">
-          <button
-            onClick={prevSlide}
-            className="p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300"
-          >
-            <ChevronLeft className="h-6 w-6 text-white" />
-          </button>
-        </div>
-        <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-20">
-          <button
-            onClick={nextSlide}
-            className="p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300"
-          >
-            <ChevronRight className="h-6 w-6 text-white" />
-          </button>
-        </div>
-
-        {/* Slide indicators */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide ? "bg-white" : "bg-white/30"
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Hero content */}
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-8">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-white font-medium">LIVE NOW</span>
-              <Flame className="h-4 w-4 text-orange-400" />
-            </div>
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          {/* Hero Badge */}
+          <div className="inline-flex items-center px-4 py-2 rounded-full glass border border-white/30 mb-8 animate-scale-in">
+            <Sparkles className="h-4 w-4 text-yellow-500 mr-2" />
+            <span className="text-sm font-semibold text-gray-800">
+              ✨ The Future of Event Discovery
+            </span>
           </div>
 
-          {/* Event title */}
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-tight">
-            {currentHeroSlide.title}
+          {/* Main Headline */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 animate-slide-up">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight block">
+              Discover
+            </span>
+            <span className="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent block">
+              Live Events
+            </span>
+            <span className="text-gray-900 block text-4xl md:text-5xl lg:text-6xl mt-4">
+              Like Never Before
+            </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-2xl md:text-3xl text-white/90 font-light mb-8">
-            {currentHeroSlide.subtitle}
+          <p
+            className="text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in"
+            style={{ animationDelay: "0.3s" }}
+          >
+            Connect with millions of events worldwide. Buy, sell, and trade
+            tickets with
+            <span className="font-semibold text-blue-700">
+              {" "}
+              AI-powered matching
+            </span>
+            ,
+            <span className="font-semibold text-purple-700">
+              {" "}
+              verified authenticity
+            </span>
+            , and
+            <span className="font-semibold text-pink-700">
+              {" "}
+              instant delivery
+            </span>
+            .
           </p>
 
-          {/* Event details */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
-            <div className="flex items-center text-white/80">
-              <MapPin className="h-5 w-5 mr-2" />
-              <span className="text-lg">{currentHeroSlide.location}</span>
-            </div>
-            <div className="flex items-center text-white/80">
-              <Clock className="h-5 w-5 mr-2" />
-              <span className="text-lg">{currentHeroSlide.date}</span>
-            </div>
-            <div className="flex items-center text-white/80">
-              <Users className="h-5 w-5 mr-2" />
-              <span className="text-lg">
-                {currentHeroSlide.attendees} attending
-              </span>
+          {/* Event Search Bar */}
+          <div
+            className="max-w-2xl mx-auto mb-12 animate-slide-up"
+            style={{ animationDelay: "0.5s" }}
+          >
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search events, artists, venues, or teams..."
+                className="w-full pl-12 pr-4 py-4 bg-white/80 backdrop-blur-sm border border-white/30 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-lg"
+              />
+              <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
+                <Button variant="primary" className="rounded-xl px-6 py-2">
+                  Search
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* Price and CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <div className="text-3xl font-bold text-white">
-              {currentHeroSlide.price}
-            </div>
-            {currentHeroSlide.soldOut ? (
+          {/* CTA Buttons */}
+          <div
+            className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up mobile-stack"
+            style={{ animationDelay: "0.6s" }}
+          >
+            <Link to="/events">
               <Button
-                variant="secondary"
+                variant="gradient"
                 size="xl"
-                className="opacity-60 cursor-not-allowed"
+                className="group shadow-2xl hover:shadow-3xl mobile-full"
               >
-                <Ticket className="h-6 w-6 mr-3" />
-                Sold Out
-              </Button>
-            ) : (
-              <Button
-                variant="secondary"
-                size="xl"
-                className="group shadow-2xl"
-              >
-                <Ticket className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
-                Get Tickets Now
+                <Calendar className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+                Browse Events
                 <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Button>
-            )}
+            </Link>
+            <Link to="/register">
+              <Button
+                variant="glass"
+                size="xl"
+                className="group border-white/30 mobile-full"
+              >
+                <Play className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+                Start Selling
+              </Button>
+            </Link>
           </div>
 
-          {/* Trending indicator */}
-          {currentHeroSlide.trending && (
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-orange-500/20 border border-orange-500/30">
-              <TrendingUp className="h-4 w-4 text-orange-400 mr-2" />
-              <span className="text-orange-100 font-medium">
-                Trending Event
-              </span>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Real-time Stats Banner */}
-      <section className="relative py-16 bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Real-Time Platform Statistics
-            </h2>
-            <p className="text-xl text-white/70">
-              Watch our numbers grow in real-time
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {realTimeStats.map((stat, index) => {
+          {/* Stats */}
+          <div
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto animate-fade-in"
+            style={{ animationDelay: "0.9s" }}
+          >
+            {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="text-center group">
-                  <div
-                    className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl`}
-                  >
-                    <Icon className="h-8 w-8 text-white" />
+                <div key={index} className="text-center group p-2">
+                  <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="h-6 w-6 text-white" />
                   </div>
-                  <div className="text-4xl md:text-5xl font-black text-white mb-2 font-mono">
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
                     {stat.number}
                   </div>
-                  <div className="text-white/70 font-medium">{stat.label}</div>
+                  <div className="text-gray-700 font-medium text-sm md:text-base">
+                    {stat.label}
+                  </div>
                 </div>
               );
             })}
@@ -548,97 +326,54 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Event Categories */}
-      <section className="relative py-20 bg-gradient-to-br from-slate-900 to-purple-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Explore by Category
-            </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Discover millions of events across all categories
-            </p>
+      {/* Live Events Ticker */}
+      <section className="py-8 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-3"></div>
+              <h3 className="text-xl font-bold text-white">
+                Live Events Right Now
+              </h3>
+            </div>
+            <Link to="/events">
+              <Button
+                variant="glass"
+                size="sm"
+                className="border-white/30 text-white"
+              >
+                View All
+              </Button>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {eventCategories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`group relative p-8 rounded-2xl transition-all duration-300 ${
-                    activeCategory === category.id
-                      ? "bg-white/20 border-2 border-white/30"
-                      : "bg-white/5 hover:bg-white/10 border-2 border-white/10"
-                  }`}
-                >
-                  <div
-                    className={`w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-r ${category.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <Icon className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {category.name}
-                  </h3>
-                  <p className="text-2xl font-black text-white mb-2">
-                    {category.count}
-                  </p>
-                  <div className="flex items-center justify-center text-green-400 text-sm">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    <span>{category.growth}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Trending Events */}
-      <section className="relative py-20 bg-gradient-to-br from-purple-900 to-pink-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Trending Events
-            </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Don't miss out on the hottest events everyone's talking about
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {trendingEvents.map((event) => (
+          <div className="grid md:grid-cols-3 gap-6">
+            {liveEvents.map((event, index) => (
               <Card
-                key={event.id}
-                className="group relative bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-300"
+                key={index}
+                variant="glass"
+                className="border-white/30 hover:border-white/50 transition-all duration-300"
               >
                 <CardContent className="p-6">
-                  {event.trending && (
-                    <div className="absolute top-4 right-4 px-2 py-1 bg-orange-500 rounded-full text-xs font-bold text-white">
-                      🔥 TRENDING
-                    </div>
-                  )}
-
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-4xl">{event.image}</div>
-                    <div className="text-right">
-                      <div className="flex items-center text-green-400 text-sm mb-1">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        <span>{event.boost}</span>
-                      </div>
-                      <div className="flex items-center text-white/60 text-sm">
-                        <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                        <span>{event.rating}</span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      {event.isLive && (
+                        <div className="flex items-center px-2 py-1 bg-red-500 rounded-full">
+                          <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
+                          <span className="text-white text-xs font-medium">
+                            LIVE
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-white/80 text-sm">
+                        {event.category}
+                      </span>
                     </div>
                   </div>
-
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {event.title}
-                  </h3>
-
-                  <div className="space-y-2 text-white/70 text-sm mb-4">
+                  <h4 className="font-bold text-white mb-2">{event.title}</h4>
+                  <div className="space-y-1 text-blue-100 text-sm">
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2" />
                       <span>{event.venue}</span>
@@ -648,23 +383,11 @@ export const HomePage: React.FC = () => {
                       <span>{event.date}</span>
                     </div>
                     <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>{event.attendees} attending</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold text-white">
-                      {event.price}
-                    </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="group-hover:scale-105 transition-transform"
-                    >
                       <Ticket className="h-4 w-4 mr-2" />
-                      Get Tickets
-                    </Button>
+                      <span className="font-semibold text-white">
+                        {event.price}
+                      </span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -673,48 +396,84 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Advanced Features */}
-      <section className="relative py-20 bg-gradient-to-br from-indigo-900 to-purple-900">
+      {/* Event Categories */}
+      <section className="py-16 bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Next-Generation Technology
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Explore by Category
             </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Experience the future of event discovery with cutting-edge
-              features
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              Find exactly what you're looking for from millions of events
+              worldwide
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {advancedFeatures.map((feature, index) => {
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {eventCategories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`flex items-center px-6 py-3 rounded-full transition-all duration-300 ${
+                    activeCategory === category.id
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                      : "bg-white/80 text-gray-700 hover:bg-white hover:shadow-md"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 mr-2" />
+                  <span className="font-medium">{category.name}</span>
+                  <span className="ml-2 text-sm opacity-75">
+                    ({category.count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-24 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Why Choose AutoMatch?
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              Advanced technology meets seamless user experience for the
+              ultimate event discovery platform
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <Card
                   key={index}
-                  className="group relative bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-500"
+                  variant="glass"
+                  hover
+                  className="group border-white/30 hover:border-white/50 transition-all duration-500 relative"
                 >
-                  <CardContent className="p-8 text-center">
-                    <div className="absolute top-4 right-4 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full text-xs font-bold text-white">
-                      {feature.highlight}
-                    </div>
-
+                  <CardContent className="p-6 md:p-8 text-center">
+                    {feature.highlight && (
+                      <div className="absolute top-4 right-4 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full text-xs font-bold text-white">
+                        {feature.highlight}
+                      </div>
+                    )}
                     <div
-                      className={`w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-xl`}
+                      className={`w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 md:mb-6 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
                     >
-                      <Icon className="h-8 w-8 text-white" />
+                      <Icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
                     </div>
-
-                    <h3 className="text-xl font-bold text-white mb-4">
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4 group-hover:text-blue-700 transition-colors">
                       {feature.title}
                     </h3>
-                    <p className="text-white/70 leading-relaxed mb-4">
+                    <p className="text-gray-700 leading-relaxed text-sm md:text-base">
                       {feature.description}
                     </p>
-
-                    <div className="text-sm text-green-400 font-medium">
-                      {feature.stats}
-                    </div>
                   </CardContent>
                 </Card>
               );
@@ -723,73 +482,151 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Enhanced Testimonials */}
-      <section className="relative py-20 bg-gradient-to-br from-slate-900 to-indigo-900">
+      {/* Event Organizer Features */}
+      <section className="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Trusted by Millions Worldwide
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+                Built for Event Organizers
+              </h2>
+              <p className="text-xl text-gray-700 mb-8">
+                Powerful tools to manage, promote, and sell your events with
+                professional-grade features
+              </p>
+
+              <div className="space-y-6">
+                {organizer_features.map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={index} className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          {feature.title}
+                        </h3>
+                        <p className="text-gray-700">{feature.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8">
+                <Button variant="gradient" size="lg" className="mr-4">
+                  Start Selling Events
+                </Button>
+                <Button variant="outline" size="lg">
+                  Learn More
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Event Dashboard
+                  </h3>
+                  <div className="flex space-x-1">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Total Sales
+                      </span>
+                      <span className="text-2xl font-bold text-blue-600">
+                        $47,230
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Tickets Sold
+                      </span>
+                      <span className="text-2xl font-bold text-green-600">
+                        1,247
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Active Events
+                      </span>
+                      <span className="text-2xl font-bold text-purple-600">
+                        12
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute top-4 left-4 w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl opacity-20"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              Trusted by Millions
             </h2>
-            <p className="text-xl text-white/70">
-              Join thousands of satisfied event-goers and organizers
+            <p className="text-xl text-gray-700">
+              Join thousands of satisfied event-goers and organizers worldwide
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
             {testimonials.map((testimonial, index) => (
               <Card
                 key={index}
-                className="bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-300"
+                variant="glass"
+                hover
+                className="border-white/30"
               >
-                <CardContent className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star
                           key={i}
-                          className="h-5 w-5 text-yellow-400 fill-current"
+                          className="h-5 w-5 text-yellow-500 fill-current"
                         />
                       ))}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {testimonial.verified && (
-                        <div className="flex items-center px-2 py-1 bg-green-500/20 rounded-full">
-                          <CheckCircle className="h-4 w-4 text-green-400 mr-1" />
-                          <span className="text-green-400 text-xs font-medium">
-                            Verified
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    {testimonial.verified && (
+                      <div className="flex items-center px-2 py-1 bg-green-100 rounded-full">
+                        <CheckCircle className="h-4 w-4 text-green-600 mr-1" />
+                        <span className="text-green-600 text-xs font-medium">
+                          Verified
+                        </span>
+                      </div>
+                    )}
                   </div>
-
-                  <p className="text-white/90 leading-relaxed mb-6 italic">
+                  <p className="text-gray-800 mb-6 leading-relaxed italic text-sm md:text-base">
                     "{testimonial.content}"
                   </p>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl mr-4">
-                        {testimonial.avatar}
-                      </div>
-                      <div>
-                        <div className="font-bold text-white">
-                          {testimonial.name}
-                        </div>
-                        <div className="text-white/60 text-sm">
-                          {testimonial.role}
-                        </div>
-                        <div className="text-white/40 text-xs">
-                          {testimonial.location}
-                        </div>
-                      </div>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-700 to-purple-700 rounded-full flex items-center justify-center text-2xl mr-4">
+                      {testimonial.avatar}
                     </div>
-                    <div className="text-right">
-                      <div className="text-white/60 text-xs">
-                        {testimonial.events}
+                    <div>
+                      <div className="font-semibold text-gray-900">
+                        {testimonial.name}
                       </div>
-                      <div className="text-white/40 text-xs">
-                        {testimonial.company}
+                      <div className="text-gray-700 text-sm">
+                        {testimonial.role}
                       </div>
                     </div>
                   </div>
@@ -800,237 +637,73 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="relative py-24 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative z-10 max-w-6xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-6xl font-bold text-white mb-8">
-            Ready to Transform Your
-            <span className="block text-yellow-300">Event Experience?</span>
+      {/* Final CTA Section */}
+      <section className="py-24 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-full h-full bg-black/20"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+          <div
+            className="absolute bottom-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-xl animate-pulse"
+            style={{ animationDelay: "2s" }}
+          ></div>
+        </div>
+
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10">
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">
+            Ready to Experience
+            <span className="block text-yellow-300">
+              Events Like Never Before?
+            </span>
           </h2>
-          <p className="text-2xl text-white/90 mb-12 max-w-3xl mx-auto">
-            Join millions of event enthusiasts who trust AutoMatch for the
-            ultimate event discovery and ticket trading experience.
+          <p className="text-xl text-indigo-100 mb-12 max-w-2xl mx-auto">
+            Join millions of event enthusiasts who trust AutoMatch for seamless
+            ticket discovery and secure transactions.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-8 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mobile-stack">
             <Link to="/register">
               <Button
                 variant="secondary"
                 size="xl"
-                className="group shadow-2xl text-lg px-12 py-6"
+                className="group shadow-2xl mobile-full"
               >
-                <Users className="h-8 w-8 mr-3 group-hover:scale-110 transition-transform" />
+                <Users className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
                 Get Started Free
-                <ArrowRight className="h-6 w-6 ml-3 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link to="/events">
               <Button
-                variant="outline"
+                variant="glass"
                 size="xl"
-                className="group border-white/30 text-white text-lg px-12 py-6"
+                className="group border-white/30 text-white mobile-full"
               >
-                <Search className="h-8 w-8 mr-3 group-hover:rotate-12 transition-transform" />
-                Explore Events
+                <Search className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
+                Browse Events
               </Button>
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-white/80">
-            <div className="flex items-center justify-center">
-              <CheckCircle className="h-6 w-6 mr-3" />
-              <span className="text-lg">Free to Join</span>
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-indigo-200">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              <span>Free to Join</span>
             </div>
-            <div className="flex items-center justify-center">
-              <Shield className="h-6 w-6 mr-3" />
-              <span className="text-lg">100% Secure</span>
+            <div className="flex items-center">
+              <Shield className="h-5 w-5 mr-2" />
+              <span>Secure & Verified</span>
             </div>
-            <div className="flex items-center justify-center">
-              <Zap className="h-6 w-6 mr-3" />
-              <span className="text-lg">Instant Matching</span>
+            <div className="flex items-center">
+              <Headphones className="h-5 w-5 mr-2" />
+              <span>24/7 Support</span>
             </div>
-            <div className="flex items-center justify-center">
-              <Headphones className="h-6 w-6 mr-3" />
-              <span className="text-lg">24/7 Support</span>
+            <div className="flex items-center">
+              <Zap className="h-5 w-5 mr-2" />
+              <span>Instant Matching</span>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Full-Width Footer */}
-      <footer className="bg-slate-900 text-white relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800"></div>
-        <div className="relative z-10">
-          {/* Newsletter Section */}
-          <div className="border-b border-white/10 py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center">
-                <h3 className="text-3xl font-bold mb-4">Stay Updated</h3>
-                <p className="text-white/70 mb-8 max-w-2xl mx-auto">
-                  Get notified about the hottest events and exclusive deals
-                  before anyone else.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <Button variant="gradient" size="lg" className="px-8">
-                    <Bell className="h-5 w-5 mr-2" />
-                    Subscribe
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Footer */}
-          <div className="py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                {/* Brand */}
-                <div className="col-span-1 md:col-span-2">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-4">
-                      <Zap className="h-6 w-6 text-white" />
-                    </div>
-                    <span className="text-2xl font-bold">AutoMatch</span>
-                  </div>
-                  <p className="text-white/70 text-lg mb-6 max-w-md">
-                    The world's most advanced event discovery platform.
-                    Connecting millions of event enthusiasts with unforgettable
-                    experiences.
-                  </p>
-                  <div className="flex space-x-4">
-                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                      <span className="text-xl">📱</span>
-                    </div>
-                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                      <span className="text-xl">🐦</span>
-                    </div>
-                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                      <span className="text-xl">📘</span>
-                    </div>
-                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                      <span className="text-xl">📸</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Links */}
-                <div>
-                  <h4 className="text-lg font-bold mb-6">Platform</h4>
-                  <ul className="space-y-4">
-                    <li>
-                      <Link
-                        to="/events"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        Browse Events
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/sell"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        Sell Tickets
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/organizers"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        For Organizers
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/api"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        API
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-bold mb-6">Company</h4>
-                  <ul className="space-y-4">
-                    <li>
-                      <Link
-                        to="/about"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        About Us
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/careers"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        Careers
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/press"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        Press
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/contact"
-                        className="text-white/70 hover:text-white transition-colors"
-                      >
-                        Contact
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-white/10 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col md:flex-row justify-between items-center">
-                <div className="text-white/60 mb-4 md:mb-0">
-                  © 2025 AutoMatch. All rights reserved.
-                </div>
-                <div className="flex space-x-6">
-                  <Link
-                    to="/privacy"
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
-                    Privacy Policy
-                  </Link>
-                  <Link
-                    to="/terms"
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
-                    Terms of Service
-                  </Link>
-                  <Link
-                    to="/security"
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
-                    Security
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
