@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import {
+import type {
   Event,
   CreateEventRequest,
   UpdateEventRequest,
@@ -9,7 +9,7 @@ import {
   PaginatedResponse,
   EventSection,
   EventFilters,
-} from '../types/event';
+} from '../types/events';
 
 // Event API Service Class
 export class EventService {

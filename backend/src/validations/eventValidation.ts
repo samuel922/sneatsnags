@@ -85,7 +85,8 @@ export const CreateEventValidationSchema = z.object({
   // Capacity and pricing
   totalSeats: optionalPositiveNumber,
   availableSeats: optionalPositiveNumber,
-  ...PriceValidationSchema.shape,
+  minPrice: z.number().min(0, "Minimum price cannot be negative").optional(),
+  maxPrice: z.number().min(0, "Maximum price cannot be negative").optional(),
   
   // Media and external data
   imageUrl: z.string().url("Invalid image URL").optional(),
@@ -122,8 +123,43 @@ export const CreateEventValidationSchema = z.object({
 });
 
 // Event update validation schema
-export const UpdateEventValidationSchema = CreateEventValidationSchema.partial()
-  .omit({ sections: true }) // Sections are updated separately
+// Create a base schema without the refine for partial operations
+const BaseEventSchema = z.object({
+  name: z.string()
+    .min(1, "Event name is required")
+    .max(200, "Event name too long")
+    .regex(/^[a-zA-Z0-9\s\-:()&.,'!]+$/, "Event name contains invalid characters"),
+  
+  description: z.string()
+    .max(2000, "Description too long")
+    .optional(),
+  
+  eventType: EventType,
+  category: optionalString,
+  subcategory: optionalString,
+  
+  ...AddressValidationSchema.shape,
+  
+  eventDate: z.string().datetime("Invalid event date format")
+    .transform((str) => new Date(str)),
+  
+  doors: z.string().datetime("Invalid doors time format")
+    .transform((str) => new Date(str))
+    .optional(),
+  
+  totalSeats: optionalPositiveNumber,
+  availableSeats: optionalPositiveNumber,
+  minPrice: z.number().min(0, "Minimum price cannot be negative").optional(),
+  maxPrice: z.number().min(0, "Maximum price cannot be negative").optional(),
+  
+  imageUrl: z.string().url("Invalid image URL").optional(),
+  ticketmasterId: z.string().optional(),
+  
+  status: EventStatus.optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const UpdateEventValidationSchema = BaseEventSchema.partial()
   .refine((data) => {
     // At least one field should be provided for update
     return Object.keys(data).length > 0;
@@ -138,7 +174,7 @@ export const EventSearchValidationSchema = z.object({
   limit: z.string().regex(/^\d+$/).transform(Number).default("20"),
   
   // Sorting
-  sortBy: z.enum(["eventDate", "name", "createdAt", "minPrice", "maxPrice"]).default("eventDate"),
+  sortBy: z.enum(["eventDate", "name", "createdAt", "minPrice", "maxPrice", "popularity"]).default("eventDate"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   
   // Filters
@@ -187,11 +223,24 @@ export const EventSearchValidationSchema = z.object({
 // Section creation validation schema
 export const CreateSectionValidationSchema = z.object({
   eventId: z.string().uuid("Invalid event ID"),
-  ...SectionValidationSchema.shape,
+  name: requiredString.min(1, "Section name is required").max(100, "Section name too long"),
+  description: optionalString,
+  rowCount: optionalPositiveNumber,
+  seatCount: optionalPositiveNumber,
+  priceLevel: z.number().int().min(1).max(10).optional(),
+});
+
+// Base section schema for partial operations
+const BaseSectionSchema = z.object({
+  name: requiredString.min(1, "Section name is required").max(100, "Section name too long"),
+  description: optionalString,
+  rowCount: optionalPositiveNumber,
+  seatCount: optionalPositiveNumber,
+  priceLevel: z.number().int().min(1).max(10).optional(),
 });
 
 // Section update validation schema
-export const UpdateSectionValidationSchema = SectionValidationSchema.partial()
+export const UpdateSectionValidationSchema = BaseSectionSchema.partial()
   .refine((data) => {
     return Object.keys(data).length > 0;
   }, {

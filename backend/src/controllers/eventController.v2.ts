@@ -168,7 +168,7 @@ export class EventControllerV2 {
         query: req.query,
       });
 
-      const query = req.query as EventSearchQuery;
+      const query = req.query as unknown as EventSearchQuery;
       const result = await eventServiceV2.getEvents(query);
 
       const duration = Date.now() - startTime;
@@ -409,9 +409,10 @@ export class EventControllerV2 {
       });
 
       const searchQuery = {
+        page: 1,
         limit: parseInt(limit as string),
-        sortBy: 'popularity',
-        sortOrder: 'desc',
+        sortBy: 'popularity' as const,
+        sortOrder: 'desc' as const,
         isActive: true,
       } as EventSearchQuery;
 
@@ -484,7 +485,12 @@ export class EventControllerV2 {
 
     try {
       // Simple database connection check
-      const eventCount = await eventServiceV2.getEvents({ limit: 1 });
+      const eventCount = await eventServiceV2.getEvents({ 
+        page: 1, 
+        limit: 1, 
+        sortBy: 'eventDate' as const, 
+        sortOrder: 'asc' as const 
+      });
       
       res.json(
         this.successResponse(
@@ -501,7 +507,7 @@ export class EventControllerV2 {
     } catch (error) {
       logger.error("Health check failed", {
         requestId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
 
       res.status(503).json(

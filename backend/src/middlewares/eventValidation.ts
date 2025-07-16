@@ -53,7 +53,7 @@ export function validateSchema<T>(schema: ZodSchema<T>, source: 'body' | 'query'
         source,
         endpoint: req.path,
         method: req.method,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       });
       
       return res.status(500).json({
@@ -66,9 +66,9 @@ export function validateSchema<T>(schema: ZodSchema<T>, source: 'body' | 'query'
 }
 
 // Specific validation middlewares for event endpoints
-export const validateCreateEvent = validateSchema(CreateEventValidationSchema, 'body');
-export const validateUpdateEvent = validateSchema(UpdateEventValidationSchema, 'body');
-export const validateEventSearch = validateSchema(EventSearchValidationSchema, 'query');
+export const validateCreateEvent = validateSchema(CreateEventValidationSchema as any, 'body');
+export const validateUpdateEvent = validateSchema(UpdateEventValidationSchema as any, 'body');
+export const validateEventSearch = validateSchema(EventSearchValidationSchema as any, 'query');
 export const validateCreateSection = validateSchema(CreateSectionValidationSchema, 'body');
 export const validateUpdateSection = validateSchema(UpdateSectionValidationSchema, 'body');
 export const validateEventId = validateSchema(EventIdValidationSchema, 'params');

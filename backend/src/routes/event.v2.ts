@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { eventControllerV2 } from "../controllers/eventController.v2";
-import { authenticate } from "../middlewares/authenticate";
-import { requireRole } from "../middlewares/requireRole";
+import { authenticate } from "../middlewares/auth";
+import { requireRole } from "../utils/auth";
 import {
   validateEventCreation,
   validateEventUpdate,
@@ -61,28 +61,28 @@ router.get(
 router.post(
   "/",
   authenticate,
-  requireRole("ADMIN"),
+  requireRole(["ADMIN"]) as any,
   rateLimitMiddleware({ windowMs: 60000, max: 10 }), // 10 creations per minute
   validateEventCreation,
-  eventControllerV2.createEvent
+  eventControllerV2.createEvent as any
 );
 
 router.put(
   "/:id",
   authenticate,
-  requireRole("ADMIN"),
+  requireRole(["ADMIN"]) as any,
   rateLimitMiddleware({ windowMs: 60000, max: 20 }), // 20 updates per minute
   validateEventUpdate,
-  eventControllerV2.updateEvent
+  eventControllerV2.updateEvent as any
 );
 
 router.delete(
   "/:id",
   authenticate,
-  requireRole("ADMIN"),
+  requireRole(["ADMIN"]) as any,
   rateLimitMiddleware({ windowMs: 60000, max: 5 }), // 5 deletions per minute
   validateEventDeletion,
-  eventControllerV2.deleteEvent
+  eventControllerV2.deleteEvent as any
 );
 
 // Health check endpoint

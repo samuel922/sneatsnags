@@ -130,7 +130,7 @@ export class EventServiceV2 {
 
         // Create sections
         const sections = await Promise.all(
-          data.sections.map(async (sectionData) => {
+          data.sections.map(async (sectionData: any) => {
             const section = await tx.section.create({
               data: {
                 eventId: event.id,
@@ -189,7 +189,7 @@ export class EventServiceV2 {
       const duration = Date.now() - startTime;
       logger.error("EventService: Event creation failed", {
         eventName: data.name,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         duration: `${duration}ms`,
         userId,
       });
@@ -251,7 +251,7 @@ export class EventServiceV2 {
       const duration = Date.now() - startTime;
       logger.error("EventService: Event update failed", {
         eventId: id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         duration: `${duration}ms`,
         userId,
       });
@@ -308,7 +308,7 @@ export class EventServiceV2 {
       const duration = Date.now() - startTime;
       logger.error("EventService: Event deletion failed", {
         eventId: id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         duration: `${duration}ms`,
         userId,
       });

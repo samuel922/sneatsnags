@@ -1,7 +1,7 @@
 import { apiClient } from './api';
 import type { PaginatedResponse, QueryParams } from '../types/api';
 import type { User } from '../types/auth';
-import type { Event } from '../types/event';
+import type { Event } from '../types/events';
 
 export interface AdminDashboardStats {
   users: {
