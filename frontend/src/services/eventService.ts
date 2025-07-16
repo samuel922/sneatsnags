@@ -323,8 +323,8 @@ export class EventService {
           return new EventServiceError(
             'Network error. Please check your connection.',
             'NETWORK_ERROR',
-            null,
-            null,
+            undefined,
+            undefined,
             operation
           );
         }
@@ -332,7 +332,7 @@ export class EventService {
         return new EventServiceError(
           error.message || 'An unexpected error occurred',
           'UNKNOWN_ERROR',
-          null,
+          undefined,
           status,
           operation
         );
@@ -447,64 +447,13 @@ export const handleEventServiceError = (error: any, fallbackMessage = 'An error 
   return fallbackMessage;
 };
 
-// Export singleton instance and legacy object
-export const eventServiceV2 = new EventService();
-export const eventService = {
-  // Legacy methods that redirect to new service
-  async getEvents(params?: any) {
-    return eventServiceV2.getEvents(params);
-  },
-  async getEventsSilent(params?: any) {
-    return eventServiceV2.getEventsSilent(params);
-  },
-  async getEvent(id: string) {
-    return eventServiceV2.getEvent(id);
-  },
-  async searchEvents(query: string, params?: any) {
-    const result = await eventServiceV2.searchEvents(query, params);
-    return {
-      data: result,
-      pagination: { page: 1, limit: result.length, total: result.length, totalPages: 1, hasNext: false, hasPrev: false }
-    };
-  },
-  async getPopularEvents(params?: any) {
-    const result = await eventServiceV2.getPopularEvents(params?.limit || 10);
-    return {
-      data: result,
-      pagination: { page: 1, limit: result.length, total: result.length, totalPages: 1, hasNext: false, hasPrev: false }
-    };
-  },
-  async getUpcomingEvents(params?: any) {
-    const result = await eventServiceV2.getUpcomingEvents(params?.limit || 10, params?.city, params?.state);
-    return {
-      data: result,
-      pagination: { page: 1, limit: result.length, total: result.length, totalPages: 1, hasNext: false, hasPrev: false }
-    };
-  },
-  async getEventSections(eventId: string) {
-    return eventServiceV2.getEventSections(eventId);
-  },
-  async getEventStats(eventId: string) {
-    return eventServiceV2.getEventStats(eventId);
-  },
-  async createEvent(eventData: CreateEventRequest) {
-    return eventServiceV2.createEvent(eventData);
-  },
-  async updateEvent(id: string, eventData: UpdateEventRequest) {
-    return eventServiceV2.updateEvent(id, eventData);
-  },
-  async deleteEvent(id: string) {
-    return eventServiceV2.deleteEvent(id);
-  },
-  async createEventSection(eventId: string, sectionData: any) {
-    return eventServiceV2.createEventSection(eventId, sectionData);
-  },
-  async updateEventSection(sectionId: string, sectionData: any) {
-    return eventServiceV2.updateEventSection(sectionId, sectionData);
-  },
-  async deleteEventSection(sectionId: string) {
-    return eventServiceV2.deleteEventSection(sectionId);
-  },
-};
+// Create singleton instance
+const eventServiceInstance = new EventService();
 
-export default eventServiceV2;
+// Export singleton instance  
+export const eventServiceV2 = eventServiceInstance;
+
+// Legacy object export for backward compatibility
+export const eventService = eventServiceInstance;
+
+export default eventServiceInstance;
