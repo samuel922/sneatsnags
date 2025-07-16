@@ -109,7 +109,6 @@ export const eventController = {
     }
   },
 
-  // Update event (admin only)
   updateEvent: async (
     req: AuthenticatedRequest,
     res: Response,
