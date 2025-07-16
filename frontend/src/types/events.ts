@@ -91,7 +91,9 @@ export interface CreateSectionRequest {
   priceLevel?: number;
 }
 
-export interface UpdateEventRequest extends Partial<Omit<CreateEventRequest, 'sections'>> {}
+export interface UpdateEventRequest extends Partial<Omit<CreateEventRequest, 'sections'>> {
+  // Additional fields specific to updates can be added here
+}
 
 // Search and Filter Interfaces
 export interface EventSearchQuery {
@@ -128,18 +130,18 @@ export interface EventFilters {
 }
 
 // API Response Interfaces
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   data?: T;
   error?: string;
   code?: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
   requestId?: string;
 }
 
-export interface PaginatedResponse<T = any> extends ApiResponse<T[]> {
+export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
   pagination: {
     page: number;
     limit: number;

@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   TextField,
-  Autocomplete,
   Chip,
   Typography,
   Grid,
@@ -26,7 +25,6 @@ import {
   ListItemText,
   ListItemIcon,
   CircularProgress,
-  Avatar,
   Stack,
 } from '@mui/material';
 import {
@@ -39,9 +37,7 @@ import {
   Event as EventIcon,
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon,
-  TrendingUp as TrendingUpIcon,
   Category as CategoryIcon,
-  Close as CloseIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -405,7 +401,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   <InputLabel>Event Type</InputLabel>
                   <Select
                     value={filters.eventType}
-                    onChange={(e) => onFiltersChange({ eventType: e.target.value as any })}
+                    onChange={(e) => onFiltersChange({ eventType: e.target.value as EventFilters['eventType'] })}
                     label="Event Type"
                   >
                     <MenuItem value="">All Types</MenuItem>
@@ -433,7 +429,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   <InputLabel>Status</InputLabel>
                   <Select
                     value={filters.status}
-                    onChange={(e) => onFiltersChange({ status: e.target.value as any })}
+                    onChange={(e) => onFiltersChange({ status: e.target.value as EventFilters['status'] })}
                     label="Status"
                   >
                     <MenuItem value="">All Statuses</MenuItem>

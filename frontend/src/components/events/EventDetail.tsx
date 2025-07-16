@@ -9,7 +9,6 @@ import {
   Chip,
   Button,
   IconButton,
-  Divider,
   Tabs,
   Tab,
   Table,
@@ -35,6 +34,7 @@ import {
   Stack,
   Breadcrumbs,
   Link,
+  TextField,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -45,12 +45,10 @@ import {
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon,
   People as PeopleIcon,
-  Category as CategoryIcon,
   Info as InfoIcon,
   EventSeat as EventSeatIcon,
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
-  Visibility as VisibilityIcon,
   Star as StarIcon,
   AccessTime as AccessTimeIcon,
   OpenInNew as OpenInNewIcon,
@@ -58,7 +56,7 @@ import {
   Home as HomeIcon,
 } from '@mui/icons-material';
 import { format, parseISO, differenceInDays, formatDistanceToNow } from 'date-fns';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -73,7 +71,6 @@ import {
 } from 'chart.js';
 import {
   Event,
-  EventStats,
   EventSection,
 } from '../../types/events';
 import { useEvents, useEventAdmin, useEventStats } from '../../contexts/EventContext';
@@ -378,7 +375,7 @@ const EventDetail: React.FC<EventDetailProps> = ({
           <Box display="flex" gap={1} mb={2}>
             <Chip
               label={event.status}
-              color={getStatusColor(event.status) as any}
+              color={getStatusColor(event.status) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
               sx={{ fontWeight: 600 }}
             />
             <Chip
@@ -647,7 +644,7 @@ const EventDetail: React.FC<EventDetailProps> = ({
                   <Box display="flex" gap={1} mt={0.5}>
                     <Chip
                       label={event.status}
-                      color={getStatusColor(event.status) as any}
+                      color={getStatusColor(event.status) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                       size="small"
                     />
                     <Chip

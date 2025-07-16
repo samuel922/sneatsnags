@@ -10,7 +10,7 @@ import {
   UseEventManagementReturn,
   DEFAULT_FILTERS,
 } from '../types/events';
-import { eventServiceV2, EventServiceError, handleEventServiceError } from '../services/eventService.v2';
+import { eventServiceV2, EventServiceError, handleEventServiceError } from '../services/eventService';
 import { useAuth } from './AuthContext';
 
 // Initial state

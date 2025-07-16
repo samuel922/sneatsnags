@@ -26,7 +26,7 @@ import { EventProvider } from '../../contexts/EventContext';
 import EventList from '../../components/events/EventList';
 import EventForm from '../../components/events/EventForm';
 import EventDetail from '../../components/events/EventDetail';
-import { handleEventServiceError } from '../../services/eventService.v2';
+import { handleEventServiceError } from '../../services/eventService';
 
 type ViewMode = 'list' | 'detail' | 'create' | 'edit';
 

@@ -13,7 +13,6 @@ import {
   MenuItem,
   FormHelperText,
   IconButton,
-  Divider,
   Alert,
   Stepper,
   Step,
@@ -26,7 +25,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,13 +38,11 @@ import {
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon,
   Image as ImageIcon,
-  Category as CategoryIcon,
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
-  Event,
   CreateEventRequest,
   UpdateEventRequest,
   EventFormData,
@@ -133,7 +129,7 @@ const EventForm: React.FC<EventFormProps> = ({
   error = null,
   mode = 'create',
 }) => {
-  const { state } = useEvents();
+  const { /* state */ } = useEvents();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<EventFormData>(() => {
     if (event) {
@@ -316,7 +312,7 @@ const EventForm: React.FC<EventFormProps> = ({
                 <InputLabel>Event Type</InputLabel>
                 <Select
                   value={formData.eventType}
-                  onChange={(e) => handleChange('eventType', e.target.value)}
+                  onChange={(e) => handleChange('eventType', e.target.value as EventFormData['eventType'])}
                   label="Event Type"
                   required
                 >
@@ -593,7 +589,7 @@ const EventForm: React.FC<EventFormProps> = ({
                         fullWidth
                         label="Section Name"
                         value={section.name}
-                        onChange={(e) => handleSectionChange(index, 'name', e.target.value)}
+                        onChange={(e) => handleSectionChange(index, 'name', e.target.value as string)}
                         error={!!formErrors[`section_${index}_name`]}
                         helperText={formErrors[`section_${index}_name`]}
                         required

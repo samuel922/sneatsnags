@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -20,13 +20,11 @@ import {
   Skeleton,
   Alert,
   Tooltip,
-  Fab,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Divider,
-  Stack,
   Avatar,
   ListItemIcon,
   ListItemText,
@@ -36,7 +34,6 @@ import {
   FilterList as FilterIcon,
   Sort as SortIcon,
   MoreVert as MoreVertIcon,
-  Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
@@ -45,7 +42,6 @@ import {
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon,
   People as PeopleIcon,
-  TrendingUp as TrendingUpIcon,
   Clear as ClearIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
@@ -54,7 +50,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import {
-  Event,
   EventFilters,
   EventListProps,
   EventCardProps,
@@ -161,7 +156,7 @@ const EventCard: React.FC<EventCardProps> = ({
             <Chip
               label={event.status}
               size="small"
-              color={getStatusColor(event.status) as any}
+              color={getStatusColor(event.status) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
               sx={{ fontWeight: 600 }}
             />
             {isUpcoming && daysUntil <= 7 && (
@@ -408,7 +403,7 @@ const EventFilters: React.FC<{
                   <InputLabel>Event Type</InputLabel>
                   <Select
                     value={filters.eventType}
-                    onChange={(e) => onFiltersChange({ eventType: e.target.value as any })}
+                    onChange={(e) => onFiltersChange({ eventType: e.target.value as EventFilters['eventType'] })}
                     label="Event Type"
                   >
                     <MenuItem value="">All Types</MenuItem>
@@ -426,7 +421,7 @@ const EventFilters: React.FC<{
                   <InputLabel>Status</InputLabel>
                   <Select
                     value={filters.status}
-                    onChange={(e) => onFiltersChange({ status: e.target.value as any })}
+                    onChange={(e) => onFiltersChange({ status: e.target.value as EventFilters['status'] })}
                     label="Status"
                   >
                     <MenuItem value="">All Statuses</MenuItem>
@@ -517,7 +512,7 @@ const EventList: React.FC<EventListProps> = ({
     setSortMenuAnchor(null);
   };
 
-  const handleSortChange = (sortBy: any, sortOrder: 'asc' | 'desc') => {
+  const handleSortChange = (sortBy: string, sortOrder: 'asc' | 'desc') => {
     actions.setSorting(sortBy, sortOrder);
     handleSortMenuClose();
   };
