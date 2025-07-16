@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { eventService } from "../services/eventService";
 import {
   Search,
   Shield,
@@ -31,50 +32,99 @@ import {
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 
+interface HeroSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  location: string;
+  date: string;
+  price: string;
+  image: string;
+  category: string;
+  attendees: string;
+  isLive: boolean;
+}
+
 export const HomePage: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeCategory, setActiveCategory] = useState("all");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Hero slides with consistent theme
-  const heroSlides = [
-    {
-      id: 1,
-      title: "Taylor Swift | Eras Tour",
-      subtitle: "Experience the magic live",
-      location: "MetLife Stadium, East Rutherford",
-      date: "Tonight • 8:00 PM",
-      price: "From $180",
-      image: "🎤",
-      category: "Concert",
-      attendees: "65,000+",
-      isLive: true,
-    },
-    {
-      id: 2,
-      title: "Lakers vs Warriors",
-      subtitle: "NBA Finals Game 7",
-      location: "Crypto.com Arena, Los Angeles",
-      date: "Tomorrow • 7:30 PM",
-      price: "From $95",
-      image: "🏀",
-      category: "Sports",
-      attendees: "20,000+",
-      isLive: false,
-    },
-    {
-      id: 3,
-      title: "Hamilton Musical",
-      subtitle: "Broadway's biggest hit",
-      location: "Richard Rodgers Theatre, NYC",
-      date: "This Weekend • 8:00 PM",
-      price: "From $149",
-      image: "🎭",
-      category: "Theater",
-      attendees: "1,300+",
-      isLive: false,
-    },
-  ];
+  // Fetch events for hero slider
+  const fetchHeroEvents = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching hero events...');
+      const response = await eventService.getEvents({ limit: 5, sortBy: 'eventDate', sortOrder: 'asc' });
+      console.log('Events response:', response);
+      
+      const events = response.data || [];
+      console.log('Events data:', events);
+      
+      if (events.length === 0) {
+        console.log('No events found, using fallback');
+        setHeroSlides([
+          {
+            id: "1",
+            title: "Discover Amazing Events",
+            subtitle: "Find your next unforgettable experience",
+            location: "Various Venues",
+            date: "Coming Soon",
+            price: "Starting Soon",
+            image: "https://picsum.photos/1200/800?random=1",
+            category: "Events",
+            attendees: "Thousands",
+            isLive: false,
+          }
+        ]);
+        return;
+      }
+      
+      // Transform events for slider
+      const transformedEvents = events.map((event, index) => ({
+        id: event.id,
+        title: event.name,
+        subtitle: event.description || `Experience ${event.name}`,
+        location: `${event.venue}, ${event.city}`,
+        date: new Date(event.eventDate).toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        price: event.minPrice ? `From $${event.minPrice}` : "Price TBA",
+        image: event.imageUrl || `https://picsum.photos/1200/800?random=${index + 1}`,
+        category: event.eventType || "Event",
+        attendees: event.totalSeats ? `${event.totalSeats.toLocaleString()}+` : "TBA",
+        isLive: new Date(event.eventDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000), // Live if within 24 hours
+      }));
+      
+      console.log('Transformed events:', transformedEvents);
+      setHeroSlides(transformedEvents);
+    } catch (error) {
+      console.error('Error fetching hero events:', error);
+      // Fallback to static slides if API fails
+      setHeroSlides([
+        {
+          id: "1",
+          title: "Discover Amazing Events",
+          subtitle: "Find your next unforgettable experience",
+          location: "Various Venues",
+          date: "Coming Soon",
+          price: "Starting Soon",
+          image: "https://picsum.photos/1200/800?random=1",
+          category: "Events",
+          attendees: "Thousands",
+          isLive: false,
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const eventCategories = [
     { id: "all", name: "All Events", icon: Globe, count: "2.8M" },
@@ -204,12 +254,19 @@ export const HomePage: React.FC = () => {
     },
   ];
 
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchHeroEvents();
+  }, []);
+
   // Auto-advance slider
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => clearInterval(timer);
+    if (heroSlides.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
   }, [heroSlides.length]);
 
   // Mouse tracking
@@ -249,10 +306,26 @@ export const HomePage: React.FC = () => {
       />
 
       {/* Hero Slider Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-indigo-900/20"></div>
-        </div>
+      <section className="relative h-[60vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        {/* Dynamic Background Image */}
+        {!loading && currentHeroSlide && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+            style={{
+              backgroundImage: `url(${currentHeroSlide.image})`,
+            }}
+          >
+            <div className="absolute inset-0 bg-black/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"></div>
+          </div>
+        )}
+        
+        {/* Fallback background for loading state */}
+        {loading && (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-indigo-900/20"></div>
+          </div>
+        )}
 
         {/* Slider Navigation */}
         <div className="absolute top-1/2 left-4 transform -translate-y-1/2 z-20">
@@ -286,56 +359,76 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 text-center max-w-6xl mx-auto">
-          {/* Live Badge */}
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
-            <div className="flex items-center space-x-2">
-              {currentHeroSlide.isLive && (
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              )}
-              <span className="text-white font-medium">
-                {currentHeroSlide.isLive ? "LIVE NOW" : "UPCOMING"}
-              </span>
+        <div className="relative z-10 text-center max-w-7xl mx-auto">
+          {loading ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-white text-xl">Loading amazing events...</p>
             </div>
-          </div>
+          ) : currentHeroSlide ? (
+            <>
+              {/* Live Badge */}
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
+                <div className="flex items-center space-x-2">
+                  {currentHeroSlide.isLive && (
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  )}
+                  <span className="text-white font-medium">
+                    {currentHeroSlide.isLive ? "LIVE NOW" : "UPCOMING"}
+                  </span>
+                </div>
+              </div>
 
-          {/* Event Title */}
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            {currentHeroSlide.title}
-          </h1>
+              {/* Event Title */}
+              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                {currentHeroSlide.title}
+              </h1>
 
-          {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-white/90 mb-8">
-            {currentHeroSlide.subtitle}
-          </p>
+              {/* Subtitle */}
+              <p className="text-xl md:text-2xl text-white/90 mb-8">
+                {currentHeroSlide.subtitle}
+              </p>
 
-          {/* Event Details */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8 text-white/80">
-            <div className="flex items-center">
-              <MapPin className="h-5 w-5 mr-2" />
-              <span>{currentHeroSlide.location}</span>
-            </div>
-            <div className="flex items-center">
-              <Clock className="h-5 w-5 mr-2" />
-              <span>{currentHeroSlide.date}</span>
-            </div>
-            <div className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              <span>{currentHeroSlide.attendees} attending</span>
-            </div>
-          </div>
+              {/* Event Details */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8 text-white/80">
+                <div className="flex items-center">
+                  <MapPin className="h-5 w-5 mr-2" />
+                  <span>{currentHeroSlide.location}</span>
+                </div>
+                <div className="flex items-center">
+                  <Clock className="h-5 w-5 mr-2" />
+                  <span>{currentHeroSlide.date}</span>
+                </div>
+                <div className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  <span>{currentHeroSlide.attendees} attending</span>
+                </div>
+              </div>
 
-          {/* Price and CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <div className="text-3xl font-bold text-white">
-              {currentHeroSlide.price}
+              {/* Price and CTA */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+                <div className="text-3xl font-bold text-white">
+                  {currentHeroSlide.price}
+                </div>
+                <Link to={`/events/${currentHeroSlide.id}`}>
+                  <Button variant="secondary" size="xl" className="group">
+                    <Ticket className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+                    Get Tickets Now
+                    <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                Discover Events
+              </h1>
+              <p className="text-xl md:text-2xl text-white/90 mb-8">
+                Amazing events coming soon
+              </p>
             </div>
-            <Button variant="secondary" size="xl" className="group">
-              <Ticket className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
-              Get Tickets Now
-              <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+          )}
         </div>
       </section>
 
@@ -343,7 +436,7 @@ export const HomePage: React.FC = () => {
       <div className="relative z-10 bg-white">
         {/* Stats Section */}
         <section className="py-16 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Trusted by Millions
@@ -374,8 +467,8 @@ export const HomePage: React.FC = () => {
 
         {/* Search Section */}
         <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="mb-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 border border-blue-200 mb-6">
                 <Sparkles className="h-4 w-4 text-blue-600 mr-2" />
                 <span className="text-sm font-medium text-blue-900">
@@ -383,30 +476,19 @@ export const HomePage: React.FC = () => {
                 </span>
               </div>
 
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 text-center">
                 Discover Events
                 <span className="block text-blue-600">Like Never Before</span>
               </h1>
 
-              <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-                Connect with millions of events worldwide. Buy, sell, and trade
-                tickets with
-                <span className="font-semibold text-blue-600">
-                  {" "}
-                  AI-powered matching
-                </span>
-                ,
-                <span className="font-semibold text-blue-600">
-                  {" "}
-                  verified authenticity
-                </span>
-                , and
-                <span className="font-semibold text-blue-600">
-                  {" "}
-                  instant delivery
-                </span>
-                .
-              </p>
+              <div className="max-w-3xl mx-auto text-center mb-12">
+                <p className="text-xl text-gray-600">
+                  Connect with millions of events worldwide. Buy, sell, and trade tickets with
+                  <span className="font-semibold text-blue-600"> AI-powered matching</span>,
+                  <span className="font-semibold text-blue-600"> verified authenticity</span>, and
+                  <span className="font-semibold text-blue-600"> instant delivery</span>.
+                </p>
+              </div>
             </div>
 
             {/* Search Bar */}
@@ -429,7 +511,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link to="/events">
                 <Button variant="primary" size="lg" className="group">
                   <Calendar className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
@@ -449,7 +531,7 @@ export const HomePage: React.FC = () => {
 
         {/* Live Events Section */}
         <section className="py-20 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -517,7 +599,7 @@ export const HomePage: React.FC = () => {
 
         {/* Event Categories */}
         <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Explore by Category
@@ -552,7 +634,7 @@ export const HomePage: React.FC = () => {
 
         {/* Features Section */}
         <section className="py-20 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Why Choose AutoMatch?
@@ -590,7 +672,7 @@ export const HomePage: React.FC = () => {
 
         {/* Event Organizer Section */}
         <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
@@ -681,7 +763,7 @@ export const HomePage: React.FC = () => {
 
         {/* Testimonials Section */}
         <section className="py-20 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Trusted by Millions
@@ -793,7 +875,7 @@ export const HomePage: React.FC = () => {
       {/* Full-Width Footer */}
       <footer className="bg-slate-800 text-white">
         <div className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {/* Brand */}
               <div className="col-span-1 md:col-span-2">
@@ -890,8 +972,8 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-700 py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="border-t border-slate-700 py-6">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-slate-400 mb-4 md:mb-0">
                 © 2024 AutoMatch. All rights reserved.
