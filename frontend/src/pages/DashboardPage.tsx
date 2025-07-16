@@ -50,79 +50,79 @@ export const DashboardPage: React.FC = () => {
       case UserRole.BUYER:
         return (
           <div className="space-y-8">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               <Card variant="glass" hover className="border-white/30">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Active Offers</p>
-                      <p className="text-3xl font-bold text-blue-600">3</p>
-                      <p className="text-xs text-gray-500">2 expiring soon</p>
+                      <p className="text-sm font-medium text-gray-700">Active Offers</p>
+                      <p className="text-2xl md:text-3xl font-bold text-blue-700">3</p>
+                      <p className="text-xs text-gray-600">2 expiring soon</p>
                     </div>
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                      <Target className="h-6 w-6 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                      <Target className="h-5 w-5 md:h-6 md:w-6 text-white" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card variant="glass" hover className="border-white/30">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Purchases</p>
-                      <p className="text-3xl font-bold text-green-600">8</p>
-                      <p className="text-xs text-gray-500">This month</p>
+                      <p className="text-sm font-medium text-gray-700">Purchases</p>
+                      <p className="text-2xl md:text-3xl font-bold text-green-700">8</p>
+                      <p className="text-xs text-gray-600">This month</p>
                     </div>
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                      <Award className="h-6 w-6 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl flex items-center justify-center">
+                      <Award className="h-5 w-5 md:h-6 md:w-6 text-white" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card variant="glass" hover className="border-white/30">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Spent</p>
-                      <p className="text-3xl font-bold text-purple-600">$2,450</p>
-                      <p className="text-xs text-gray-500">Last 30 days</p>
+                      <p className="text-sm font-medium text-gray-700">Total Spent</p>
+                      <p className="text-2xl md:text-3xl font-bold text-purple-700">$2,450</p>
+                      <p className="text-xs text-gray-600">Last 30 days</p>
                     </div>
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                      <DollarSign className="h-6 w-6 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-white" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Card variant="gradient" className="p-8">
+            <Card variant="gradient" className="p-4 md:p-8">
               <CardHeader>
-                <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">Quick Actions</h3>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   <Button 
                     variant="primary" 
-                    className="justify-start h-auto p-4"
+                    className="justify-start h-auto p-3 md:p-4"
                     onClick={() => navigate('/events')}
                   >
-                    <Zap className="h-5 w-5 mr-3" />
+                    <Zap className="h-4 w-4 md:h-5 md:w-5 mr-2 md:mr-3" />
                     <div className="text-left">
-                      <div className="font-semibold">Create New Offer</div>
-                      <div className="text-sm opacity-90">Find tickets for your next event</div>
+                      <div className="font-semibold text-sm md:text-base">Create New Offer</div>
+                      <div className="text-xs md:text-sm opacity-90">Find tickets for your next event</div>
                     </div>
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="justify-start h-auto p-4"
+                    className="justify-start h-auto p-3 md:p-4"
                     onClick={() => navigate('/events')}
                   >
-                    <Activity className="h-5 w-5 mr-3" />
+                    <Activity className="h-4 w-4 md:h-5 md:w-5 mr-2 md:mr-3" />
                     <div className="text-left">
-                      <div className="font-semibold">Browse Events</div>
-                      <div className="text-sm text-gray-600">Discover upcoming shows</div>
+                      <div className="font-semibold text-sm md:text-base">Browse Events</div>
+                      <div className="text-xs md:text-sm text-gray-700">Discover upcoming shows</div>
                     </div>
                   </Button>
                 </div>
@@ -310,11 +310,11 @@ export const DashboardPage: React.FC = () => {
     <div className="min-h-screen p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.firstName}! 👋
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-700 text-sm md:text-base">
             Here's what's happening with your account today.
           </p>
         </div>

@@ -116,24 +116,24 @@ export const HomePage: React.FC = () => {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
             Experience the next generation of ticket trading with 
-            <span className="font-semibold text-blue-600"> AI-powered matching</span>, 
-            <span className="font-semibold text-purple-600"> secure payments</span>, and 
-            <span className="font-semibold text-pink-600"> instant processing</span>.
+            <span className="font-semibold text-blue-700"> AI-powered matching</span>, 
+            <span className="font-semibold text-purple-700"> secure payments</span>, and 
+            <span className="font-semibold text-pink-700"> instant processing</span>.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up" style={{ animationDelay: '0.6s' }}>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up mobile-stack" style={{ animationDelay: '0.6s' }}>
             <Link to="/events">
-              <Button variant="gradient" size="xl" className="group shadow-2xl hover:shadow-3xl">
+              <Button variant="gradient" size="xl" className="group shadow-2xl hover:shadow-3xl mobile-full">
                 <Search className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
                 Explore Events
                 <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link to="/register">
-              <Button variant="glass" size="xl" className="group border-white/30">
+              <Button variant="glass" size="xl" className="group border-white/30 mobile-full">
                 <Play className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
                 Get Started Free
               </Button>
@@ -141,16 +141,16 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '0.9s' }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '0.9s' }}>
             {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">
+              <div key={index} className="text-center group p-2">
+                <div className="text-3xl md:text-4xl mb-2 group-hover:scale-110 transition-transform">
                   {stat.icon}
                 </div>
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
                   {stat.number}
                 </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+                <div className="text-gray-700 font-medium text-sm md:text-base">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -168,15 +168,15 @@ export const HomePage: React.FC = () => {
       <section className="py-24 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               Why Choose AutoMatch?
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
               Revolutionizing ticket trading with cutting-edge technology and user-focused innovation.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
@@ -186,14 +186,14 @@ export const HomePage: React.FC = () => {
                   hover
                   className="group border-white/30 hover:border-white/50 transition-all duration-500"
                 >
-                  <CardContent className="p-8 text-center">
-                    <div className={`w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
-                      <Icon className="h-8 w-8 text-white" />
+                  <CardContent className="p-6 md:p-8 text-center">
+                    <div className={`w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 md:mb-6 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
+                      <Icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4 group-hover:text-blue-700 transition-colors">
                       {feature.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-gray-700 leading-relaxed text-sm md:text-base">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -263,15 +263,15 @@ export const HomePage: React.FC = () => {
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               Loved by Thousands
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-700">
               See what our users are saying about AutoMatch
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
             {testimonials.map((testimonial, index) => (
               <Card
                 key={index}
@@ -279,22 +279,22 @@ export const HomePage: React.FC = () => {
                 hover
                 className="border-white/30"
               >
-                <CardContent className="p-8">
+                <CardContent className="p-6 md:p-8">
                   <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star key={i} className="h-5 w-5 text-yellow-500 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-6 leading-relaxed italic">
+                  <p className="text-gray-800 mb-6 leading-relaxed italic text-sm md:text-base">
                     "{testimonial.content}"
                   </p>
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-2xl mr-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-700 to-purple-700 rounded-full flex items-center justify-center text-2xl mr-4">
                       {testimonial.avatar}
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                      <div className="text-gray-600 text-sm">{testimonial.role}</div>
+                      <div className="text-gray-700 text-sm">{testimonial.role}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -321,16 +321,16 @@ export const HomePage: React.FC = () => {
             Join thousands of users who trust AutoMatch for seamless ticket trading.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mobile-stack">
             <Link to="/register">
-              <Button variant="secondary" size="xl" className="group shadow-2xl">
+              <Button variant="secondary" size="xl" className="group shadow-2xl mobile-full">
                 <Users className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
                 Start Trading Now
                 <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link to="/events">
-              <Button variant="glass" size="xl" className="group border-white/30 text-white">
+              <Button variant="glass" size="xl" className="group border-white/30 text-white mobile-full">
                 <Search className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
                 Browse Events
               </Button>

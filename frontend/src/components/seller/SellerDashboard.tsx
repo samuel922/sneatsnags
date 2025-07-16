@@ -88,36 +88,38 @@ export const SellerDashboard = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
       {/* Header Section */}
       <Box sx={{ 
         display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' },
         justifyContent: 'space-between', 
-        alignItems: 'center', 
+        alignItems: { xs: 'stretch', sm: 'center' }, 
+        gap: { xs: 2, sm: 0 },
         mb: 4,
-        p: 3,
+        p: { xs: 2, sm: 3 },
         background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
         borderRadius: 3,
         border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 0 } }}>
           <Avatar 
             sx={{ 
-              width: 64, 
-              height: 64, 
-              mr: 3,
+              width: { xs: 48, sm: 64 }, 
+              height: { xs: 48, sm: 64 }, 
+              mr: { xs: 2, sm: 3 },
               background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-              fontSize: '1.5rem',
+              fontSize: { xs: '1.2rem', sm: '1.5rem' },
               fontWeight: 600
             }}
           >
-            <Store sx={{ fontSize: '2rem' }} />
+            <Store sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }} />
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5, fontSize: { xs: '1.5rem', sm: '2rem' } }}>
               Welcome back, {user?.firstName}!
             </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               Ready to manage your ticket listings?
             </Typography>
           </Box>
@@ -132,8 +134,10 @@ export const SellerDashboard = () => {
             borderRadius: 3,
             textTransform: 'none',
             fontWeight: 600,
-            px: 3,
-            py: 1.5
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+            width: { xs: '100%', sm: 'auto' }
           }}
         >
           Create New Listing
@@ -141,7 +145,7 @@ export const SellerDashboard = () => {
       </Box>
 
       {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} lg={3}>
           <Card sx={{ 
             height: '100%',
@@ -154,7 +158,7 @@ export const SellerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
                   <Assignment />
@@ -187,7 +191,7 @@ export const SellerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.success.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
                   <TrendingUp />
@@ -220,7 +224,7 @@ export const SellerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.secondary.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
                   <CheckCircle />
@@ -253,7 +257,7 @@ export const SellerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.warning.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
                   <AttachMoney />
@@ -285,7 +289,7 @@ export const SellerDashboard = () => {
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             borderRadius: 3
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
                 Quick Actions
               </Typography>
@@ -343,7 +347,7 @@ export const SellerDashboard = () => {
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             borderRadius: 3
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
                 Getting Started
               </Typography>
@@ -449,7 +453,7 @@ export const SellerDashboard = () => {
             border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
             borderRadius: 3
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
                   <Analytics />

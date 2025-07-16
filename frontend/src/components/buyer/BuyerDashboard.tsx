@@ -74,36 +74,38 @@ export const BuyerDashboard = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
       {/* Header Section */}
       <Box sx={{ 
         display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' },
         justifyContent: 'space-between', 
-        alignItems: 'center', 
+        alignItems: { xs: 'stretch', sm: 'center' }, 
+        gap: { xs: 2, sm: 0 },
         mb: 4,
-        p: 3,
+        p: { xs: 2, sm: 3 },
         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
         borderRadius: 3,
         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 0 } }}>
           <Avatar 
             sx={{ 
-              width: 64, 
-              height: 64, 
-              mr: 3,
+              width: { xs: 48, sm: 64 }, 
+              height: { xs: 48, sm: 64 }, 
+              mr: { xs: 2, sm: 3 },
               background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-              fontSize: '1.5rem',
+              fontSize: { xs: '1.2rem', sm: '1.5rem' },
               fontWeight: 600
             }}
           >
             {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5, fontSize: { xs: '1.5rem', sm: '2rem' } }}>
               Welcome back, {user?.firstName}!
             </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               Ready to find your next event tickets?
             </Typography>
           </Box>
@@ -118,8 +120,10 @@ export const BuyerDashboard = () => {
             borderRadius: 3,
             textTransform: 'none',
             fontWeight: 600,
-            px: 3,
-            py: 1.5
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+            width: { xs: '100%', sm: 'auto' }
           }}
         >
           Browse Events
@@ -127,8 +131,8 @@ export const BuyerDashboard = () => {
       </Box>
 
       {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={4}>
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ 
             height: '100%',
             background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
@@ -140,7 +144,7 @@ export const BuyerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
                   <AccessTime />
@@ -163,7 +167,7 @@ export const BuyerDashboard = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ 
             height: '100%',
             background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
@@ -175,7 +179,7 @@ export const BuyerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.success.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
                   <CheckCircle />
@@ -198,7 +202,7 @@ export const BuyerDashboard = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ 
             height: '100%',
             background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.light, 0.05)} 100%)`,
@@ -210,7 +214,7 @@ export const BuyerDashboard = () => {
               boxShadow: `0 12px 24px ${alpha(theme.palette.secondary.main, 0.15)}`
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
                   <Timeline />

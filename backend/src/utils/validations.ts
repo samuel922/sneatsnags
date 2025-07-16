@@ -86,7 +86,7 @@ export const createSectionSchema = z.object({
   priceLevel: z.number().int().min(1).max(10).optional(),
 });
 
-export const createEventSchema = z.object({
+const baseEventSchema = z.object({
   name: z.string().min(1, "Event name is required").max(200, "Event name is too long"),
   description: z.string().max(2000, "Description is too long").optional(),
   venue: z.string().min(1, "Venue is required").max(200, "Venue name is too long"),
@@ -111,7 +111,9 @@ export const createEventSchema = z.object({
   totalSeats: z.coerce.number().int().positive("Total seats must be a positive integer").optional(),
   availableSeats: z.coerce.number().int().positive("Available seats must be a positive integer").optional(),
   sections: z.array(createSectionSchema).min(1, "At least one section is required").optional(),
-}).refine((data) => {
+});
+
+export const createEventSchema = baseEventSchema.refine((data) => {
   if (data.minPrice && data.maxPrice) {
     return data.minPrice <= data.maxPrice;
   }
@@ -129,7 +131,7 @@ export const createEventSchema = z.object({
   path: ["doors"],
 });
 
-export const updateEventSchema = createEventSchema.partial().omit({ sections: true });
+export const updateEventSchema = baseEventSchema.partial().omit({ sections: true });
 
 export const createEventSectionSchema = z.object({
   eventId: z.string().cuid("Invalid event ID"),
