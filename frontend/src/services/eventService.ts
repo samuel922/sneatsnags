@@ -307,6 +307,8 @@ export class EventService {
     
     // Log the full error response for debugging
     const fullError = error as any;
+    console.error('Full error object:', fullError);
+    
     if (fullError?.response) {
       console.error('Full error response:', {
         status: fullError.response.status,
@@ -316,8 +318,8 @@ export class EventService {
     }
 
     // Extract error information from the response
-    const errorData = (error as { response?: { data?: { success?: boolean; error?: string; code?: string; details?: unknown }; status?: number } })?.response?.data;
-    const status = (error as { response?: { data?: unknown; status?: number } })?.response?.status;
+    const errorData = fullError?.response?.data;
+    const status = fullError?.response?.status;
     
     console.error('Extracted error data:', errorData);
     console.error('Extracted status:', status);
@@ -336,7 +338,29 @@ export class EventService {
     // Handle HTTP status codes
     switch (status) {
       case 400:
-        const validationMessage = errorData?.error || "Invalid request data";
+        console.error('400 validation error details:', errorData);
+        let validationMessage = "Invalid request data";
+        
+        if (errorData?.error) {
+          validationMessage = errorData.error;
+        } else if (errorData?.message) {
+          validationMessage = errorData.message;
+        } else if (errorData?.details) {
+          const details = Array.isArray(errorData.details) 
+            ? errorData.details.map((d: any) => d.message || d.path || d).join(', ')
+            : JSON.stringify(errorData.details);
+          validationMessage = `Validation failed: ${details}`;
+        } else if (errorData && typeof errorData === 'object') {
+          // Handle field-specific validation errors like {imageUrl: ["Invalid image URL"]}
+          const fieldErrors = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const errorMessages = Array.isArray(messages) ? messages.join(', ') : messages;
+              return `${field}: ${errorMessages}`;
+            })
+            .join('; ');
+          validationMessage = `Validation failed: ${fieldErrors}`;
+        }
+        
         return new EventServiceError(
           validationMessage,
           "VALIDATION_ERROR",
@@ -551,7 +575,6 @@ export const handleEventServiceError = (
 const eventServiceInstance = new EventService();
 
 // Export singleton instance
-export const eventServiceV2 = eventServiceInstance;
 
 // Legacy object export for backward compatibility
 export const eventService = eventServiceInstance;

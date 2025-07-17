@@ -23,7 +23,7 @@ import {
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { adminService } from '../../services/adminService';
-import { eventServiceV2 } from '../../services/eventService.v2';
+import { eventService } from '../../services/eventService';
 import { SweetAlert } from '../../utils/sweetAlert';
 import type { Event, CreateEventRequest, EventType } from '../../types/events';
 
@@ -668,14 +668,11 @@ export const AdminEventsPage: React.FC = () => {
 
   const handleCreateEvent = async (eventData: EventFormData) => {
     try {
-      // Transform sections to match backend structure
-      const backendSections = eventData.sections.map(section => ({
-        name: section.name,
-        description: section.description || '',
-        rowCount: Math.ceil(section.capacity / 20), // Estimate rows
-        seatCount: section.capacity,
-        priceLevel: section.minPrice,
-      }));
+      // Check authentication
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('No access token found. Please log in again.');
+      }
 
       // Map category to proper EventType
       const getEventTypeFromCategory = (category: string): string => {
@@ -695,21 +692,9 @@ export const AdminEventsPage: React.FC = () => {
         return 'OTHER';
       };
 
-      // Validate required fields
+      // Validate basic requirements
       if (!eventData.name || eventData.name.length < 3) {
         throw new Error('Event name must be at least 3 characters long');
-      }
-      if (!eventData.venue || eventData.venue.length < 2) {
-        throw new Error('Venue name must be at least 2 characters long');
-      }
-      if (!eventData.address || eventData.address.length < 5) {
-        throw new Error('Address must be at least 5 characters long');
-      }
-      if (!eventData.city || eventData.city.length < 2) {
-        throw new Error('City name must be at least 2 characters long');
-      }
-      if (!eventData.state || eventData.state.length < 2) {
-        throw new Error('State name must be at least 2 characters long');
       }
       if (!eventData.date || !eventData.time) {
         throw new Error('Event date and time are required');
@@ -724,8 +709,17 @@ export const AdminEventsPage: React.FC = () => {
         throw new Error('Event date must be in the future');
       }
 
-      // Create base request data without sections
-      const baseRequestData = {
+      // Transform sections to match backend structure
+      const backendSections = eventData.sections.map(section => ({
+        name: section.name,
+        description: section.description || '',
+        rowCount: Math.ceil(section.capacity / 20),
+        seatCount: section.capacity,
+        priceLevel: section.minPrice,
+      }));
+
+      // Prepare request data
+      const requestData: CreateEventRequest = {
         name: eventData.name.trim(),
         description: eventData.description?.trim() || '',
         venue: eventData.venue.trim(),
@@ -737,76 +731,61 @@ export const AdminEventsPage: React.FC = () => {
         eventDate: eventDateTime.toISOString(),
         eventType: getEventTypeFromCategory(eventData.category || '') as EventType,
         category: eventData.category,
-        imageUrl: eventData.imageUrl || '',
-        minPrice: eventData.sections.length > 0 ? Math.min(...eventData.sections.map((s: any) => s.minPrice)) : 0,
-        maxPrice: eventData.sections.length > 0 ? Math.max(...eventData.sections.map((s: any) => s.maxPrice)) : 0,
+        imageUrl: eventData.imageUrl && eventData.imageUrl.trim().length > 0 ? eventData.imageUrl : undefined,
+        minPrice: eventData.sections.length > 0 ? Math.max(0.01, Math.min(...eventData.sections.map((s: any) => s.minPrice))) : undefined,
+        maxPrice: eventData.sections.length > 0 ? Math.max(0.01, Math.max(...eventData.sections.map((s: any) => s.maxPrice))) : undefined,
         totalSeats: eventData.sections.reduce((sum: number, section: any) => sum + section.capacity, 0),
+        sections: backendSections,
       };
 
-      console.log('Sending request data:', JSON.stringify(baseRequestData, null, 2));
-      console.log('Event date:', eventData.date, 'Event time:', eventData.time);
-      
-      // Check authentication
-      const token = localStorage.getItem('accessToken');
-      console.log('Access token exists:', !!token);
-      if (!token) {
-        throw new Error('No access token found. Please log in again.');
-      }
+      console.log('Sending request data:', JSON.stringify(requestData, null, 2));
+      console.log('Selected event:', selectedEvent);
+      console.log('Is update operation:', !!selectedEvent);
 
-      console.log('Selected event for update:', selectedEvent);
-      console.log('Event ID being used:', selectedEvent?.id);
-
-      // Transform the data to match the eventServiceV2 expected format
-      const serviceData = {
-        ...baseRequestData,
-        eventDate: eventData.date,
-        eventTime: eventData.time,
-        sections: backendSections
-      };
+      let result: Event;
       
-      const result = selectedEvent 
-        ? await eventServiceV2.updateEvent(selectedEvent.id, serviceData)
-        : await eventServiceV2.createEvent(serviceData);
-      
-      // For event updates, we need to handle sections separately
-      if (selectedEvent && eventData.sections.length > 0) {
-        try {
-          // Get existing sections to determine what needs to be updated/created/deleted
-          const existingSections = selectedEvent.sections || [];
-          
-          // Update or create sections
-          for (const section of eventData.sections) {
-            const existingSection = existingSections.find(es => es.name === section.name);
+      if (selectedEvent) {
+        // Update existing event (exclude sections from update)
+        const { sections, ...updateData } = requestData;
+        result = await eventService.updateEvent(selectedEvent.id, updateData);
+        
+        // Handle sections separately for updates
+        if (eventData.sections.length > 0) {
+          try {
+            const existingSections = selectedEvent.sections || [];
             
-            if (existingSection) {
-              // Update existing section
-              await eventServiceV2.updateEventSection(existingSection.id, {
-                name: section.name,
-                description: section.description,
-                seatCount: section.capacity,
-                priceLevel: section.minPrice,
-                capacity: section.capacity,
-                isActive: section.isActive,
-              });
-            } else {
-              // Create new section
-              await eventServiceV2.createEventSection(selectedEvent.id, {
-                name: section.name,
-                description: section.description,
-                seatCount: section.capacity,
-                priceLevel: section.minPrice,
-                capacity: section.capacity,
-                isActive: section.isActive,
-              });
+            for (const section of eventData.sections) {
+              const existingSection = existingSections.find(es => es.name === section.name);
+              
+              if (existingSection) {
+                await eventService.updateEventSection(existingSection.id, {
+                  name: section.name,
+                  description: section.description,
+                  seatCount: section.capacity,
+                  priceLevel: section.minPrice,
+                  capacity: section.capacity,
+                  isActive: section.isActive,
+                });
+              } else {
+                await eventService.createEventSection(selectedEvent.id, {
+                  name: section.name,
+                  description: section.description,
+                  seatCount: section.capacity,
+                  priceLevel: section.minPrice,
+                  capacity: section.capacity,
+                  isActive: section.isActive,
+                });
+              }
             }
+          } catch (sectionError) {
+            console.error('Error updating sections:', sectionError);
           }
-          
-          console.log('Sections updated successfully');
-        } catch (sectionError) {
-          console.error('Error updating sections:', sectionError);
-          // Don't throw here - the event was updated successfully
         }
+      } else {
+        // Create new event with sections
+        result = await eventService.createEvent(requestData);
       }
+
       console.log(selectedEvent ? 'Event updated successfully:' : 'Event created successfully:', result);
 
       // Refresh the events list
@@ -821,32 +800,14 @@ export const AdminEventsPage: React.FC = () => {
         selectedEvent ? 'The event has been successfully updated.' : 'The event has been successfully created.'
       );
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error('Error with event operation:', error);
       
-      // Log detailed error information
-      console.error('Full error object:', error);
-      if (error && typeof error === 'object' && 'details' in error) {
-        console.error('Validation details:', error.details);
-      }
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       
-      let errorMessage = 'There was an error creating the event. Please try again.';
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        
-        // Check for validation errors
-        if (error.message.includes('Validation failed') && 'details' in error) {
-          const details = (error as any).details;
-          if (details && typeof details === 'object') {
-            const validationErrors = Object.entries(details)
-              .map(([field, message]) => `${field}: ${message}`)
-              .join(', ');
-            errorMessage = `Validation failed: ${validationErrors}`;
-          }
-        }
-      }
-      
-      SweetAlert.error('Failed to create event', errorMessage);
+      SweetAlert.error(
+        selectedEvent ? 'Failed to update event' : 'Failed to create event',
+        errorMessage
+      );
     }
   };
 
@@ -858,11 +819,14 @@ export const AdminEventsPage: React.FC = () => {
 
     if (confirmed) {
       try {
-        // Mock delete - in real app, this would be an API call
-        setEvents(prev => prev.filter(event => event.id !== eventId));
+        await eventService.deleteEvent(eventId);
+        await fetchEvents();
+        await fetchStats();
         SweetAlert.success('Event deleted', 'The event has been successfully deleted');
       } catch (error) {
-        SweetAlert.error('Failed to delete event', 'Please try again');
+        console.error('Error deleting event:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete event';
+        SweetAlert.error('Failed to delete event', errorMessage);
       }
     }
   };
